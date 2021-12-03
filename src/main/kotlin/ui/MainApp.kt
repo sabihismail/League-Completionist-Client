@@ -1,9 +1,11 @@
 package ui
 
-import league.LeagueConnection
-import league.SummonerStatus
+import javafx.beans.property.SimpleListProperty
+import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
+import javafx.collections.FXCollections
 import javafx.geometry.Pos
+import league.*
 import tornadofx.*
 import java.util.*
 
@@ -36,6 +38,15 @@ class MainViewController : Controller() {
 
             runLater { view.chestProperty.set("Available chests: ${it.chestCount} (next one in $remainingStr days)") }
         }
+
+        leagueConnection.onChampionSelectChange {
+            if (it.gameMode != GameMode.ARAM) return@onChampionSelectChange
+
+            runLater {
+                view.benchedChampionListProperty.set(FXCollections.observableList(it.benchedChampions))
+                view.teamChampionListProperty.set(FXCollections.observableList(it.teamChampions))
+            }
+        }
     }
 
     fun updateChestInfo() {
@@ -57,27 +68,47 @@ class MainView: View() {
     val summonerProperty = SimpleStringProperty()
     val chestProperty = SimpleStringProperty()
 
+    val gameModeProperty = SimpleObjectProperty<GameMode>()
+    val benchedChampionListProperty = SimpleListProperty<ChampionInfo>()
+    val teamChampionListProperty = SimpleListProperty<ChampionInfo>()
+
     private val controller = find(MainViewController::class)
 
     override val root = vbox {
-        alignment = Pos.TOP_CENTER
         prefWidth = 800.0
         prefHeight = 600.0
 
-        label(summonerProperty)
-        label(chestProperty)
-        hbox {
-            alignment = Pos.CENTER
-            spacing = 6.0
+        borderpane {
+            top = vbox {
+                alignment = Pos.CENTER
 
-            button("Refresh Chest Data") {
-                action { controller.updateChestInfo() }
+                label(summonerProperty)
+                label(chestProperty)
             }
-            button("Refresh Champion Mastery Data") {
-                action { controller.updateChampionMasteryInfo() }
+
+            center = vbox {
+                datagrid(benchedChampionListProperty) {
+                    cellCache {
+                        label(it.name)
+                    }
+                }
+
+                spacer {  }
+
+                datagrid(teamChampionListProperty) {
+                    cellCache {
+                        label(it.name)
+                    }
+                }
             }
-            button("Stop") {
-                action { controller.stopOrStart() }
+
+            bottom = hbox {
+                alignment = Pos.CENTER
+                spacing = 6.0
+
+                button("Refresh Chest Data").setOnAction { controller.updateChestInfo() }
+                button("Refresh Champion Mastery Data").setOnAction { controller.updateChampionMasteryInfo() }
+                button("Stop").setOnAction { controller.stopOrStart() }
             }
         }
     }
