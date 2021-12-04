@@ -1,10 +1,10 @@
 package ui
 
 import javafx.beans.property.SimpleListProperty
-import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
 import javafx.collections.FXCollections
 import javafx.geometry.Pos
+import javafx.scene.paint.Color
 import league.*
 import tornadofx.*
 import java.util.*
@@ -17,7 +17,7 @@ class MainViewController : Controller() {
         leagueConnection.start()
 
         leagueConnection.onSummonerChange {
-            val str = when(it.status) {
+            val str = when (it.status) {
                 SummonerStatus.NOT_LOGGED_IN -> "Not logged in."
                 SummonerStatus.LOGGED_IN_UNAUTHORIZED -> "Unauthorized Login."
                 SummonerStatus.LOGGED_IN_AUTHORIZED -> "Logged in as: ${it.displayName} (Level: ${it.summonerLevel})"
@@ -28,6 +28,7 @@ class MainViewController : Controller() {
             if (it.status != SummonerStatus.LOGGED_IN_AUTHORIZED) return@onSummonerChange
 
             leagueConnection.updateMasteryChestInfo()
+            leagueConnection.updateClientState()
         }
 
         leagueConnection.onMasteryChestChange {
@@ -40,6 +41,8 @@ class MainViewController : Controller() {
         }
 
         leagueConnection.onChampionSelectChange {
+            runLater { view.gameModeProperty.set("Game Mode: ${it.gameMode}") }
+
             if (it.gameMode != GameMode.ARAM) return@onChampionSelectChange
 
             runLater {
@@ -58,24 +61,20 @@ class MainViewController : Controller() {
     fun updateChampionMasteryInfo() {
         leagueConnection.updateChampionMasteryInfo()
     }
-
-    fun stopOrStart() {
-
-    }
 }
 
 class MainView: View() {
     val summonerProperty = SimpleStringProperty()
     val chestProperty = SimpleStringProperty()
 
-    val gameModeProperty = SimpleObjectProperty<GameMode>()
+    val gameModeProperty = SimpleStringProperty()
     val benchedChampionListProperty = SimpleListProperty<ChampionInfo>()
     val teamChampionListProperty = SimpleListProperty<ChampionInfo>()
 
     private val controller = find(MainViewController::class)
 
     override val root = vbox {
-        prefWidth = 800.0
+        prefWidth = 600.0
         prefHeight = 600.0
 
         borderpane {
@@ -84,20 +83,50 @@ class MainView: View() {
 
                 label(summonerProperty)
                 label(chestProperty)
+                label(gameModeProperty)
             }
 
             center = vbox {
+                alignment = Pos.CENTER
+                paddingTop = 16.0
+
+                label("Available Champions:")
                 datagrid(benchedChampionListProperty) {
+                    alignment = Pos.CENTER
+
+                    maxRows = 2
+                    maxCellsInRow = 5
+                    cellWidth = 120.0
+                    cellHeight = 120.0
+
                     cellCache {
-                        label(it.name)
+                        imageview(LeagueImageAPI.getChampionImage(it.id))
                     }
                 }
 
-                spacer {  }
-
+                label("Your Team:")
                 datagrid(teamChampionListProperty) {
+                    alignment = Pos.CENTER
+
+                    maxRows = 1
+                    maxCellsInRow = 5
+                    cellWidth = 120.0
+                    cellHeight = 120.0
+
                     cellCache {
-                        label(it.name)
+                        stackpane {
+                            alignment = Pos.TOP_CENTER
+
+                            imageview(LeagueImageAPI.getChampionImage(it.id))
+                            label(if (it.isSummonerSelectedChamp) "You" else "") {
+                                alignment = Pos.TOP_CENTER
+
+                                textFill = Color.WHITE
+                                style {
+                                    backgroundColor += Color.BLACK
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -108,7 +137,6 @@ class MainView: View() {
 
                 button("Refresh Chest Data").setOnAction { controller.updateChestInfo() }
                 button("Refresh Champion Mastery Data").setOnAction { controller.updateChampionMasteryInfo() }
-                button("Stop").setOnAction { controller.stopOrStart() }
             }
         }
     }

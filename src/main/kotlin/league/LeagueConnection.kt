@@ -7,20 +7,19 @@ import com.stirante.lolclient.ClientWebSocket
 import generated.*
 import tornadofx.*
 import java.util.*
-import kotlin.collections.ArrayList
 
 
-enum class MasteryStatus(i: Int) {
-    NOT_OWNED(0),
-    FREE_TO_PLAY(1),
-    BOX_NOT_ATTAINED(2),
-    BOX_ATTAINED(3)
+enum class MasteryStatus {
+    NOT_OWNED,
+    FREE_TO_PLAY,
+    BOX_NOT_ATTAINED,
+    BOX_ATTAINED
 }
 
-enum class SummonerStatus(i: Int) {
-    NOT_LOGGED_IN(0),
-    LOGGED_IN_UNAUTHORIZED(1),
-    LOGGED_IN_AUTHORIZED(2)
+enum class SummonerStatus {
+    NOT_LOGGED_IN,
+    LOGGED_IN_UNAUTHORIZED,
+    LOGGED_IN_AUTHORIZED
 }
 
 enum class GameMode {
@@ -51,7 +50,7 @@ data class SummonerInfo(val status: SummonerStatus = SummonerStatus.NOT_LOGGED_I
 data class MasteryChestInfo(var nextChestDate: Date? = null, var chestCount: Int = 0)
 
 data class ChampionInfo(val id: Int, val name: String, val freeToPlay: Boolean, val owned: Boolean, val rented: Boolean, val baseLoadScreenPath: String,
-                        val squarePortraitPath: String, val masteryStatus: MasteryStatus, val masteryPoints: Int)
+                        val squarePortraitPath: String, val masteryStatus: MasteryStatus, val masteryPoints: Int, var isSummonerSelectedChamp: Boolean = false)
 
 data class ChampionSelectInfo(val gameMode: GameMode = GameMode.NONE, val teamChampions: List<ChampionInfo> = listOf(),
                               val benchedChampions: List<ChampionInfo> = listOf())
@@ -73,6 +72,21 @@ class LeagueConnection {
     private val onMasteryChestChangeList = ArrayList<(MasteryChestInfo) -> Unit>()
     private val onChampionSelectChangeList = ArrayList<(ChampionSelectInfo) -> Unit>()
 
+    fun updateClientState() {
+        clientState = clientAPI.executeGet("/lol-gameflow/v1/gameflow-phase", LolGameflowGameflowPhase::class.java).responseObject
+
+        handleClientStateChange(clientState)
+
+        when (clientState) {
+            LolGameflowGameflowPhase.CHAMPSELECT -> {
+                val championSelectSession = clientAPI.executeGet("/lol-champ-select/v1/session", LolChampSelectChampSelectSession::class.java).responseObject
+
+                handleChampionSelect(championSelectSession)
+            }
+            else -> return
+        }
+    }
+
     fun updateChampionMasteryInfo() {
         val champions = clientAPI.executeGet("/lol-champions/v1/inventories/${summonerInfo.summonerID}/champions",
             Array<LolChampionsCollectionsChampion>::class.java).responseObject
@@ -81,24 +95,24 @@ class LeagueConnection {
             Array<LolCollectionsCollectionsChampionMastery>::class.java).responseObject
 
         val masteryPairing = champions.map {
-            lateinit var status: MasteryStatus
+            lateinit var masteryStatus: MasteryStatus
             var championPoints = 0
 
             if (!it.ownership.owned) {
-                status = if (it.freeToPlay) MasteryStatus.FREE_TO_PLAY else MasteryStatus.NOT_OWNED
+                masteryStatus = if (it.freeToPlay) MasteryStatus.FREE_TO_PLAY else MasteryStatus.NOT_OWNED
             } else {
                 val championMastery = championMasteryList.firstOrNull { championMastery -> championMastery.championId == it.id }
 
                 if (championMastery == null) {
-                    status = MasteryStatus.BOX_NOT_ATTAINED
+                    masteryStatus = MasteryStatus.BOX_NOT_ATTAINED
                 } else {
-                    status = if (championMastery.chestGranted) MasteryStatus.BOX_ATTAINED else MasteryStatus.BOX_NOT_ATTAINED
+                    masteryStatus = if (championMastery.chestGranted) MasteryStatus.BOX_ATTAINED else MasteryStatus.BOX_NOT_ATTAINED
 
                     championPoints = championMastery.championPoints
                 }
             }
 
-            ChampionInfo(it.id, it.name, it.freeToPlay, it.ownership.owned, it.ownership.rental.rented, it.baseLoadScreenPath, it.squarePortraitPath, status,
+            ChampionInfo(it.id, it.name, it.freeToPlay, it.ownership.owned, it.ownership.rental.rented, it.baseLoadScreenPath, it.squarePortraitPath, masteryStatus,
                 championPoints)
         }
 
@@ -121,6 +135,18 @@ class LeagueConnection {
         masteryChestChanged()
     }
 
+    fun onSummonerChange(callable: (SummonerInfo) -> Unit) {
+        onSummonerChangeList.add(callable)
+    }
+
+    fun onMasteryChestChange(callable: (MasteryChestInfo) -> Unit) {
+        onMasteryChestChangeList.add(callable)
+    }
+
+    fun onChampionSelectChange(callable: (ChampionSelectInfo) -> Unit) {
+        onChampionSelectChangeList.add(callable)
+    }
+
     fun start() {
         clientAPI.addClientConnectionListener(object : ClientConnectionListener {
             override fun onClientConnected() {
@@ -133,7 +159,7 @@ class LeagueConnection {
                     override fun onEvent(event: ClientWebSocket.Event?) {
                         if (event == null || event.uri == null) return
 
-                        when(event.uri) {
+                        when (event.uri) {
                             "/lol-champ-select/v1/session" -> handleChampionSelect(event.data as LolChampSelectChampSelectSession)
                             "/lol-gameflow/v1/gameflow-phase" -> handleClientStateChange(event.data as LolGameflowGameflowPhase)
                             else -> {
@@ -160,8 +186,8 @@ class LeagueConnection {
         })
     }
 
-    private fun handleClientStateChange(gameflowPhase: LolGameflowGameflowPhase) {
-        when(gameflowPhase) {
+    private fun handleClientStateChange(gameFlowPhase: LolGameflowGameflowPhase) {
+        when (gameFlowPhase) {
             LolGameflowGameflowPhase.CHAMPSELECT -> {
                 val gameFlow = clientAPI.executeGet("/lol-gameflow/v1/session", LolGameflowGameflowSession::class.java).responseObject ?: return
 
@@ -185,15 +211,26 @@ class LeagueConnection {
             }
         }
 
-        clientState = gameflowPhase
+        clientState = gameFlowPhase
     }
 
     private fun handleChampionSelect(champSelectSession: LolChampSelectChampSelectSession) {
         if (gameMode == GameMode.NONE) return
+        if (champSelectSession.myTeam.isEmpty()) return
+
+        if (championInfo.isEmpty()) {
+            updateChampionMasteryInfo()
+        }
+
+        val selectedChamp = champSelectSession.myTeam.find { it.summonerId == summonerInfo.summonerID }!!
 
         val benchedChampions = champSelectSession.benchChampionIds.map { championInfo[it]!! }
         val teamChampions = champSelectSession.myTeam.sortedBy { it.cellId }
             .map { championInfo[it.championId]!! }
+
+        teamChampions.forEach {
+            it.isSummonerSelectedChamp = it.id == selectedChamp.championId
+        }
 
         championSelectInfo = ChampionSelectInfo(gameMode, teamChampions, benchedChampions)
         championSelectChanged()
@@ -215,18 +252,6 @@ class LeagueConnection {
         summonerChanged()
 
         return true
-    }
-
-    fun onSummonerChange(callable: (SummonerInfo) -> Unit) {
-        onSummonerChangeList.add(callable)
-    }
-
-    fun onMasteryChestChange(callable: (MasteryChestInfo) -> Unit) {
-        onMasteryChestChangeList.add(callable)
-    }
-
-    fun onChampionSelectChange(callable: (ChampionSelectInfo) -> Unit) {
-        onChampionSelectChangeList.add(callable)
     }
 
     private fun summonerChanged() {
