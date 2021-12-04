@@ -9,9 +9,10 @@ import tornadofx.*
 import java.util.*
 
 
-enum class MasteryStatus {
+enum class ChampionOwnershipStatus {
     NOT_OWNED,
     FREE_TO_PLAY,
+    RENTAL,
     BOX_NOT_ATTAINED,
     BOX_ATTAINED
 }
@@ -49,8 +50,8 @@ data class SummonerInfo(val status: SummonerStatus = SummonerStatus.NOT_LOGGED_I
 
 data class MasteryChestInfo(var nextChestDate: Date? = null, var chestCount: Int = 0)
 
-data class ChampionInfo(val id: Int, val name: String, val freeToPlay: Boolean, val owned: Boolean, val rented: Boolean, val baseLoadScreenPath: String,
-                        val squarePortraitPath: String, val masteryStatus: MasteryStatus, val masteryPoints: Int, var isSummonerSelectedChamp: Boolean = false)
+data class ChampionInfo(val id: Int, val name: String, val ownershipStatus: ChampionOwnershipStatus, val masteryPoints: Int,
+                        var isSummonerSelectedChamp: Boolean = false)
 
 data class ChampionSelectInfo(val gameMode: GameMode = GameMode.NONE, val teamChampions: List<ChampionInfo> = listOf(),
                               val benchedChampions: List<ChampionInfo> = listOf())
@@ -95,25 +96,30 @@ class LeagueConnection {
             Array<LolCollectionsCollectionsChampionMastery>::class.java).responseObject
 
         val masteryPairing = champions.map {
-            lateinit var masteryStatus: MasteryStatus
+            lateinit var championOwnershipStatus: ChampionOwnershipStatus
             var championPoints = 0
 
             if (!it.ownership.owned) {
-                masteryStatus = if (it.freeToPlay) MasteryStatus.FREE_TO_PLAY else MasteryStatus.NOT_OWNED
+                championOwnershipStatus = if (it.ownership.rental.rented) {
+                    ChampionOwnershipStatus.RENTAL
+                } else if (it.freeToPlay) {
+                    ChampionOwnershipStatus.FREE_TO_PLAY
+                } else {
+                    ChampionOwnershipStatus.NOT_OWNED
+                }
             } else {
                 val championMastery = championMasteryList.firstOrNull { championMastery -> championMastery.championId == it.id }
 
                 if (championMastery == null) {
-                    masteryStatus = MasteryStatus.BOX_NOT_ATTAINED
+                    championOwnershipStatus = ChampionOwnershipStatus.BOX_NOT_ATTAINED
                 } else {
-                    masteryStatus = if (championMastery.chestGranted) MasteryStatus.BOX_ATTAINED else MasteryStatus.BOX_NOT_ATTAINED
+                    championOwnershipStatus = if (championMastery.chestGranted) ChampionOwnershipStatus.BOX_ATTAINED else ChampionOwnershipStatus.BOX_NOT_ATTAINED
 
                     championPoints = championMastery.championPoints
                 }
             }
 
-            ChampionInfo(it.id, it.name, it.freeToPlay, it.ownership.owned, it.ownership.rental.rented, it.baseLoadScreenPath, it.squarePortraitPath, masteryStatus,
-                championPoints)
+            ChampionInfo(it.id, it.name, championOwnershipStatus, championPoints)
         }
 
         championInfo = masteryPairing.associateBy({ it.id }, { it })

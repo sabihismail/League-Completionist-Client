@@ -1,5 +1,6 @@
 package ui
 
+import DEBUG_FAKE_UI_DATA
 import javafx.beans.property.SimpleListProperty
 import javafx.beans.property.SimpleStringProperty
 import javafx.collections.FXCollections
@@ -7,9 +8,18 @@ import javafx.geometry.Pos
 import javafx.scene.paint.Color
 import league.*
 import tornadofx.*
+import ui.mock.MainViewControllerSimulated
 import java.util.*
 
-class MainViewController : Controller() {
+object ViewConstants {
+    const val IMAGE_WIDTH = 120.0
+    const val IMAGE_SPACING_WIDTH = 8.0
+
+    const val APP_WIDTH = IMAGE_WIDTH * 5 + IMAGE_SPACING_WIDTH * (5 + 2) + 30.0
+    const val APP_HEIGHT = 800.0
+}
+
+open class MainViewController : Controller() {
     private val view: MainView by inject()
     private val leagueConnection = LeagueConnection()
 
@@ -52,13 +62,13 @@ class MainViewController : Controller() {
         }
     }
 
-    fun updateChestInfo() {
+    open fun updateChestInfo() {
         view.chestProperty.set("Querying...")
 
         leagueConnection.updateMasteryChestInfo()
     }
 
-    fun updateChampionMasteryInfo() {
+    open fun updateChampionMasteryInfo() {
         leagueConnection.updateChampionMasteryInfo()
     }
 }
@@ -71,15 +81,16 @@ class MainView: View() {
     val benchedChampionListProperty = SimpleListProperty<ChampionInfo>()
     val teamChampionListProperty = SimpleListProperty<ChampionInfo>()
 
-    private val controller = find(MainViewController::class)
+    private val controller = find(if (DEBUG_FAKE_UI_DATA) MainViewControllerSimulated::class else MainViewController::class)
 
     override val root = vbox {
-        prefWidth = 600.0
-        prefHeight = 600.0
+        prefWidth = ViewConstants.APP_WIDTH
+        prefHeight = ViewConstants.APP_HEIGHT
 
         borderpane {
             top = vbox {
                 alignment = Pos.CENTER
+                paddingBottom = 16.0
 
                 label(summonerProperty)
                 label(chestProperty)
@@ -88,11 +99,11 @@ class MainView: View() {
 
             center = vbox {
                 alignment = Pos.CENTER
-                paddingTop = 16.0
 
                 label("Available Champions:")
                 datagrid(benchedChampionListProperty) {
                     alignment = Pos.CENTER
+                    paddingBottom = 16.0
 
                     maxRows = 2
                     maxCellsInRow = 5
@@ -100,7 +111,7 @@ class MainView: View() {
                     cellHeight = 120.0
 
                     cellCache {
-                        imageview(LeagueImageAPI.getChampionImage(it.id))
+                        imageview(LeagueImageAPI.getChampionImage(it.id))  { effect = LeagueImageAPI.getChampionImageEffect(it) }
                     }
                 }
 
@@ -110,18 +121,17 @@ class MainView: View() {
 
                     maxRows = 1
                     maxCellsInRow = 5
-                    cellWidth = 120.0
-                    cellHeight = 120.0
+                    cellWidth = ViewConstants.IMAGE_WIDTH
+                    cellHeight = ViewConstants.IMAGE_WIDTH
+                    horizontalCellSpacing = ViewConstants.IMAGE_SPACING_WIDTH
 
                     cellCache {
                         stackpane {
-                            alignment = Pos.TOP_CENTER
+                            imageview(LeagueImageAPI.getChampionImage(it.id)) { effect = LeagueImageAPI.getChampionImageEffect(it) }
 
-                            imageview(LeagueImageAPI.getChampionImage(it.id))
                             label(if (it.isSummonerSelectedChamp) "You" else "") {
-                                alignment = Pos.TOP_CENTER
-
                                 textFill = Color.WHITE
+
                                 style {
                                     backgroundColor += Color.BLACK
                                 }
