@@ -47,9 +47,9 @@ object LeagueImageAPI {
         return imagePath
     }
 
-    fun getChampionImageEffect(it: ChampionInfo): Effect {
-        if (it.ownershipStatus == ChampionOwnershipStatus.NOT_OWNED || it.ownershipStatus == ChampionOwnershipStatus.RENTAL ||
-            it.ownershipStatus == ChampionOwnershipStatus.FREE_TO_PLAY) {
+    fun getChampionImageEffect(championInfo: ChampionInfo): Effect {
+        if (championInfo.ownershipStatus == ChampionOwnershipStatus.NOT_OWNED || championInfo.ownershipStatus == ChampionOwnershipStatus.RENTAL ||
+            championInfo.ownershipStatus == ChampionOwnershipStatus.FREE_TO_PLAY) {
             return ColorAdjust(0.0, -1.0, -0.7, -0.1)
         }
 
@@ -57,7 +57,7 @@ object LeagueImageAPI {
             width = ViewConstants.IMAGE_WIDTH
             height = ViewConstants.IMAGE_WIDTH
 
-            paint = if (it.ownershipStatus == ChampionOwnershipStatus.BOX_ATTAINED) Color.RED else Color.GREEN
+            paint = if (championInfo.ownershipStatus == ChampionOwnershipStatus.BOX_ATTAINED) Color.RED else Color.GREEN
         }
 
         val blend = Blend().apply {

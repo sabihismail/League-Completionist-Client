@@ -4,6 +4,7 @@ import DEBUG_LOG_ENDPOINTS
 import com.stirante.lolclient.ClientApi
 import com.stirante.lolclient.ClientConnectionListener
 import com.stirante.lolclient.ClientWebSocket
+import com.stirante.lolclient.libs.org.apache.http.conn.HttpHostConnectException
 import generated.*
 import tornadofx.*
 import java.util.*
@@ -163,11 +164,12 @@ class LeagueConnection {
                 socket = clientAPI.openWebSocket()
                 socket?.setSocketListener(object : ClientWebSocket.SocketListener {
                     override fun onEvent(event: ClientWebSocket.Event?) {
-                        if (event == null || event.uri == null) return
+                        if (event == null || event.uri == null || event.data == null) return
 
                         when (event.uri) {
                             "/lol-champ-select/v1/session" -> handleChampionSelect(event.data as LolChampSelectChampSelectSession)
                             "/lol-gameflow/v1/gameflow-phase" -> handleClientStateChange(event.data as LolGameflowGameflowPhase)
+                            "/lol-login/v1/session" -> handleSignOnState(event.data as LolLoginLoginSession)
                             else -> {
                                 if (!DEBUG_LOG_ENDPOINTS) return
 
@@ -190,6 +192,19 @@ class LeagueConnection {
                 socket?.close()
             }
         })
+    }
+
+    private fun handleSignOnState(loginSession: LolLoginLoginSession) {
+        when (loginSession.state) {
+            LolLoginLoginSessionStates.LOGGING_OUT -> {
+                summonerInfo = SummonerInfo(SummonerStatus.NOT_LOGGED_IN)
+                summonerChanged()
+            }
+            LolLoginLoginSessionStates.SUCCEEDED -> {
+                handleClientConnection()
+            }
+            else -> return
+        }
     }
 
     private fun handleClientStateChange(gameFlowPhase: LolGameflowGameflowPhase) {
@@ -243,10 +258,21 @@ class LeagueConnection {
     }
 
     private fun handleClientConnection(): Boolean {
-        if (!clientAPI.isAuthorized) {
-            summonerInfo = SummonerInfo(SummonerStatus.LOGGED_IN_UNAUTHORIZED)
-            summonerChanged()
+        if (!clientAPI.isConnected) return false
 
+        try {
+            if (!clientAPI.isAuthorized) {
+                summonerInfo = SummonerInfo(SummonerStatus.LOGGED_IN_UNAUTHORIZED)
+                summonerChanged()
+
+                return false
+            }
+        } catch (e: HttpHostConnectException) {
+            if (e.message?.contains("Connection refused: connect") == true) {
+                return false
+            }
+
+            e.printStackTrace()
             return false
         }
 

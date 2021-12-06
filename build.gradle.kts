@@ -1,9 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-plugins {
-    kotlin("jvm") version "1.5.10"
-    application
-}
+group = "me.sabihismail"
+version = "1.0.0"
 
 tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = JavaVersion.VERSION_1_8.toString()
@@ -13,8 +11,30 @@ tasks.test {
     useJUnitPlatform()
 }
 
-group = "me.sabihismail"
-version = "1.0.0"
+tasks.register<Jar>("uberJar") {
+    archiveClassifier.set("uber")
+
+    manifest {
+        attributes(
+            "Main-Class" to "MainKt",
+            "Implementation-Title" to "Gradle",
+            "Implementation-Version" to archiveVersion
+        )
+    }
+
+    from(sourceSets.main.get().output)
+
+    dependsOn(configurations.runtimeClasspath)
+    from({
+        configurations.runtimeClasspath.get().filter { it.name.endsWith("jar") }
+            .map { zipTree(it) }
+    })
+}
+
+plugins {
+    kotlin("jvm") version "1.5.10"
+    application
+}
 
 repositories {
     mavenCentral()
@@ -24,7 +44,7 @@ repositories {
 dependencies {
     implementation("no.tornado:tornadofx:1.7.20")
     implementation("com.github.stirante:lol-client-java-api:1.2.3")
-    implementation("org.junit.jupiter:junit-jupiter:5.8.1")
+    implementation("org.junit.jupiter:junit-jupiter:5.8.2")
 
     testImplementation(kotlin("test"))
 }
