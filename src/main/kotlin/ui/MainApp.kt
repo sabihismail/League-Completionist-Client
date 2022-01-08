@@ -8,6 +8,9 @@ import javafx.geometry.Pos
 import javafx.scene.paint.Color
 import league.*
 import tornadofx.*
+import ui.ViewConstants.CHAMPION_STATUS_AVAILABLE_CHEST_COLOR
+import ui.ViewConstants.CHAMPION_STATUS_NOT_OWNED_COLOR
+import ui.ViewConstants.CHAMPION_STATUS_UNAVAILABLE_CHEST_COLOR
 import ui.mock.MainViewControllerSimulated
 import java.util.*
 import kotlin.system.exitProcess
@@ -18,6 +21,10 @@ object ViewConstants {
 
     const val APP_WIDTH = IMAGE_WIDTH * 5 + IMAGE_SPACING_WIDTH * (5 + 2) + 40.0
     const val APP_HEIGHT = 800.0
+
+    val CHAMPION_STATUS_AVAILABLE_CHEST_COLOR: Color = Color.GREEN
+    val CHAMPION_STATUS_UNAVAILABLE_CHEST_COLOR: Color = Color.RED
+    val CHAMPION_STATUS_NOT_OWNED_COLOR: Color = Color.BLACK
 }
 
 open class MainViewController : Controller() {
@@ -142,12 +149,43 @@ class MainView: View() {
                 }
             }
 
-            bottom = hbox {
-                alignment = Pos.CENTER
-                spacing = 6.0
+            bottom = vbox {
+                vbox {
+                    hbox {
+                        spacing = 6.0
+                        alignment = Pos.CENTER_LEFT
 
-                button("Refresh Chest Data").setOnAction { controller.updateChestInfo() }
-                button("Refresh Champion Mastery Data").setOnAction { controller.updateChampionMasteryInfo() }
+                        rectangle(0, 0, 20, 20) {
+                            fill = CHAMPION_STATUS_AVAILABLE_CHEST_COLOR
+                        }
+                        label("Available")
+                    }
+                    hbox {
+                        spacing = 6.0
+                        alignment = Pos.CENTER_LEFT
+
+                        rectangle(0, 0, 20, 20) {
+                            fill = CHAMPION_STATUS_UNAVAILABLE_CHEST_COLOR
+                        }
+                        label("Already Obtained")
+                    }
+                    hbox {
+                        spacing = 6.0
+                        alignment = Pos.CENTER_LEFT
+
+                        rectangle(0, 0, 20, 20) {
+                            fill = CHAMPION_STATUS_NOT_OWNED_COLOR
+                        }
+                        label("Not Owned/Free to Play")
+                    }
+                }
+                hbox {
+                    alignment = Pos.CENTER
+                    spacing = 6.0
+
+                    button("Refresh Chest Data").setOnAction { controller.updateChestInfo() }
+                    button("Refresh Champion Mastery Data").setOnAction { controller.updateChampionMasteryInfo() }
+                }
             }
         }
     }

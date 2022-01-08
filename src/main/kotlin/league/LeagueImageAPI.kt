@@ -2,8 +2,9 @@ package league
 
 import javafx.scene.effect.*
 import javafx.scene.image.Image
-import javafx.scene.paint.Color
 import ui.ViewConstants
+import ui.ViewConstants.CHAMPION_STATUS_AVAILABLE_CHEST_COLOR
+import ui.ViewConstants.CHAMPION_STATUS_UNAVAILABLE_CHEST_COLOR
 import java.io.FileOutputStream
 import java.net.URL
 import java.nio.channels.Channels
@@ -57,7 +58,10 @@ object LeagueImageAPI {
             width = ViewConstants.IMAGE_WIDTH
             height = ViewConstants.IMAGE_WIDTH
 
-            paint = if (championInfo.ownershipStatus == ChampionOwnershipStatus.BOX_ATTAINED) Color.RED else Color.GREEN
+            paint = if (championInfo.ownershipStatus == ChampionOwnershipStatus.BOX_ATTAINED)
+                CHAMPION_STATUS_UNAVAILABLE_CHEST_COLOR
+            else
+                CHAMPION_STATUS_AVAILABLE_CHEST_COLOR
         }
 
         val blend = Blend().apply {
