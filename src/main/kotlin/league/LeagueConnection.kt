@@ -78,6 +78,7 @@ class LeagueConnection {
     private val onSummonerChangeList = ArrayList<(SummonerInfo) -> Unit>()
     private val onMasteryChestChangeList = ArrayList<(MasteryChestInfo) -> Unit>()
     private val onChampionSelectChangeList = ArrayList<(ChampionSelectInfo) -> Unit>()
+    private val onClientStateChangeList = ArrayList<(LolGameflowGameflowPhase) -> Unit>()
 
     fun start() {
         thread {
@@ -173,6 +174,10 @@ class LeagueConnection {
 
     fun onChampionSelectChange(callable: (ChampionSelectInfo) -> Unit) {
         onChampionSelectChangeList.add(callable)
+    }
+
+    fun onClientStateChange(callable: (LolGameflowGameflowPhase) -> Unit) {
+        onClientStateChangeList.add(callable)
     }
 
     private fun setupClientAPI() {
@@ -284,6 +289,7 @@ class LeagueConnection {
         }
 
         clientState = gameFlowPhase
+        clientStateChanged()
     }
 
     private fun handleChampionSelectChange(champSelectSession: LolChampSelectChampSelectSession) {
@@ -366,5 +372,9 @@ class LeagueConnection {
 
     private fun championSelectChanged() {
         onChampionSelectChangeList.forEach { it(championSelectInfo) }
+    }
+
+    private fun clientStateChanged() {
+        onClientStateChangeList.forEach { it(clientState) }
     }
 }

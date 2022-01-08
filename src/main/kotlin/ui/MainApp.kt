@@ -68,6 +68,10 @@ open class MainViewController : Controller() {
                 view.teamChampionListProperty.set(FXCollections.observableList(it.teamChampions))
             }
         }
+
+        leagueConnection.onClientStateChange {
+            runLater { view.clientStateProperty.set("Client State: ${it.name}") }
+        }
     }
 
     open fun updateChestInfo() {
@@ -85,6 +89,7 @@ class MainView: View() {
     val summonerProperty = SimpleStringProperty()
     val chestProperty = SimpleStringProperty()
 
+    val clientStateProperty = SimpleStringProperty()
     val gameModeProperty = SimpleStringProperty()
     val benchedChampionListProperty = SimpleListProperty<ChampionInfo>()
     val teamChampionListProperty = SimpleListProperty<ChampionInfo>()
@@ -102,6 +107,7 @@ class MainView: View() {
 
                 label(summonerProperty)
                 label(chestProperty)
+                label(clientStateProperty)
                 label(gameModeProperty)
             }
 
