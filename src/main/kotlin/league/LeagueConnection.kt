@@ -1,13 +1,16 @@
 package league
 
-import DEBUG_LOG_ENDPOINTS
+import DEBUG_LOG_ALL_ENDPOINTS
+import DEBUG_LOG_HANDLED_ENDPOINTS
 import com.stirante.lolclient.ClientApi
 import com.stirante.lolclient.ClientConnectionListener
 import com.stirante.lolclient.ClientWebSocket
 import com.stirante.lolclient.libs.org.apache.http.conn.HttpHostConnectException
 import generated.*
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder
 import tornadofx.*
 import java.util.*
+import kotlin.concurrent.thread
 
 
 enum class ChampionOwnershipStatus {
@@ -21,7 +24,8 @@ enum class ChampionOwnershipStatus {
 enum class SummonerStatus {
     NOT_LOGGED_IN,
     LOGGED_IN_UNAUTHORIZED,
-    LOGGED_IN_AUTHORIZED
+    LOGGED_IN_AUTHORIZED,
+    NOT_CHECKED,
 }
 
 enum class GameMode {
@@ -40,14 +44,15 @@ enum class GameMode {
     UNKNOWN
 }
 
-data class SummonerInfo(val status: SummonerStatus = SummonerStatus.NOT_LOGGED_IN,
-                        val accountID: Long = 0,
-                        val summonerID: Long = 0,
-                        val displayName: String = "",
-                        val internalName: String = "",
-                        val percentCompleteForNextLevel: Int = 0,
-                        val summonerLevel: Int = 0,
-                        val xpUntilNextLevel: Long = 0)
+data class SummonerInfo(
+    var status: SummonerStatus = SummonerStatus.NOT_CHECKED,
+    val accountID: Long = 0,
+    val summonerID: Long = 0,
+    val displayName: String = "",
+    val internalName: String = "",
+    val percentCompleteForNextLevel: Int = 0,
+    val summonerLevel: Int = 0,
+    val xpUntilNextLevel: Long = 0)
 
 data class MasteryChestInfo(var nextChestDate: Date? = null, var chestCount: Int = 0)
 
@@ -59,7 +64,7 @@ data class ChampionSelectInfo(val gameMode: GameMode = GameMode.NONE, val teamCh
 
 
 class LeagueConnection {
-    val clientAPI = ClientApi()
+    var clientAPI = ClientApi()
     var socket: ClientWebSocket? = null
 
     var clientState = LolGameflowGameflowPhase.NONE
@@ -74,6 +79,26 @@ class LeagueConnection {
     private val onMasteryChestChangeList = ArrayList<(MasteryChestInfo) -> Unit>()
     private val onChampionSelectChangeList = ArrayList<(ChampionSelectInfo) -> Unit>()
 
+    fun start() {
+        thread {
+            while (true) {
+                if (summonerInfo.status == SummonerStatus.LOGGED_IN_AUTHORIZED) {
+                    Thread.sleep(1000)
+                    continue
+                }
+
+                println("ClientAPI Startup")
+
+                summonerInfo.status = SummonerStatus.NOT_CHECKED
+                setupClientAPI()
+
+                while (summonerInfo.status == SummonerStatus.NOT_CHECKED) {
+                    Thread.sleep(1000)
+                }
+            }
+        }
+    }
+
     fun updateClientState() {
         clientState = clientAPI.executeGet("/lol-gameflow/v1/gameflow-phase", LolGameflowGameflowPhase::class.java).responseObject
 
@@ -83,7 +108,7 @@ class LeagueConnection {
             LolGameflowGameflowPhase.CHAMPSELECT -> {
                 val championSelectSession = clientAPI.executeGet("/lol-champ-select/v1/session", LolChampSelectChampSelectSession::class.java).responseObject
 
-                handleChampionSelect(championSelectSession)
+                handleChampionSelectChange(championSelectSession)
             }
             else -> return
         }
@@ -91,10 +116,10 @@ class LeagueConnection {
 
     fun updateChampionMasteryInfo() {
         val champions = clientAPI.executeGet("/lol-champions/v1/inventories/${summonerInfo.summonerID}/champions",
-            Array<LolChampionsCollectionsChampion>::class.java).responseObject
+            Array<LolChampionsCollectionsChampion>::class.java).responseObject ?: return
 
         val championMasteryList = clientAPI.executeGet("/lol-collections/v1/inventories/${summonerInfo.summonerID}/champion-mastery",
-            Array<LolCollectionsCollectionsChampionMastery>::class.java).responseObject
+            Array<LolCollectionsCollectionsChampionMastery>::class.java).responseObject ?: return
 
         val masteryPairing = champions.map {
             lateinit var championOwnershipStatus: ChampionOwnershipStatus
@@ -135,11 +160,7 @@ class LeagueConnection {
         val chestEligibility = clientAPI.executeGet("/lol-collections/v1/inventories/chest-eligibility",
             LolCollectionsCollectionsChestEligibility::class.java).responseObject
 
-        val nextChestDate = Date(chestEligibility.nextChestRechargeTime)
-        val chestCount = chestEligibility.earnableChests
-
-        masteryChestInfo = MasteryChestInfo(nextChestDate, chestCount)
-        masteryChestChanged()
+        handleMasteryChestChange(chestEligibility)
     }
 
     fun onSummonerChange(callable: (SummonerInfo) -> Unit) {
@@ -154,7 +175,9 @@ class LeagueConnection {
         onChampionSelectChangeList.add(callable)
     }
 
-    fun start() {
+    private fun setupClientAPI() {
+        clientAPI = ClientApi()
+
         clientAPI.addClientConnectionListener(object : ClientConnectionListener {
             override fun onClientConnected() {
                 if (!handleClientConnection()) return
@@ -167,21 +190,29 @@ class LeagueConnection {
                         if (event == null || event.uri == null || event.data == null) return
 
                         when (event.uri) {
-                            "/lol-champ-select/v1/session" -> handleChampionSelect(event.data as LolChampSelectChampSelectSession)
+                            "/lol-champ-select/v1/session" -> handleChampionSelectChange(event.data as LolChampSelectChampSelectSession)
                             "/lol-gameflow/v1/gameflow-phase" -> handleClientStateChange(event.data as LolGameflowGameflowPhase)
-                            "/lol-login/v1/session" -> handleSignOnState(event.data as LolLoginLoginSession)
+                            "/lol-login/v1/session" -> handleSignOnStateChange(event.data as LolLoginLoginSession)
+                            "/lol-collections/v1/inventories/chest-eligibility" -> handleMasteryChestChange(event.data as LolCollectionsCollectionsChestEligibility)
                             else -> {
-                                if (!DEBUG_LOG_ENDPOINTS) return
+                                if (event.uri.contains("chest")) {
+                                    println(event.uri + " - " + event.eventType)
+                                    println(ReflectionToStringBuilder.toString(event.data))
+                                }
+
+                                if (!DEBUG_LOG_ALL_ENDPOINTS) return
 
                                 println("ClientAPI WebSocket:")
-                                println(event.eventType + " - " + event.uri)
-                                println(event.data)
+                                println(event.uri + " - " + event.eventType)
+                                println(ReflectionToStringBuilder.toString(event.data))
                             }
                         }
                     }
 
                     override fun onClose(code: Int, reason: String?) {
                         println("ClientAPI WebSocket: Closed - $code")
+
+                        summonerInfo = SummonerInfo(SummonerStatus.NOT_LOGGED_IN)
                     }
                 })
             }
@@ -194,7 +225,23 @@ class LeagueConnection {
         })
     }
 
-    private fun handleSignOnState(loginSession: LolLoginLoginSession) {
+    private fun handleMasteryChestChange(chestEligibility: LolCollectionsCollectionsChestEligibility) {
+        if (DEBUG_LOG_HANDLED_ENDPOINTS) {
+            println("LolCollectionsCollectionsChestEligibility: ${ReflectionToStringBuilder.toString(chestEligibility)}")
+        }
+
+        val nextChestDate = Date(chestEligibility.nextChestRechargeTime)
+        val chestCount = chestEligibility.earnableChests
+
+        masteryChestInfo = MasteryChestInfo(nextChestDate, chestCount)
+        masteryChestChanged()
+    }
+
+    private fun handleSignOnStateChange(loginSession: LolLoginLoginSession) {
+        if (DEBUG_LOG_HANDLED_ENDPOINTS) {
+            println("LolLoginLoginSession: ${ReflectionToStringBuilder.toString(loginSession)}")
+        }
+
         when (loginSession.state) {
             LolLoginLoginSessionStates.LOGGING_OUT -> {
                 summonerInfo = SummonerInfo(SummonerStatus.NOT_LOGGED_IN)
@@ -208,6 +255,10 @@ class LeagueConnection {
     }
 
     private fun handleClientStateChange(gameFlowPhase: LolGameflowGameflowPhase) {
+        if (DEBUG_LOG_HANDLED_ENDPOINTS) {
+            println("LolGameflowGameflowPhase: ${ReflectionToStringBuilder.toString(gameFlowPhase)}")
+        }
+
         when (gameFlowPhase) {
             LolGameflowGameflowPhase.CHAMPSELECT -> {
                 val gameFlow = clientAPI.executeGet("/lol-gameflow/v1/session", LolGameflowGameflowSession::class.java).responseObject ?: return
@@ -235,7 +286,11 @@ class LeagueConnection {
         clientState = gameFlowPhase
     }
 
-    private fun handleChampionSelect(champSelectSession: LolChampSelectChampSelectSession) {
+    private fun handleChampionSelectChange(champSelectSession: LolChampSelectChampSelectSession) {
+        if (DEBUG_LOG_HANDLED_ENDPOINTS) {
+            println("LolChampSelectChampSelectSession: ${ReflectionToStringBuilder.toString(champSelectSession)}")
+        }
+
         if (gameMode == GameMode.NONE) return
         if (champSelectSession.myTeam.isEmpty()) return
 
@@ -258,9 +313,21 @@ class LeagueConnection {
     }
 
     private fun handleClientConnection(): Boolean {
-        if (!clientAPI.isConnected) return false
+        var str = ""
+        if (DEBUG_LOG_HANDLED_ENDPOINTS) {
+            str = "ClientConnection: isConnected=${clientAPI.isConnected}"
+        }
+
+        if (!clientAPI.isConnected) {
+            println(str)
+            return false
+        }
 
         try {
+            if (DEBUG_LOG_HANDLED_ENDPOINTS) {
+                str += " - isAuthorized=${clientAPI.isAuthorized}"
+            }
+
             if (!clientAPI.isAuthorized) {
                 summonerInfo = SummonerInfo(SummonerStatus.LOGGED_IN_UNAUTHORIZED)
                 summonerChanged()
@@ -276,10 +343,13 @@ class LeagueConnection {
             return false
         }
 
+        if (DEBUG_LOG_HANDLED_ENDPOINTS) {
+            println(str)
+        }
+
         val summoner = clientAPI.executeGet("/lol-summoner/v1/current-summoner", LolSummonerSummoner::class.java).responseObject
 
-        summonerInfo = SummonerInfo(
-            SummonerStatus.LOGGED_IN_AUTHORIZED, summoner.accountId, summoner.summonerId, summoner.displayName, summoner.internalName,
+        summonerInfo = SummonerInfo(SummonerStatus.LOGGED_IN_AUTHORIZED, summoner.accountId, summoner.summonerId, summoner.displayName, summoner.internalName,
             summoner.percentCompleteForNextLevel, summoner.summonerLevel, summoner.xpUntilNextLevel)
         summonerChanged()
 

@@ -45,6 +45,7 @@ dependencies {
     implementation("no.tornado:tornadofx:1.7.20")
     implementation("com.github.stirante:lol-client-java-api:1.2.3")
     implementation("org.junit.jupiter:junit-jupiter:5.8.2")
+    implementation("org.apache.commons:commons-lang3:3.12.0")
 
     testImplementation(kotlin("test"))
 }

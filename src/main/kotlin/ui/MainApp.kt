@@ -29,7 +29,7 @@ open class MainViewController : Controller() {
 
         leagueConnection.onSummonerChange {
             val str = when (it.status) {
-                SummonerStatus.NOT_LOGGED_IN -> "Not logged in."
+                SummonerStatus.NOT_LOGGED_IN, SummonerStatus.NOT_CHECKED -> "Not logged in."
                 SummonerStatus.LOGGED_IN_UNAUTHORIZED -> "Unauthorized Login."
                 SummonerStatus.LOGGED_IN_AUTHORIZED -> "Logged in as: ${it.displayName} (Level: ${it.summonerLevel})"
             }
