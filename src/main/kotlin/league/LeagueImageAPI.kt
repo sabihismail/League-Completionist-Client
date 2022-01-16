@@ -37,7 +37,7 @@ object LeagueImageAPI {
             val urlStr = IMAGE_ENDPOINT.format(id)
 
             val connection = URL(urlStr).openConnection()
-            connection.setRequestProperty("User-Agent", "LoLcuBoxes")
+            connection.setRequestProperty("User-Agent", "LoL-Mastery-Box-Client")
 
             val readableByteChannel = Channels.newChannel(connection.getInputStream())
             val fileOutputStream = FileOutputStream(imagePath.toFile())

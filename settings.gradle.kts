@@ -1,2 +1,2 @@
-rootProject.name = "LoLcuBoxes"
+rootProject.name = "LoL-Mastery-Box-Client"
 
