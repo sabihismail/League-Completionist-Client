@@ -141,7 +141,9 @@ class MainView: View() {
 
                     cellCache {
                         stackpane {
-                            imageview(LeagueImageAPI.getChampionImage(it.id)) { effect = LeagueImageAPI.getChampionImageEffect(it) }
+                            imageview(LeagueImageAPI.getChampionImage(it.id)) {
+                                effect = LeagueImageAPI.getChampionImageEffect(it)
+                            }
 
                             label(if (it.isSummonerSelectedChamp) "You" else "") {
                                 textFill = Color.WHITE
@@ -158,7 +160,7 @@ class MainView: View() {
             bottom = vbox {
                 vbox {
                     hbox {
-                        spacing = 6.0
+                        spacing = 4.0
                         alignment = Pos.CENTER_LEFT
 
                         rectangle(0, 0, 20, 20) {
@@ -167,7 +169,7 @@ class MainView: View() {
                         label("Available")
                     }
                     hbox {
-                        spacing = 6.0
+                        spacing = 4.0
                         alignment = Pos.CENTER_LEFT
 
                         rectangle(0, 0, 20, 20) {
@@ -176,7 +178,7 @@ class MainView: View() {
                         label("Already Obtained")
                     }
                     hbox {
-                        spacing = 6.0
+                        spacing = 4.0
                         alignment = Pos.CENTER_LEFT
 
                         rectangle(0, 0, 20, 20) {
