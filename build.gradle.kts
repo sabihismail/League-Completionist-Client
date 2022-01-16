@@ -47,6 +47,8 @@ dependencies {
     implementation("org.junit.jupiter:junit-jupiter:5.8.2")
     implementation("org.apache.commons:commons-lang3:3.12.0")
 
+    implementation("org.jetbrains.kotlin:kotlin-reflect:1.5.10")
+
     testImplementation(kotlin("test"))
 }
 
