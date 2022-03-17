@@ -44,6 +44,15 @@ enum class GameMode {
     UNKNOWN
 }
 
+enum class Role {
+    ANY,
+    TOP,
+    JUNGLE,
+    MIDDLE,
+    BOTTOM,
+    SUPPORT
+}
+
 data class SummonerInfo(
     var status: SummonerStatus = SummonerStatus.NOT_CHECKED,
     val accountID: Long = 0,
@@ -59,8 +68,8 @@ data class MasteryChestInfo(var nextChestDate: Date? = null, var chestCount: Int
 data class ChampionInfo(val id: Int, val name: String, val ownershipStatus: ChampionOwnershipStatus, val masteryPoints: Int,
                         var isSummonerSelectedChamp: Boolean = false)
 
-data class ChampionSelectInfo(val gameMode: GameMode = GameMode.NONE, val teamChampions: List<ChampionInfo> = listOf(),
-                              val benchedChampions: List<ChampionInfo> = listOf())
+data class ChampionSelectInfo(val gameMode: GameMode = GameMode.NONE, val teamChampions: List<ChampionInfo?> = listOf(),
+                              val benchedChampions: List<ChampionInfo> = listOf(), val assignedRole: Role = Role.ANY)
 
 
 class LeagueConnection {
@@ -308,13 +317,30 @@ class LeagueConnection {
 
         val benchedChampions = champSelectSession.benchChampionIds.map { championInfo[it]!! }
         val teamChampions = champSelectSession.myTeam.sortedBy { it.cellId }
-            .map { championInfo[it.championId]!! }
+            .map {
+                if (championInfo.contains(it.championId)) {
+                    championInfo[it.championId]
+                } else {
+                    null
+                }
+            }
 
-        teamChampions.forEach {
+        teamChampions.filterNotNull().forEach {
             it.isSummonerSelectedChamp = it.id == selectedChamp.championId
         }
 
-        championSelectInfo = ChampionSelectInfo(gameMode, teamChampions, benchedChampions)
+        val assignedRole = when (selectedChamp.assignedPosition.uppercase()) {
+            "TOP" -> Role.TOP
+            "JUNGLE" -> Role.JUNGLE
+            "MIDDLE" -> Role.MIDDLE
+            "BOTTOM" -> Role.BOTTOM
+            "UTILITY" -> Role.SUPPORT
+            else -> Role.ANY
+        }
+
+        println(selectedChamp.assignedPosition)
+
+        championSelectInfo = ChampionSelectInfo(gameMode, teamChampions, benchedChampions, assignedRole)
         championSelectChanged()
     }
 

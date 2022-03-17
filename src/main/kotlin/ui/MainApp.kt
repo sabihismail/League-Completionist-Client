@@ -1,6 +1,7 @@
 package ui
 
-import DEBUG_FAKE_UI_DATA
+import DEBUG_FAKE_UI_DATA_ARAM
+import DEBUG_FAKE_UI_DATA_NORMAL
 import javafx.beans.property.SimpleListProperty
 import javafx.beans.property.SimpleStringProperty
 import javafx.collections.FXCollections
@@ -8,12 +9,19 @@ import javafx.geometry.Pos
 import javafx.scene.paint.Color
 import league.*
 import tornadofx.*
+import ui.GenericConstants.ACCEPTABLE_GAME_MODES
 import ui.ViewConstants.CHAMPION_STATUS_AVAILABLE_CHEST_COLOR
 import ui.ViewConstants.CHAMPION_STATUS_NOT_OWNED_COLOR
 import ui.ViewConstants.CHAMPION_STATUS_UNAVAILABLE_CHEST_COLOR
-import ui.mock.MainViewControllerSimulated
+import ui.mock.AramMainViewControllerSimulated
+import ui.mock.NormalMainViewControllerSimulated
 import java.util.*
 import kotlin.system.exitProcess
+
+enum class ActiveView {
+    ARAM,
+    REGULAR
+}
 
 object ViewConstants {
     const val IMAGE_WIDTH = 120.0
@@ -27,9 +35,28 @@ object ViewConstants {
     val CHAMPION_STATUS_NOT_OWNED_COLOR: Color = Color.BLACK
 }
 
+object GenericConstants {
+    val ACCEPTABLE_GAME_MODES = listOf(
+        GameMode.ARAM,
+    )
+
+    val ROLE_SPECIFIC_MODES = listOf(
+        GameMode.CLASH,
+        GameMode.RANKED_SOLO,
+        GameMode.RANKED_FLEX,
+    )
+
+    val NON_ROLE_SPECIFIC_MODES = listOf(
+        GameMode.SUMMONERS_RIFT,
+    )
+}
+
 open class MainViewController : Controller() {
     private val view: MainView by inject()
+    private val aramView: AramGridView by inject()
+    private val regularView: NormalGridView by inject()
     private val leagueConnection = LeagueConnection()
+    private var activeView = ActiveView.ARAM
 
     init {
         leagueConnection.start()
@@ -38,7 +65,7 @@ open class MainViewController : Controller() {
             val str = when (it.status) {
                 SummonerStatus.NOT_LOGGED_IN, SummonerStatus.NOT_CHECKED -> "Not logged in."
                 SummonerStatus.LOGGED_IN_UNAUTHORIZED -> "Unauthorized Login."
-                SummonerStatus.LOGGED_IN_AUTHORIZED -> "Logged in as: ${it.displayName} (Level: ${it.summonerLevel})"
+                SummonerStatus.LOGGED_IN_AUTHORIZED -> "Logged in as: ${it.displayName} (Level ${it.summonerLevel})"
             }
 
             runLater { view.summonerProperty.set(str) }
@@ -61,11 +88,37 @@ open class MainViewController : Controller() {
         leagueConnection.onChampionSelectChange {
             runLater { view.gameModeProperty.set("Game Mode: ${it.gameMode}") }
 
-            if (it.gameMode != GameMode.ARAM) return@onChampionSelectChange
+            if (!ACCEPTABLE_GAME_MODES.contains(it.gameMode)) return@onChampionSelectChange
 
-            runLater {
-                view.benchedChampionListProperty.set(FXCollections.observableList(it.benchedChampions))
-                view.teamChampionListProperty.set(FXCollections.observableList(it.teamChampions))
+            if (it.gameMode == GameMode.ARAM) {
+                runLater {
+                    if (activeView != ActiveView.ARAM) {
+                        val root = tornadofx.find<NormalGridView>().root
+                        root.children.clear()
+                        root.children.add(view.root)
+
+                        activeView = ActiveView.ARAM
+                    }
+
+                    aramView.benchedChampionListProperty.set(FXCollections.observableList(it.benchedChampions))
+                    aramView.teamChampionListProperty.set(FXCollections.observableList(it.teamChampions))
+                }
+            } else {
+                runLater {
+                    if (activeView != ActiveView.REGULAR) {
+                        val root = tornadofx.find<AramGridView>().root
+                        root.children.clear()
+                        root.children.add(view.root)
+
+                        activeView = ActiveView.REGULAR
+                    }
+
+                    val sortedChampionInfo = leagueConnection.championInfo.map { champion -> champion.value }
+                        .filter { champion -> champion.ownershipStatus == ChampionOwnershipStatus.BOX_NOT_ATTAINED }
+                        .sortedByDescending { champion -> champion.masteryPoints }
+
+                    regularView.championListProperty.set(FXCollections.observableList(sortedChampionInfo))
+                }
             }
         }
 
@@ -85,16 +138,93 @@ open class MainViewController : Controller() {
     }
 }
 
+class NormalGridView: View() {
+    val championListProperty = SimpleListProperty<ChampionInfo>()
+
+    @Suppress("DuplicatedCode")
+    override val root = vbox {
+        alignment = Pos.CENTER
+
+        label("Available Champions:")
+        datagrid(championListProperty) {
+            alignment = Pos.CENTER
+            paddingBottom = 16.0
+
+            maxRows = 32
+            maxCellsInRow = 5
+            cellWidth = ViewConstants.IMAGE_WIDTH
+            cellHeight = ViewConstants.IMAGE_WIDTH
+
+            cellCache {
+                imageview(LeagueImageAPI.getChampionImage(it.id))  { effect = LeagueImageAPI.getChampionImageEffect(it) }
+            }
+        }
+    }
+}
+
+class AramGridView: View() {
+    val benchedChampionListProperty = SimpleListProperty<ChampionInfo>()
+    val teamChampionListProperty = SimpleListProperty<ChampionInfo>()
+
+    @Suppress("DuplicatedCode")
+    override val root = vbox {
+        alignment = Pos.CENTER
+
+        label("Available Champions:")
+        datagrid(benchedChampionListProperty) {
+            alignment = Pos.CENTER
+            paddingBottom = 16.0
+
+            maxRows = 2
+            maxCellsInRow = 5
+            cellWidth = ViewConstants.IMAGE_WIDTH
+            cellHeight = ViewConstants.IMAGE_WIDTH
+
+            cellCache {
+                imageview(LeagueImageAPI.getChampionImage(it.id))  { effect = LeagueImageAPI.getChampionImageEffect(it) }
+            }
+        }
+
+        label("Your Team:")
+        datagrid(teamChampionListProperty) {
+            alignment = Pos.CENTER
+
+            maxRows = 1
+            maxCellsInRow = 5
+            cellWidth = ViewConstants.IMAGE_WIDTH
+            cellHeight = ViewConstants.IMAGE_WIDTH
+            horizontalCellSpacing = ViewConstants.IMAGE_SPACING_WIDTH
+
+            cellCache {
+                stackpane {
+                    imageview(LeagueImageAPI.getChampionImage(it.id)) {
+                        effect = LeagueImageAPI.getChampionImageEffect(it)
+                    }
+
+                    label(if (it.isSummonerSelectedChamp) "You" else "") {
+                        textFill = Color.WHITE
+
+                        style {
+                            backgroundColor += Color.BLACK
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 class MainView: View() {
     val summonerProperty = SimpleStringProperty()
     val chestProperty = SimpleStringProperty()
 
     val clientStateProperty = SimpleStringProperty()
     val gameModeProperty = SimpleStringProperty()
-    val benchedChampionListProperty = SimpleListProperty<ChampionInfo>()
-    val teamChampionListProperty = SimpleListProperty<ChampionInfo>()
 
-    private val controller = find(if (DEBUG_FAKE_UI_DATA) MainViewControllerSimulated::class else MainViewController::class)
+    private val controller = find(
+        if (DEBUG_FAKE_UI_DATA_ARAM) AramMainViewControllerSimulated::class
+        else if (DEBUG_FAKE_UI_DATA_NORMAL) NormalMainViewControllerSimulated::class
+        else MainViewController::class)
 
     override val root = vbox {
         prefWidth = ViewConstants.APP_WIDTH
@@ -111,50 +241,8 @@ class MainView: View() {
                 label(gameModeProperty)
             }
 
-            center = vbox {
-                alignment = Pos.CENTER
-
-                label("Available Champions:")
-                datagrid(benchedChampionListProperty) {
-                    alignment = Pos.CENTER
-                    paddingBottom = 16.0
-
-                    maxRows = 2
-                    maxCellsInRow = 5
-                    cellWidth = 120.0
-                    cellHeight = 120.0
-
-                    cellCache {
-                        imageview(LeagueImageAPI.getChampionImage(it.id))  { effect = LeagueImageAPI.getChampionImageEffect(it) }
-                    }
-                }
-
-                label("Your Team:")
-                datagrid(teamChampionListProperty) {
-                    alignment = Pos.CENTER
-
-                    maxRows = 1
-                    maxCellsInRow = 5
-                    cellWidth = ViewConstants.IMAGE_WIDTH
-                    cellHeight = ViewConstants.IMAGE_WIDTH
-                    horizontalCellSpacing = ViewConstants.IMAGE_SPACING_WIDTH
-
-                    cellCache {
-                        stackpane {
-                            imageview(LeagueImageAPI.getChampionImage(it.id)) {
-                                effect = LeagueImageAPI.getChampionImageEffect(it)
-                            }
-
-                            label(if (it.isSummonerSelectedChamp) "You" else "") {
-                                textFill = Color.WHITE
-
-                                style {
-                                    backgroundColor += Color.BLACK
-                                }
-                            }
-                        }
-                    }
-                }
+            center = borderpane {
+                center<AramGridView>()
             }
 
             bottom = vbox {

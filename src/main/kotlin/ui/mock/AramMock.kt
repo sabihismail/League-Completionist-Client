@@ -3,13 +3,15 @@ package ui.mock
 import javafx.collections.FXCollections
 import league.*
 import tornadofx.runLater
+import ui.AramGridView
 import ui.MainView
 import ui.MainViewController
 import java.util.*
 
 
-class MainViewControllerSimulated : MainViewController() {
+class AramMainViewControllerSimulated : MainViewController() {
     private val view: MainView by inject()
+    private val aramView: AramGridView by inject()
 
     init {
         // onSummonerChange
@@ -17,7 +19,7 @@ class MainViewControllerSimulated : MainViewController() {
             SummonerStatus.LOGGED_IN_AUTHORIZED, -1, -1, "TestName", "TestName",
             1, 12, 1)
 
-        runLater { view.summonerProperty.set("Logged in as: ${summonerInfo.displayName} (Level: ${summonerInfo.summonerLevel})") }
+        runLater { view.summonerProperty.set("Logged in as: ${summonerInfo.displayName} (Level ${summonerInfo.summonerLevel})") }
 
         // onMasteryChestChange
         val masteryChestInfo = MasteryChestInfo(Calendar.getInstance().apply { add(Calendar.DATE, 1) }.time, 3)
@@ -54,8 +56,8 @@ class MainViewControllerSimulated : MainViewController() {
         runLater { view.gameModeProperty.set("Game Mode: ${championSelectInfo.gameMode}") }
 
         runLater {
-            view.benchedChampionListProperty.set(FXCollections.observableList(championSelectInfo.benchedChampions))
-            view.teamChampionListProperty.set(FXCollections.observableList(championSelectInfo.teamChampions))
+            aramView.benchedChampionListProperty.set(FXCollections.observableList(championSelectInfo.benchedChampions))
+            aramView.teamChampionListProperty.set(FXCollections.observableList(championSelectInfo.teamChampions))
         }
     }
 
