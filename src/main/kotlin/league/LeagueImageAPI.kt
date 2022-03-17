@@ -2,6 +2,8 @@ package league
 
 import javafx.scene.effect.*
 import javafx.scene.image.Image
+import league.models.ChampionInfo
+import league.models.ChampionOwnershipStatus
 import ui.ViewConstants
 import ui.ViewConstants.CHAMPION_STATUS_AVAILABLE_CHEST_COLOR
 import ui.ViewConstants.CHAMPION_STATUS_UNAVAILABLE_CHEST_COLOR
@@ -13,7 +15,6 @@ import java.nio.file.Paths
 import kotlin.io.path.createDirectory
 import kotlin.io.path.exists
 import kotlin.io.path.notExists
-
 
 object LeagueImageAPI {
     private const val IMAGE_ENDPOINT = "https://cdn.communitydragon.org/latest/champion/%d/square"

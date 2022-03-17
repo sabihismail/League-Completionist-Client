@@ -7,70 +7,12 @@ import com.stirante.lolclient.ClientConnectionListener
 import com.stirante.lolclient.ClientWebSocket
 import com.stirante.lolclient.libs.org.apache.http.conn.HttpHostConnectException
 import generated.*
+import league.models.*
+import league.models.Role
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder
 import tornadofx.*
 import java.util.*
 import kotlin.concurrent.thread
-
-
-enum class ChampionOwnershipStatus {
-    NOT_OWNED,
-    FREE_TO_PLAY,
-    RENTAL,
-    BOX_NOT_ATTAINED,
-    BOX_ATTAINED
-}
-
-enum class SummonerStatus {
-    NOT_LOGGED_IN,
-    LOGGED_IN_UNAUTHORIZED,
-    LOGGED_IN_AUTHORIZED,
-    NOT_CHECKED,
-}
-
-enum class GameMode {
-    NONE,
-    SUMMONERS_RIFT,
-    RANKED_SOLO,
-    RANKED_FLEX,
-    CLASH,
-    ARAM,
-    HEXAKILL,
-    ONE_FOR_ALL,
-    URF,
-    TUTORIAL,
-    BOT,
-    PRACTICE_TOOL,
-    UNKNOWN
-}
-
-enum class Role {
-    ANY,
-    TOP,
-    JUNGLE,
-    MIDDLE,
-    BOTTOM,
-    SUPPORT
-}
-
-data class SummonerInfo(
-    var status: SummonerStatus = SummonerStatus.NOT_CHECKED,
-    val accountID: Long = 0,
-    val summonerID: Long = 0,
-    val displayName: String = "",
-    val internalName: String = "",
-    val percentCompleteForNextLevel: Int = 0,
-    val summonerLevel: Int = 0,
-    val xpUntilNextLevel: Long = 0)
-
-data class MasteryChestInfo(var nextChestDate: Date? = null, var chestCount: Int = 0)
-
-data class ChampionInfo(val id: Int, val name: String, val ownershipStatus: ChampionOwnershipStatus, val masteryPoints: Int,
-                        var isSummonerSelectedChamp: Boolean = false)
-
-data class ChampionSelectInfo(val gameMode: GameMode = GameMode.NONE, val teamChampions: List<ChampionInfo?> = listOf(),
-                              val benchedChampions: List<ChampionInfo> = listOf(), val assignedRole: Role = Role.ANY)
-
 
 class LeagueConnection {
     var clientAPI = ClientApi()
@@ -337,8 +279,6 @@ class LeagueConnection {
             "UTILITY" -> Role.SUPPORT
             else -> Role.ANY
         }
-
-        println(selectedChamp.assignedPosition)
 
         championSelectInfo = ChampionSelectInfo(gameMode, teamChampions, benchedChampions, assignedRole)
         championSelectChanged()

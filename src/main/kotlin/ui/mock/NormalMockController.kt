@@ -1,16 +1,16 @@
 package ui.mock
 
 import javafx.collections.FXCollections
-import league.*
+import league.models.*
 import tornadofx.runLater
-import ui.AramGridView
 import ui.MainView
 import ui.MainViewController
-import ui.NormalGridView
+import ui.views.AramGridView
+import ui.views.NormalGridView
 import java.util.*
 
 
-class NormalMainViewControllerSimulated : MainViewController() {
+class NormalMockController : MainViewController() {
     private val view: MainView by inject()
     private val regularView: NormalGridView by inject()
 
