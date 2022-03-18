@@ -2,10 +2,7 @@ package league
 
 import javafx.scene.effect.*
 import javafx.scene.image.Image
-import league.models.ChampionInfo
-import league.models.ChampionOwnershipStatus
-import league.models.Role
-import league.models.RoleMapping
+import league.models.*
 import ui.ViewConstants
 import util.StringUtil
 import java.io.FileOutputStream
@@ -16,9 +13,6 @@ import java.nio.file.Paths
 import kotlin.io.path.createDirectory
 import kotlin.io.path.exists
 import kotlin.io.path.notExists
-
-@kotlinx.serialization.Serializable
-data class QueueInfo(val name: String, val shortName: String, val description: String, val detailedDescription: String)
 
 object LeagueCommunityDragonAPI {
     private const val IMAGE_ENDPOINT = "https://cdn.communitydragon.org/latest/champion/%d/square"

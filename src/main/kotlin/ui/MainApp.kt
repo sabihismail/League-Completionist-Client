@@ -130,6 +130,7 @@ open class MainViewController : Controller() {
         }
     }
 
+    @Suppress("SameParameterValue")
     private fun getChampionMasteryInfo(byRole: Boolean = false): List<ChampionInfo> {
         var info = leagueConnection.championInfo.map { champion -> champion.value }
             .filter { champion -> champion.ownershipStatus == ChampionOwnershipStatus.BOX_NOT_ATTAINED }

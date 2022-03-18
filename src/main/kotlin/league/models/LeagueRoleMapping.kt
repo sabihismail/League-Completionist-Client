@@ -10,6 +10,9 @@ data class RoleMapping(@SerialName("TOP") val top: HashMap<Int, Float>,
                        @SerialName("BOTTOM") val bottom: HashMap<Int, Float>,
                        @SerialName("SUPPORT") val support: HashMap<Int, Float>)
 
+@kotlinx.serialization.Serializable
+data class QueueInfo(val name: String, val shortName: String, val description: String, val detailedDescription: String)
+
 data class SummonerInfo(
     var status: SummonerStatus = SummonerStatus.NOT_CHECKED,
     val accountID: Long = 0,
