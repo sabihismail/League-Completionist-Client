@@ -31,7 +31,6 @@ class AramMockController : MainViewController() {
 
         // onChampionSelectChange
         val championSelectInfo = ChampionSelectInfo(
-            GameMode.ARAM,
             listOf(
                 ChampionInfo(711, "Vex", ChampionOwnershipStatus.BOX_NOT_ATTAINED, 10, false),
                 ChampionInfo(350, "Yuumi", ChampionOwnershipStatus.BOX_ATTAINED, 10, false),
@@ -53,7 +52,7 @@ class AramMockController : MainViewController() {
             )
         )
 
-        runLater { view.gameModeProperty.set("Game Mode: ${championSelectInfo.gameMode}") }
+        runLater { view.gameModeProperty.set("Game Mode: ${GameMode.ARAM}") }
 
         runLater {
             aramView.benchedChampionListProperty.set(FXCollections.observableList(championSelectInfo.benchedChampions))

@@ -3,7 +3,7 @@ package ui.views
 import javafx.beans.property.SimpleListProperty
 import javafx.geometry.Pos
 import javafx.scene.paint.Color
-import league.LeagueImageAPI
+import league.LeagueCommunityDragonAPI
 import league.models.ChampionInfo
 import tornadofx.*
 import ui.ViewConstants
@@ -27,7 +27,7 @@ class AramGridView: View() {
             cellHeight = ViewConstants.IMAGE_WIDTH
 
             cellCache {
-                imageview(LeagueImageAPI.getChampionImage(it.id))  { effect = LeagueImageAPI.getChampionImageEffect(it) }
+                imageview(LeagueCommunityDragonAPI.getChampionImage(it.id))  { effect = LeagueCommunityDragonAPI.getChampionImageEffect(it) }
             }
         }
 
@@ -43,8 +43,8 @@ class AramGridView: View() {
 
             cellCache {
                 stackpane {
-                    imageview(LeagueImageAPI.getChampionImage(it.id)) {
-                        effect = LeagueImageAPI.getChampionImageEffect(it)
+                    imageview(LeagueCommunityDragonAPI.getChampionImage(it.id)) {
+                        effect = LeagueCommunityDragonAPI.getChampionImageEffect(it)
                     }
 
                     label(if (it.isSummonerSelectedChamp) "You" else "") {

@@ -2,7 +2,7 @@ package ui.views
 
 import javafx.beans.property.SimpleListProperty
 import javafx.geometry.Pos
-import league.LeagueImageAPI
+import league.LeagueCommunityDragonAPI
 import league.models.ChampionInfo
 import tornadofx.*
 import ui.ViewConstants
@@ -11,7 +11,6 @@ import ui.ViewConstants
 class NormalGridView: View() {
     val championListProperty = SimpleListProperty<ChampionInfo>()
 
-    @Suppress("DuplicatedCode")
     override val root = vbox {
         alignment = Pos.CENTER
 
@@ -19,6 +18,7 @@ class NormalGridView: View() {
         datagrid(championListProperty) {
             alignment = Pos.CENTER
             paddingBottom = 16.0
+            prefHeight = 1000.0
 
             maxRows = 32
             maxCellsInRow = 5
@@ -26,7 +26,7 @@ class NormalGridView: View() {
             cellHeight = ViewConstants.IMAGE_WIDTH
 
             cellCache {
-                imageview(LeagueImageAPI.getChampionImage(it.id))  { effect = LeagueImageAPI.getChampionImageEffect(it) }
+                imageview(LeagueCommunityDragonAPI.getChampionImage(it.id))  { effect = LeagueCommunityDragonAPI.getChampionImageEffect(it) }
             }
         }
     }

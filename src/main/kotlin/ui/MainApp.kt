@@ -6,10 +6,9 @@ import javafx.beans.property.SimpleStringProperty
 import javafx.collections.FXCollections
 import javafx.geometry.Pos
 import javafx.scene.paint.Color
+import league.LeagueCommunityDragonAPI
 import league.LeagueConnection
-import league.models.ChampionOwnershipStatus
-import league.models.GameMode
-import league.models.SummonerStatus
+import league.models.*
 import tornadofx.*
 import ui.GenericConstants.ACCEPTABLE_GAME_MODES
 import ui.ViewConstants.CHAMPION_STATUS_AVAILABLE_CHEST_COLOR
@@ -94,11 +93,11 @@ open class MainViewController : Controller() {
         }
 
         leagueConnection.onChampionSelectChange {
-            runLater { view.gameModeProperty.set("Game Mode: ${it.gameMode}") }
+            runLater { view.gameModeProperty.set("Game Mode: ${leagueConnection.gameMode}") }
 
-            if (!ACCEPTABLE_GAME_MODES.contains(it.gameMode)) return@onChampionSelectChange
+            if (!ACCEPTABLE_GAME_MODES.contains(leagueConnection.gameMode)) return@onChampionSelectChange
 
-            if (it.gameMode == GameMode.ARAM) {
+            if (leagueConnection.gameMode == GameMode.ARAM) {
                 runLater {
                     if (activeView != ActiveView.ARAM) {
                         val root = find<NormalGridView>().root
@@ -121,11 +120,7 @@ open class MainViewController : Controller() {
                         activeView = ActiveView.REGULAR
                     }
 
-                    val sortedChampionInfo = leagueConnection.championInfo.map { champion -> champion.value }
-                        .filter { champion -> champion.ownershipStatus == ChampionOwnershipStatus.BOX_NOT_ATTAINED }
-                        .sortedByDescending { champion -> champion.masteryPoints }
-
-                    regularView.championListProperty.set(FXCollections.observableList(sortedChampionInfo))
+                    regularView.championListProperty.set(FXCollections.observableList(getChampionMasteryInfo(byRole=true)))
                 }
             }
         }
@@ -133,6 +128,20 @@ open class MainViewController : Controller() {
         leagueConnection.onClientStateChange {
             runLater { view.clientStateProperty.set("Client State: ${it.name}") }
         }
+    }
+
+    private fun getChampionMasteryInfo(byRole: Boolean = false): List<ChampionInfo> {
+        var info = leagueConnection.championInfo.map { champion -> champion.value }
+            .filter { champion -> champion.ownershipStatus == ChampionOwnershipStatus.BOX_NOT_ATTAINED }
+            .sortedByDescending { champion -> champion.masteryPoints }
+
+        if (byRole && leagueConnection.championSelectInfo.assignedRole != Role.ANY) {
+            val championsByRole = LeagueCommunityDragonAPI.getChampionsByRole(leagueConnection.championSelectInfo.assignedRole)
+
+            info = info.filter { championsByRole.contains(it.id) }
+        }
+
+        return info
     }
 
     open fun updateChestInfo() {

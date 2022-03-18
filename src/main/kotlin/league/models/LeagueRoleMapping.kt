@@ -2,7 +2,6 @@ package league.models
 
 import kotlinx.serialization.SerialName
 import java.util.*
-import kotlin.collections.HashMap
 
 @kotlinx.serialization.Serializable
 data class RoleMapping(@SerialName("TOP") val top: HashMap<Int, Float>,
@@ -26,5 +25,4 @@ data class MasteryChestInfo(var nextChestDate: Date? = null, var chestCount: Int
 data class ChampionInfo(val id: Int, val name: String, val ownershipStatus: ChampionOwnershipStatus, val masteryPoints: Int,
                         var isSummonerSelectedChamp: Boolean = false)
 
-data class ChampionSelectInfo(val gameMode: GameMode = GameMode.NONE, val teamChampions: List<ChampionInfo?> = listOf(),
-                              val benchedChampions: List<ChampionInfo> = listOf(), val assignedRole: Role = Role.ANY)
+data class ChampionSelectInfo(val teamChampions: List<ChampionInfo?> = listOf(), val benchedChampions: List<ChampionInfo> = listOf(), val assignedRole: Role = Role.ANY)

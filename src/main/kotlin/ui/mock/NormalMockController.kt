@@ -30,14 +30,6 @@ class NormalMockController : MainViewController() {
 
         runLater { view.chestProperty.set("Available chests: ${masteryChestInfo.chestCount} (next one in $remainingStr days)") }
 
-        // onChampionSelectChange
-        val championSelectInfo = ChampionSelectInfo(
-            GameMode.RANKED_FLEX,
-            listOf(),
-            listOf(),
-            Role.TOP
-        )
-
         val championInfo = listOf(
             ChampionInfo(127, "Lissandra", ChampionOwnershipStatus.BOX_NOT_ATTAINED, 10463),
             ChampionInfo(432, "Bard", ChampionOwnershipStatus.BOX_NOT_ATTAINED, 10421),
@@ -68,7 +60,7 @@ class NormalMockController : MainViewController() {
         root.children.clear()
         root.children.add(regularView.root)
 
-        runLater { view.gameModeProperty.set("Game Mode: ${championSelectInfo.gameMode}") }
+        runLater { view.gameModeProperty.set("Game Mode: ${GameMode.RANKED_FLEX}") }
 
         runLater {
             regularView.championListProperty.set(FXCollections.observableList(sortedChampionInfo))
