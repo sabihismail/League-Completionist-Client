@@ -69,11 +69,11 @@ class LeagueConnection {
     fun updateChampionMasteryInfo() {
         val champions = clientAPI.executeGet("/lol-champions/v1/inventories/${summonerInfo.summonerID}/champions",
             Array<LolChampionsCollectionsChampion>::class.java).responseObject ?: return
-        Logging.log(champions, LogType.DEBUG)
+        Logging.log(champions, LogType.INFO)
 
         val championMasteryList = clientAPI.executeGet("/lol-collections/v1/inventories/${summonerInfo.summonerID}/champion-mastery",
             Array<LolCollectionsCollectionsChampionMastery>::class.java).responseObject ?: return
-        Logging.log(championMasteryList, LogType.DEBUG)
+        Logging.log(championMasteryList, LogType.INFO)
 
         val masteryPairing = champions.map {
             lateinit var championOwnershipStatus: ChampionOwnershipStatus
