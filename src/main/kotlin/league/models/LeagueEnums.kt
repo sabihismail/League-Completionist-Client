@@ -17,7 +17,8 @@ enum class SummonerStatus {
 
 enum class GameMode {
     NONE,
-    SUMMONERS_RIFT,
+    BLIND_PICK,
+    DRAFT_PICK,
     RANKED_SOLO,
     RANKED_FLEX,
     CLASH,

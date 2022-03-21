@@ -41,20 +41,22 @@ object ViewConstants {
 object GenericConstants {
     val ACCEPTABLE_GAME_MODES = listOf(
         GameMode.ARAM,
-        GameMode.SUMMONERS_RIFT,
-        GameMode.CLASH,
+        GameMode.BLIND_PICK,
+        GameMode.DRAFT_PICK,
         GameMode.RANKED_SOLO,
         GameMode.RANKED_FLEX,
+        GameMode.CLASH,
     )
 
     val ROLE_SPECIFIC_MODES = listOf(
-        GameMode.CLASH,
+        GameMode.DRAFT_PICK,
         GameMode.RANKED_SOLO,
         GameMode.RANKED_FLEX,
+        GameMode.CLASH,
     )
 
     val NON_ROLE_SPECIFIC_MODES = listOf(
-        GameMode.SUMMONERS_RIFT,
+        GameMode.BLIND_PICK,
     )
 }
 
@@ -155,8 +157,6 @@ open class MainViewController : Controller() {
         leagueConnection.updateChampionMasteryInfo()
     }
 }
-
-
 
 class MainView: View() {
     val summonerProperty = SimpleStringProperty()

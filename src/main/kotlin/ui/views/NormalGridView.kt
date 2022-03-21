@@ -2,6 +2,7 @@ package ui.views
 
 import javafx.beans.property.SimpleListProperty
 import javafx.geometry.Pos
+import javafx.scene.paint.Color
 import league.LeagueCommunityDragonAPI
 import league.models.ChampionInfo
 import tornadofx.*
@@ -26,7 +27,19 @@ class NormalGridView: View() {
             cellHeight = ViewConstants.IMAGE_WIDTH
 
             cellCache {
-                imageview(LeagueCommunityDragonAPI.getChampionImage(it.id))  { effect = LeagueCommunityDragonAPI.getChampionImageEffect(it) }
+                stackpane {
+                    alignment = Pos.TOP_RIGHT
+
+                    imageview(LeagueCommunityDragonAPI.getChampionImage(it.id)) { effect = LeagueCommunityDragonAPI.getChampionImageEffect(it) }
+
+                    label(it.level.toString()) {
+                        textFill = Color.WHITE
+
+                        style {
+                            backgroundColor += Color.BLACK
+                        }
+                    }
+                }
             }
         }
     }

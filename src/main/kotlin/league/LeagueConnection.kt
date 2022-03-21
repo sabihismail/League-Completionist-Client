@@ -69,13 +69,16 @@ class LeagueConnection {
     fun updateChampionMasteryInfo() {
         val champions = clientAPI.executeGet("/lol-champions/v1/inventories/${summonerInfo.summonerID}/champions",
             Array<LolChampionsCollectionsChampion>::class.java).responseObject ?: return
+        Logging.log(champions, LogType.DEBUG)
 
         val championMasteryList = clientAPI.executeGet("/lol-collections/v1/inventories/${summonerInfo.summonerID}/champion-mastery",
             Array<LolCollectionsCollectionsChampionMastery>::class.java).responseObject ?: return
+        Logging.log(championMasteryList, LogType.DEBUG)
 
         val masteryPairing = champions.map {
             lateinit var championOwnershipStatus: ChampionOwnershipStatus
             var championPoints = 0
+            var championLevel = 0
 
             if (!it.ownership.owned) {
                 championOwnershipStatus = if (it.ownership.rental.rented) {
@@ -94,10 +97,11 @@ class LeagueConnection {
                     championOwnershipStatus = if (championMastery.chestGranted) ChampionOwnershipStatus.BOX_ATTAINED else ChampionOwnershipStatus.BOX_NOT_ATTAINED
 
                     championPoints = championMastery.championPoints
+                    championLevel = championMastery.championLevel
                 }
             }
 
-            ChampionInfo(it.id, it.name, championOwnershipStatus, championPoints)
+            ChampionInfo(it.id, it.name, championOwnershipStatus, championPoints, championLevel)
         }
 
         championInfo = masteryPairing.associateBy({ it.id }, { it })
@@ -210,7 +214,7 @@ class LeagueConnection {
                 Logging.log(gameFlow, LogType.DEBUG)
 
                 gameMode = when (gameFlow.gameData.queue.gameMode) {
-                    "CLASSIC" -> GameMode.SUMMONERS_RIFT
+                    "CLASSIC" -> GameMode.BLIND_PICK
                     "RANKED_SOLO_5x5" -> GameMode.RANKED_SOLO
                     "RANKED_FLEX_SR" -> GameMode.RANKED_FLEX
                     "CLASH" -> GameMode.CLASH
@@ -222,6 +226,22 @@ class LeagueConnection {
                     "BOT" -> GameMode.BOT
                     "PRACTICETOOL" -> GameMode.PRACTICE_TOOL
                     else -> GameMode.UNKNOWN
+                }
+
+                if (gameMode == GameMode.BLIND_PICK) {
+                    val gameType = LeagueCommunityDragonAPI.getQueueMapping(gameFlow.gameData.queue.id)
+
+                    gameMode = when (gameType.description) {
+                        "Blind Pick" -> GameMode.BLIND_PICK
+                        "Draft Pick" -> GameMode.DRAFT_PICK
+                        "Ranked Solo/Duo" -> GameMode.RANKED_SOLO
+                        "Ranked Flex" -> GameMode.RANKED_FLEX
+                        "Clash" -> GameMode.CLASH
+                        "Beginner" -> GameMode.BOT
+                        "Intermediate" -> GameMode.BOT
+                        "Co-op vs. AI" -> GameMode.BOT
+                        else -> GameMode.UNKNOWN
+                    }
                 }
             }
             else -> {

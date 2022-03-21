@@ -25,7 +25,7 @@ data class SummonerInfo(
 
 data class MasteryChestInfo(var nextChestDate: Date? = null, var chestCount: Int = 0)
 
-data class ChampionInfo(val id: Int, val name: String, val ownershipStatus: ChampionOwnershipStatus, val masteryPoints: Int,
+data class ChampionInfo(val id: Int, val name: String, val ownershipStatus: ChampionOwnershipStatus, val masteryPoints: Int, val level: Int = 0,
                         var isSummonerSelectedChamp: Boolean = false)
 
 data class ChampionSelectInfo(val teamChampions: List<ChampionInfo?> = listOf(), val benchedChampions: List<ChampionInfo> = listOf(), val assignedRole: Role = Role.ANY)
