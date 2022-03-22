@@ -7,6 +7,8 @@ object Logging {
     private val LOG_MODE = LogType.INFO
 
     fun log(obj: Any, logType: LogType, header: String? = null) {
+        if (logType < LOG_MODE) return
+
         val s = ReflectionToStringBuilder.reflectionToString(obj, RecursiveToStringStyle())
 
         var headerValue = header
