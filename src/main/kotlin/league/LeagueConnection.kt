@@ -14,16 +14,17 @@ import java.util.*
 import kotlin.concurrent.thread
 
 class LeagueConnection {
-    var clientAPI = ClientApi()
+    lateinit var clientAPI: ClientApi
     var socket: ClientWebSocket? = null
 
     var clientState = LolGameflowGameflowPhase.NONE
     var gameMode = GameMode.NONE
 
     var summonerInfo = SummonerInfo()
-    var masteryChestInfo = MasteryChestInfo()
     var championSelectInfo = ChampionSelectInfo()
     var championInfo = mapOf<Int, ChampionInfo>()
+
+    private var masteryChestInfo = MasteryChestInfo()
 
     private val onSummonerChangeList = ArrayList<(SummonerInfo) -> Unit>()
     private val onMasteryChestChangeList = ArrayList<(MasteryChestInfo) -> Unit>()
@@ -32,6 +33,8 @@ class LeagueConnection {
 
     fun start() {
         thread {
+            clientAPI = ClientApi()
+
             while (true) {
                 if (summonerInfo.status == SummonerStatus.LOGGED_IN_AUTHORIZED) {
                     Thread.sleep(1000)
@@ -69,11 +72,11 @@ class LeagueConnection {
     fun updateChampionMasteryInfo() {
         val champions = clientAPI.executeGet("/lol-champions/v1/inventories/${summonerInfo.summonerID}/champions",
             Array<LolChampionsCollectionsChampion>::class.java).responseObject ?: return
-        Logging.log(champions, LogType.INFO)
+        Logging.log(champions, LogType.VERBOSE)
 
         val championMasteryList = clientAPI.executeGet("/lol-collections/v1/inventories/${summonerInfo.summonerID}/champion-mastery",
             Array<LolCollectionsCollectionsChampionMastery>::class.java).responseObject ?: return
-        Logging.log(championMasteryList, LogType.INFO)
+        Logging.log(championMasteryList, LogType.VERBOSE)
 
         val masteryPairing = champions.map {
             lateinit var championOwnershipStatus: ChampionOwnershipStatus
@@ -159,7 +162,7 @@ class LeagueConnection {
                                     Logging.log(event.data, LogType.DEBUG, event.uri + " - " + event.eventType)
                                 }
 
-                                Logging.log(event.data, LogType.ALL, "ClientAPI WebSocket: " + event.uri + " - " + event.eventType)
+                                Logging.log(event.data, LogType.VERBOSE, "ClientAPI WebSocket: " + event.uri + " - " + event.eventType)
                             }
                         }
                     }

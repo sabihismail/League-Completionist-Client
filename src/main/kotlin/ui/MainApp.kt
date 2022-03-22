@@ -8,9 +8,13 @@ import javafx.geometry.Pos
 import javafx.scene.paint.Color
 import league.LeagueCommunityDragonAPI
 import league.LeagueConnection
-import league.models.*
+import league.models.ChampionInfo
+import league.models.GameMode
+import league.models.Role
+import league.models.SummonerStatus
 import tornadofx.*
 import ui.GenericConstants.ACCEPTABLE_GAME_MODES
+import ui.GenericConstants.ROLE_SPECIFIC_MODES
 import ui.ViewConstants.CHAMPION_STATUS_AVAILABLE_CHEST_COLOR
 import ui.ViewConstants.CHAMPION_STATUS_NOT_OWNED_COLOR
 import ui.ViewConstants.CHAMPION_STATUS_UNAVAILABLE_CHEST_COLOR
@@ -53,10 +57,6 @@ object GenericConstants {
         GameMode.RANKED_SOLO,
         GameMode.RANKED_FLEX,
         GameMode.CLASH,
-    )
-
-    val NON_ROLE_SPECIFIC_MODES = listOf(
-        GameMode.BLIND_PICK,
     )
 }
 
@@ -122,7 +122,9 @@ open class MainViewController : Controller() {
                         activeView = ActiveView.REGULAR
                     }
 
-                    regularView.championListProperty.set(FXCollections.observableList(getChampionMasteryInfo(byRole=true)))
+                    val championList = getChampionMasteryInfo()
+
+                    regularView.championListProperty.set(FXCollections.observableList(championList))
                 }
             }
         }
@@ -132,13 +134,11 @@ open class MainViewController : Controller() {
         }
     }
 
-    @Suppress("SameParameterValue")
-    private fun getChampionMasteryInfo(byRole: Boolean = false): List<ChampionInfo> {
+    fun getChampionMasteryInfo(): List<ChampionInfo> {
         var info = leagueConnection.championInfo.map { champion -> champion.value }
-            .filter { champion -> champion.ownershipStatus == ChampionOwnershipStatus.BOX_NOT_ATTAINED }
-            .sortedByDescending { champion -> champion.masteryPoints }
+            .sortedByDescending { champion -> champion.level }
 
-        if (byRole && leagueConnection.championSelectInfo.assignedRole != Role.ANY) {
+        if (ROLE_SPECIFIC_MODES.contains(leagueConnection.gameMode) && leagueConnection.championSelectInfo.assignedRole != Role.ANY) {
             val championsByRole = LeagueCommunityDragonAPI.getChampionsByRole(leagueConnection.championSelectInfo.assignedRole)
 
             info = info.filter { championsByRole.contains(it.id) }

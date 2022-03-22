@@ -1,7 +1,7 @@
 package util
 
 enum class LogType {
-    ALL,
+    VERBOSE,
     DEBUG,
     INFO,
 }

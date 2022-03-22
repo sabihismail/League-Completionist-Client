@@ -1,17 +1,10 @@
 package util
 
-import DEBUG_LOG_ALL_ENDPOINTS
-import DEBUG_LOG_HANDLED_ENDPOINTS
 import org.apache.commons.lang3.builder.RecursiveToStringStyle
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder
 
 object Logging {
-    private val LOG_MODE = if (DEBUG_LOG_ALL_ENDPOINTS)
-        LogType.ALL
-    else if (DEBUG_LOG_HANDLED_ENDPOINTS)
-        LogType.DEBUG
-    else
-        LogType.INFO
+    private val LOG_MODE = LogType.INFO
 
     fun log(obj: Any, logType: LogType, header: String? = null) {
         val s = ReflectionToStringBuilder.reflectionToString(obj, RecursiveToStringStyle())

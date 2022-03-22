@@ -34,6 +34,7 @@ class NormalGridView: View() {
 
                     label(it.level.toString()) {
                         textFill = Color.WHITE
+                        paddingHorizontal = 8
 
                         style {
                             backgroundColor += Color.BLACK
