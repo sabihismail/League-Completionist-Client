@@ -64,7 +64,4 @@ class AramMockController : MainViewController() {
             aramView.teamChampionListProperty.set(FXCollections.observableList(championSelectInfo.teamChampions))
         }
     }
-
-    override fun updateChestInfo() {}
-    override fun updateChampionMasteryInfo() {}
 }

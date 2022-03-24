@@ -125,10 +125,10 @@ open class MainViewController : Controller() {
             runLater {
                 val root = gridView.root as VBox
 
-                if (root == replacementView.root) return@runLater
-
-                root.children.clear()
-                root.children.add(replacementView.root)
+                if (root != replacementView.root) {
+                    root.children.clear()
+                    root.children.add(replacementView.root)
+                }
 
                 when (activeView) {
                     ActiveView.ARAM -> {
@@ -147,7 +147,7 @@ open class MainViewController : Controller() {
 
         leagueConnection.onClientStateChange {
             if (it == LolGameflowGameflowPhase.ENDOFGAME) {
-                updateChampionMasteryInfo()
+                leagueConnection.updateChampionMasteryInfo()
             }
 
             runLater { view.clientStateProperty.set("Client State: ${it.name}") }
@@ -165,16 +165,6 @@ open class MainViewController : Controller() {
         }
 
         return info
-    }
-
-    open fun updateChestInfo() {
-        view.chestProperty.set("Querying...")
-
-        leagueConnection.updateMasteryChestInfo()
-    }
-
-    open fun updateChampionMasteryInfo() {
-        leagueConnection.updateChampionMasteryInfo()
     }
 }
 
@@ -238,13 +228,6 @@ class MainView: View() {
                         }
                         label("Not Owned/Free to Play")
                     }
-                }
-                hbox {
-                    alignment = Pos.CENTER
-                    spacing = 6.0
-
-                    button("Refresh Chest Data").setOnAction { controller.updateChestInfo() }
-                    button("Refresh Champion Mastery Data").setOnAction { controller.updateChampionMasteryInfo() }
                 }
             }
         }

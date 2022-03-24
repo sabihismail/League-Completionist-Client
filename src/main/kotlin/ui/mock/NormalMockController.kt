@@ -75,7 +75,4 @@ class NormalMockController : MainViewController() {
             regularView.championListProperty.set(FXCollections.observableList(sortedChampionInfo))
         }
     }
-
-    override fun updateChestInfo() {}
-    override fun updateChampionMasteryInfo() {}
 }
