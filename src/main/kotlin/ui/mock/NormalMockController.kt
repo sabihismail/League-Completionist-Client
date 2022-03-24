@@ -6,22 +6,21 @@ import league.models.*
 import tornadofx.runLater
 import ui.MainView
 import ui.MainViewController
-import ui.views.AramGridView
+import ui.views.DefaultGridView
 import ui.views.NormalGridView
 import util.KotlinExtensionUtil.getPrivateProperty
 import java.util.*
 
 
-const val IS_BY_ROLE = false
-
 class NormalMockController : MainViewController() {
+    private val roleFilter = false
+
     private val view: MainView by inject()
     private val regularView: NormalGridView by inject()
 
     init {
         // onSummonerChange
-        val summonerInfo = SummonerInfo(
-            SummonerStatus.LOGGED_IN_AUTHORIZED, -1, -1, "TestName", "TestName",
+        val summonerInfo = SummonerInfo(SummonerStatus.LOGGED_IN_AUTHORIZED, -1, -1, "TestName", "TestName",
             1, 12, 1)
 
         runLater { view.summonerProperty.set("Logged in as: ${summonerInfo.displayName} (Level ${summonerInfo.summonerLevel})") }
@@ -61,12 +60,12 @@ class NormalMockController : MainViewController() {
             8 to ChampionInfo(8, "Volibear", ChampionOwnershipStatus.BOX_NOT_ATTAINED, 522110, level = 0),
         )
 
-        val role = if (IS_BY_ROLE) Role.TOP else Role.ANY
+        val role = if (roleFilter) Role.TOP else Role.ANY
 
         leagueConnection.championSelectInfo = ChampionSelectInfo(assignedRole = role)
         val sortedChampionInfo = controller.getChampionMasteryInfo()
 
-        val root = find<AramGridView>().root
+        val root = find<DefaultGridView>().root
         root.children.clear()
         root.children.add(regularView.root)
 

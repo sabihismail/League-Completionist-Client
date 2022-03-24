@@ -1,0 +1,4 @@
+package league
+
+class LeagueDataDragonAPI {
+}

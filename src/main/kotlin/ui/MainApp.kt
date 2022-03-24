@@ -5,6 +5,7 @@ import DEBUG_FAKE_UI_DATA_NORMAL
 import javafx.beans.property.SimpleStringProperty
 import javafx.collections.FXCollections
 import javafx.geometry.Pos
+import javafx.scene.layout.VBox
 import javafx.scene.paint.Color
 import league.LeagueCommunityDragonAPI
 import league.LeagueConnection
@@ -21,13 +22,15 @@ import ui.ViewConstants.CHAMPION_STATUS_UNAVAILABLE_CHEST_COLOR
 import ui.mock.AramMockController
 import ui.mock.NormalMockController
 import ui.views.AramGridView
+import ui.views.DefaultGridView
 import ui.views.NormalGridView
 import java.util.*
 import kotlin.system.exitProcess
 
 enum class ActiveView {
+    NONE,
     ARAM,
-    REGULAR
+    NORMAL,
 }
 
 object ViewConstants {
@@ -43,29 +46,26 @@ object ViewConstants {
 }
 
 object GenericConstants {
-    val ACCEPTABLE_GAME_MODES = listOf(
-        GameMode.ARAM,
-        GameMode.BLIND_PICK,
-        GameMode.DRAFT_PICK,
-        GameMode.RANKED_SOLO,
-        GameMode.RANKED_FLEX,
-        GameMode.CLASH,
-    )
-
     val ROLE_SPECIFIC_MODES = listOf(
         GameMode.DRAFT_PICK,
         GameMode.RANKED_SOLO,
         GameMode.RANKED_FLEX,
         GameMode.CLASH,
     )
+
+    val ACCEPTABLE_GAME_MODES = ROLE_SPECIFIC_MODES + listOf(
+        GameMode.ARAM,
+        GameMode.BLIND_PICK,
+    )
 }
 
 open class MainViewController : Controller() {
     private val view: MainView by inject()
+    private val defaultView: DefaultGridView by inject()
     private val aramView: AramGridView by inject()
-    private val regularView: NormalGridView by inject()
+    private val normalView: NormalGridView by inject()
     private val leagueConnection = LeagueConnection()
-    private var activeView = ActiveView.ARAM
+    private var activeView = ActiveView.NONE
 
     init {
         leagueConnection.start()
@@ -99,32 +99,47 @@ open class MainViewController : Controller() {
 
             if (!ACCEPTABLE_GAME_MODES.contains(leagueConnection.gameMode)) return@onChampionSelectChange
 
-            if (leagueConnection.gameMode == GameMode.ARAM) {
-                runLater {
-                    if (activeView != ActiveView.ARAM) {
-                        val root = find<NormalGridView>().root
-                        root.children.clear()
-                        root.children.add(aramView.root)
+            val gridView = when (activeView) {
+                ActiveView.NONE -> find<DefaultGridView>()
+                ActiveView.ARAM -> find<AramGridView>()
+                ActiveView.NORMAL -> find<NormalGridView>()
+            }
 
-                        activeView = ActiveView.ARAM
+            activeView = when (leagueConnection.gameMode) {
+                GameMode.ARAM -> ActiveView.ARAM
+                GameMode.BLIND_PICK,
+                GameMode.DRAFT_PICK,
+                GameMode.RANKED_SOLO,
+                GameMode.RANKED_FLEX,
+                GameMode.CLASH -> ActiveView.NORMAL
+                else -> ActiveView.NONE
+            }
+
+            val replacementView = when (activeView) {
+                ActiveView.ARAM -> aramView
+                ActiveView.NORMAL -> normalView
+                else -> defaultView
+            }
+
+            runLater {
+                val root = gridView.root as VBox
+
+                if (root == replacementView.root) return@runLater
+
+                root.children.clear()
+                root.children.add(replacementView.root)
+
+                when (activeView) {
+                    ActiveView.ARAM -> {
+                        aramView.benchedChampionListProperty.set(FXCollections.observableList(it.benchedChampions))
+                        aramView.teamChampionListProperty.set(FXCollections.observableList(it.teamChampions))
                     }
+                    ActiveView.NORMAL -> {
+                        val championList = getChampionMasteryInfo()
 
-                    aramView.benchedChampionListProperty.set(FXCollections.observableList(it.benchedChampions))
-                    aramView.teamChampionListProperty.set(FXCollections.observableList(it.teamChampions))
-                }
-            } else {
-                runLater {
-                    if (activeView != ActiveView.REGULAR) {
-                        val root = find<AramGridView>().root
-                        root.children.clear()
-                        root.children.add(regularView.root)
-
-                        activeView = ActiveView.REGULAR
+                        normalView.championListProperty.set(FXCollections.observableList(championList))
                     }
-
-                    val championList = getChampionMasteryInfo()
-
-                    regularView.championListProperty.set(FXCollections.observableList(championList))
+                    else -> {}
                 }
             }
         }
@@ -186,7 +201,7 @@ class MainView: View() {
             }
 
             center = borderpane {
-                center<AramGridView>()
+                center<DefaultGridView>()
             }
 
             bottom = vbox {

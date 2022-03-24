@@ -82,6 +82,7 @@ class LeagueConnection {
             lateinit var championOwnershipStatus: ChampionOwnershipStatus
             var championPoints = 0
             var championLevel = 0
+            var tokens = 0
 
             if (!it.ownership.owned) {
                 championOwnershipStatus = if (it.ownership.rental.rented) {
@@ -101,10 +102,11 @@ class LeagueConnection {
 
                     championPoints = championMastery.championPoints
                     championLevel = championMastery.championLevel
+                    tokens = championMastery.tokensEarned
                 }
             }
 
-            ChampionInfo(it.id, it.name, championOwnershipStatus, championPoints, championLevel)
+            ChampionInfo(it.id, it.name, championOwnershipStatus, championPoints, championLevel, tokens)
         }
 
         championInfo = masteryPairing.associateBy({ it.id }, { it })

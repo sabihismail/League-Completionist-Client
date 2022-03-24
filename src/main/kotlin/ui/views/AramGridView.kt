@@ -27,7 +27,20 @@ class AramGridView: View() {
             cellHeight = ViewConstants.IMAGE_WIDTH
 
             cellCache {
-                imageview(LeagueCommunityDragonAPI.getChampionImage(it.id))  { effect = LeagueCommunityDragonAPI.getChampionImageEffect(it) }
+                stackpane {
+                    alignment = Pos.TOP_RIGHT
+
+                    imageview(LeagueCommunityDragonAPI.getChampionImage(it.id)) { effect = LeagueCommunityDragonAPI.getChampionImageEffect(it) }
+
+                    label(it.level.toString()) {
+                        textFill = Color.WHITE
+                        paddingHorizontal = 8
+
+                        style {
+                            backgroundColor += Color.BLACK
+                        }
+                    }
+                }
             }
         }
 

@@ -5,7 +5,7 @@ import java.nio.file.Files
 import kotlin.io.path.fileSize
 import kotlin.test.Test
 
-internal class LeagueImageAPITest {
+internal class LeagueCommunityDragonAPITest {
     @Test
     fun checkLeagueQueueMappingAPI() {
         assert(LeagueCommunityDragonAPI.QUEUE_MAPPING.size == 0)

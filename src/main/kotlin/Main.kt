@@ -1,4 +1,3 @@
-
 import tornadofx.launch
 import ui.MainApp
 

@@ -6,6 +6,7 @@ import tornadofx.runLater
 import ui.MainView
 import ui.MainViewController
 import ui.views.AramGridView
+import ui.views.DefaultGridView
 import java.util.*
 
 
@@ -51,6 +52,10 @@ class AramMockController : MainViewController() {
                 ChampionInfo(875, "Sett", ChampionOwnershipStatus.BOX_ATTAINED, 10, isSummonerSelectedChamp = false),
             )
         )
+
+        val root = find<DefaultGridView>().root
+        root.children.clear()
+        root.children.add(aramView.root)
 
         runLater { view.gameModeProperty.set("Game Mode: ${GameMode.ARAM}") }
 

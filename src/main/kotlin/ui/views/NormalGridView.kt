@@ -12,6 +12,7 @@ import ui.ViewConstants
 class NormalGridView: View() {
     val championListProperty = SimpleListProperty<ChampionInfo>()
 
+    @Suppress("DuplicatedCode")
     override val root = vbox {
         alignment = Pos.CENTER
 
@@ -28,16 +29,42 @@ class NormalGridView: View() {
 
             cellCache {
                 stackpane {
-                    alignment = Pos.TOP_RIGHT
+                    alignment = Pos.TOP_CENTER
 
                     imageview(LeagueCommunityDragonAPI.getChampionImage(it.id)) { effect = LeagueCommunityDragonAPI.getChampionImageEffect(it) }
 
-                    label(it.level.toString()) {
-                        textFill = Color.WHITE
-                        paddingHorizontal = 8
+                    borderpane {
+                        left = stackpane {
+                            alignment = Pos.TOP_LEFT
 
-                        style {
-                            backgroundColor += Color.BLACK
+                            label("Lvl ${it.level}") {
+                                textFill = Color.WHITE
+                                paddingHorizontal = 8
+
+                                style {
+                                    backgroundColor += Color.BLACK
+                                }
+                            }
+                        }
+
+                        right = stackpane {
+                            alignment = Pos.TOP_RIGHT
+
+                            label(
+                                when (it.level) {
+                                    6 -> "${it.tokens}/3"
+                                    5 -> "${it.tokens}/2"
+                                    else -> ""
+                                }
+                            ) {
+                                isVisible = listOf(5, 6).contains(it.level)
+                                textFill = Color.WHITE
+                                paddingHorizontal = 8
+
+                                style {
+                                    backgroundColor += Color.BLACK
+                                }
+                            }
                         }
                     }
                 }
