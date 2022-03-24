@@ -1,4 +1,7 @@
 package league
 
-class LeagueDataDragonAPI {
+object LeagueDataDragonAPI {
+    const val VERSIONS_ENDPOINT = "https://ddragon.leagueoflegends.com/api/versions.json"
+
+
 }

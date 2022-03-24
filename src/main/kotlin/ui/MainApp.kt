@@ -2,6 +2,7 @@ package ui
 
 import DEBUG_FAKE_UI_DATA_ARAM
 import DEBUG_FAKE_UI_DATA_NORMAL
+import generated.LolGameflowGameflowPhase
 import javafx.beans.property.SimpleStringProperty
 import javafx.collections.FXCollections
 import javafx.geometry.Pos
@@ -145,6 +146,10 @@ open class MainViewController : Controller() {
         }
 
         leagueConnection.onClientStateChange {
+            if (it == LolGameflowGameflowPhase.ENDOFGAME) {
+                updateChampionMasteryInfo()
+            }
+
             runLater { view.clientStateProperty.set("Client State: ${it.name}") }
         }
     }

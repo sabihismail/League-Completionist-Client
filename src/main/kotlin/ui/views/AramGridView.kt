@@ -28,11 +28,11 @@ class AramGridView: View() {
 
             cellCache {
                 stackpane {
-                    alignment = Pos.TOP_RIGHT
+                    alignment = Pos.TOP_LEFT
 
                     imageview(LeagueCommunityDragonAPI.getChampionImage(it.id)) { effect = LeagueCommunityDragonAPI.getChampionImageEffect(it) }
 
-                    label(it.level.toString()) {
+                    label("Lvl ${it.level}") {
                         textFill = Color.WHITE
                         paddingHorizontal = 8
 
@@ -63,8 +63,10 @@ class AramGridView: View() {
                             effect = LeagueCommunityDragonAPI.getChampionImageEffect(it)
                         }
 
-                        label(if (it.isSummonerSelectedChamp) "You" else "") {
+                        label("You") {
+                            isVisible = it.isSummonerSelectedChamp
                             textFill = Color.WHITE
+                            paddingHorizontal = 8
 
                             style {
                                 backgroundColor += Color.BLACK
@@ -73,9 +75,9 @@ class AramGridView: View() {
                     }
 
                     stackpane {
-                        alignment = Pos.TOP_RIGHT
+                        alignment = Pos.TOP_LEFT
 
-                        label(it.level.toString()) {
+                        label("Lvl ${it.level}") {
                             textFill = Color.WHITE
                             paddingHorizontal = 8
 
