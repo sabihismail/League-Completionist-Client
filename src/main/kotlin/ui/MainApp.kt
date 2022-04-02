@@ -6,7 +6,7 @@ import generated.LolGameflowGameflowPhase
 import javafx.beans.property.SimpleStringProperty
 import javafx.collections.FXCollections
 import javafx.geometry.Pos
-import javafx.scene.layout.VBox
+import javafx.scene.layout.Pane
 import javafx.scene.paint.Color
 import league.LeagueCommunityDragonAPI
 import league.LeagueConnection
@@ -120,7 +120,7 @@ open class MainViewController : Controller() {
             }
 
             runLater {
-                val root = gridView.root as VBox
+                val root = gridView.root as Pane
 
                 if (root != replacementView.root) {
                     root.children.clear()
