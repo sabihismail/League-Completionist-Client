@@ -10,10 +10,7 @@ import javafx.scene.layout.VBox
 import javafx.scene.paint.Color
 import league.LeagueCommunityDragonAPI
 import league.LeagueConnection
-import league.models.ChampionInfo
-import league.models.GameMode
-import league.models.Role
-import league.models.SummonerStatus
+import league.models.*
 import tornadofx.*
 import ui.GenericConstants.ACCEPTABLE_GAME_MODES
 import ui.GenericConstants.ROLE_SPECIFIC_MODES
@@ -138,6 +135,16 @@ open class MainViewController : Controller() {
                     ActiveView.NORMAL -> {
                         val championList = getChampionMasteryInfo()
 
+                        normalView.selectionState.addListener { _, _, newValue ->
+                            val newRole = if (newValue) Role.TOP else Role.ANY
+
+                            leagueConnection.gameMode = GameMode.RANKED_FLEX
+                            leagueConnection.championSelectInfo = ChampionSelectInfo(assignedRole = newRole)
+                            val newSortedChampionInfo = getChampionMasteryInfo()
+
+                            normalView.championListProperty.set(FXCollections.observableList(newSortedChampionInfo))
+                        }
+
                         normalView.championListProperty.set(FXCollections.observableList(championList))
                     }
                     else -> {}
@@ -175,10 +182,12 @@ class MainView: View() {
     val clientStateProperty = SimpleStringProperty()
     val gameModeProperty = SimpleStringProperty()
 
+    @Suppress("unused")
     private val controller = find(
         if (DEBUG_FAKE_UI_DATA_ARAM) AramMockController::class
         else if (DEBUG_FAKE_UI_DATA_NORMAL) NormalMockController::class
-        else MainViewController::class)
+        else MainViewController::class
+    )
 
     override val root = vbox {
         prefWidth = ViewConstants.APP_WIDTH

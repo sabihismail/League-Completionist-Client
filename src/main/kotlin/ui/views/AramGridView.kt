@@ -12,7 +12,6 @@ class AramGridView: View() {
     val benchedChampionListProperty = SimpleListProperty<ChampionInfo>()
     val teamChampionListProperty = SimpleListProperty<ChampionInfo>()
 
-    @Suppress("DuplicatedCode")
     override val root = vbox {
         alignment = Pos.CENTER
 

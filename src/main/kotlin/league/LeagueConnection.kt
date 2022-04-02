@@ -78,36 +78,37 @@ class LeagueConnection {
             Array<LolCollectionsCollectionsChampionMastery>::class.java).responseObject ?: return
         Logging.log(championMasteryList, LogType.VERBOSE)
 
-        val masteryPairing = champions.map {
-            lateinit var championOwnershipStatus: ChampionOwnershipStatus
-            var championPoints = 0
-            var championLevel = 0
-            var tokens = 0
+        val masteryPairing = champions.filter { it.id != -1 }
+            .map {
+                lateinit var championOwnershipStatus: ChampionOwnershipStatus
+                var championPoints = 0
+                var championLevel = 0
+                var tokens = 0
 
-            if (!it.ownership.owned) {
-                championOwnershipStatus = if (it.ownership.rental.rented) {
-                    ChampionOwnershipStatus.RENTAL
-                } else if (it.freeToPlay) {
-                    ChampionOwnershipStatus.FREE_TO_PLAY
+                if (!it.ownership.owned) {
+                    championOwnershipStatus = if (it.ownership.rental.rented) {
+                        ChampionOwnershipStatus.RENTAL
+                    } else if (it.freeToPlay) {
+                        ChampionOwnershipStatus.FREE_TO_PLAY
+                    } else {
+                        ChampionOwnershipStatus.NOT_OWNED
+                    }
                 } else {
-                    ChampionOwnershipStatus.NOT_OWNED
-                }
-            } else {
-                val championMastery = championMasteryList.firstOrNull { championMastery -> championMastery.championId == it.id }
+                    val championMastery = championMasteryList.firstOrNull { championMastery -> championMastery.championId == it.id }
 
-                if (championMastery == null) {
-                    championOwnershipStatus = ChampionOwnershipStatus.BOX_NOT_ATTAINED
-                } else {
-                    championOwnershipStatus = if (championMastery.chestGranted) ChampionOwnershipStatus.BOX_ATTAINED else ChampionOwnershipStatus.BOX_NOT_ATTAINED
+                    if (championMastery == null) {
+                        championOwnershipStatus = ChampionOwnershipStatus.BOX_NOT_ATTAINED
+                    } else {
+                        championOwnershipStatus = if (championMastery.chestGranted) ChampionOwnershipStatus.BOX_ATTAINED else ChampionOwnershipStatus.BOX_NOT_ATTAINED
 
-                    championPoints = championMastery.championPoints
-                    championLevel = championMastery.championLevel
-                    tokens = championMastery.tokensEarned
+                        championPoints = championMastery.championPoints
+                        championLevel = championMastery.championLevel
+                        tokens = championMastery.tokensEarned
+                    }
                 }
+
+                ChampionInfo(it.id, it.name, championOwnershipStatus, championPoints, championLevel, tokens)
             }
-
-            ChampionInfo(it.id, it.name, championOwnershipStatus, championPoints, championLevel, tokens)
-        }
 
         championInfo = masteryPairing.associateBy({ it.id }, { it })
     }
