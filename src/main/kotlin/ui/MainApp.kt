@@ -10,7 +10,10 @@ import javafx.scene.layout.Pane
 import javafx.scene.paint.Color
 import league.LeagueCommunityDragonAPI
 import league.LeagueConnection
-import league.models.*
+import league.models.ChampionInfo
+import league.models.GameMode
+import league.models.Role
+import league.models.SummonerStatus
 import tornadofx.*
 import ui.GenericConstants.ACCEPTABLE_GAME_MODES
 import ui.GenericConstants.ROLE_SPECIFIC_MODES
@@ -67,6 +70,12 @@ open class MainViewController : Controller() {
 
     init {
         leagueConnection.start()
+
+        normalView.selectionState.addListener { _, _, newValue ->
+            val newSortedChampionInfo = getChampionMasteryInfo(newValue)
+
+            normalView.championListProperty.set(FXCollections.observableList(newSortedChampionInfo))
+        }
 
         leagueConnection.onSummonerChange {
             val str = when (it.status) {
@@ -127,45 +136,43 @@ open class MainViewController : Controller() {
                     root.children.add(replacementView.root)
                 }
 
-                when (activeView) {
-                    ActiveView.ARAM -> {
-                        aramView.benchedChampionListProperty.set(FXCollections.observableList(it.benchedChampions))
-                        aramView.teamChampionListProperty.set(FXCollections.observableList(it.teamChampions))
-                    }
-                    ActiveView.NORMAL -> {
-                        val championList = getChampionMasteryInfo()
-
-                        normalView.selectionState.addListener { _, _, newValue ->
-                            val newRole = if (newValue) Role.TOP else Role.ANY
-
-                            leagueConnection.gameMode = GameMode.RANKED_FLEX
-                            leagueConnection.championSelectInfo = ChampionSelectInfo(assignedRole = newRole)
-                            val newSortedChampionInfo = getChampionMasteryInfo()
-
-                            normalView.championListProperty.set(FXCollections.observableList(newSortedChampionInfo))
-                        }
-
-                        normalView.championListProperty.set(FXCollections.observableList(championList))
-                    }
-                    else -> {}
-                }
+                updateChampionList()
             }
         }
 
         leagueConnection.onClientStateChange {
             if (it == LolGameflowGameflowPhase.ENDOFGAME) {
                 leagueConnection.updateChampionMasteryInfo()
+
+                updateChampionList()
             }
 
             runLater { view.clientStateProperty.set("Client State: ${it.name}") }
         }
     }
 
-    fun getChampionMasteryInfo(): List<ChampionInfo> {
+    private fun updateChampionList() {
+        runLater {
+            when (activeView) {
+                ActiveView.ARAM -> {
+                    aramView.benchedChampionListProperty.set(FXCollections.observableList(leagueConnection.championSelectInfo.benchedChampions))
+                    aramView.teamChampionListProperty.set(FXCollections.observableList(leagueConnection.championSelectInfo.teamChampions))
+                }
+                ActiveView.NORMAL -> {
+                    val championList = getChampionMasteryInfo(normalView.selectionState.value)
+
+                    normalView.championListProperty.set(FXCollections.observableList(championList))
+                }
+                else -> {}
+            }
+        }
+    }
+
+    fun getChampionMasteryInfo(byRole: Boolean): List<ChampionInfo> {
         var info = leagueConnection.championInfo.map { champion -> champion.value }
             .sortedByDescending { champion -> champion.level }
 
-        if (ROLE_SPECIFIC_MODES.contains(leagueConnection.gameMode) && leagueConnection.championSelectInfo.assignedRole != Role.ANY) {
+        if (byRole && ROLE_SPECIFIC_MODES.contains(leagueConnection.gameMode) && leagueConnection.championSelectInfo.assignedRole != Role.ANY) {
             val championsByRole = LeagueCommunityDragonAPI.getChampionsByRole(leagueConnection.championSelectInfo.assignedRole)
 
             info = info.filter { championsByRole.contains(it.id) }
