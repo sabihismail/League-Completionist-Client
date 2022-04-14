@@ -6,7 +6,9 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder
 object Logging {
     private val LOG_MODE = LogType.INFO
 
-    fun log(obj: Any, logType: LogType, header: String? = null) {
+    private var lastMessageLogged = ""
+
+    fun log(obj: Any, logType: LogType, header: String? = null, ignorableDuplicate: Boolean = false) {
         if (logType < LOG_MODE) return
 
         val s = ReflectionToStringBuilder.reflectionToString(obj, RecursiveToStringStyle())
@@ -16,10 +18,10 @@ object Logging {
             headerValue = obj::class.simpleName
         }
 
-        log(s, logType, headerValue)
+        log(s, logType, header = headerValue, ignorableDuplicate = ignorableDuplicate)
     }
 
-    fun log(str: String, logType: LogType, header: String? = null) {
+    fun log(str: String, logType: LogType, header: String? = null, ignorableDuplicate: Boolean = false) {
         if (logType < LOG_MODE) return
         
         val s = StringBuilder()
@@ -29,6 +31,11 @@ object Logging {
 
         s.append(str)
 
-        println(s.toString())
+        val toStr = s.toString()
+        if (ignorableDuplicate && toStr == lastMessageLogged) return
+
+        lastMessageLogged = toStr
+
+        println(toStr)
     }
 }

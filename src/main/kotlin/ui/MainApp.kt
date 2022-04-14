@@ -170,7 +170,11 @@ open class MainViewController : Controller() {
 
     fun getChampionMasteryInfo(byRole: Boolean): List<ChampionInfo> {
         var info = leagueConnection.championInfo.map { champion -> champion.value }
-            .sortedByDescending { champion -> champion.level }
+            .sortedWith(
+                compareByDescending<ChampionInfo> { it.level }
+                    .thenByDescending { it.ownershipStatus }
+                    .thenByDescending { it.tokens }
+            )
 
         if (byRole && ROLE_SPECIFIC_MODES.contains(leagueConnection.gameMode) && leagueConnection.championSelectInfo.assignedRole != Role.ANY) {
             val championsByRole = LeagueCommunityDragonAPI.getChampionsByRole(leagueConnection.championSelectInfo.assignedRole)
