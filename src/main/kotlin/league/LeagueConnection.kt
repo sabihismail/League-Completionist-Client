@@ -95,7 +95,7 @@ class LeagueConnection {
             val scanner = Scanner(InputStreamReader(FileInputStream(path)))
             val sb = StringBuilder()
             while (scanner.hasNextLine()) {
-                if (!sb.toString().isEmpty()) {
+                if (sb.toString().isNotEmpty()) {
                     sb.append("\n")
                 }
                 sb.append(scanner.nextLine())
