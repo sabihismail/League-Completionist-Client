@@ -8,9 +8,7 @@ import javafx.collections.FXCollections
 import javafx.geometry.Pos
 import javafx.scene.layout.Pane
 import javafx.scene.paint.Color
-import league.LeagueCommunityDragonAPI
 import league.LeagueConnection
-import league.models.ChampionInfo
 import league.models.GameMode
 import league.models.Role
 import league.models.SummonerStatus
@@ -72,8 +70,8 @@ open class MainViewController : Controller() {
 
         normalView.currentRole.addListener { _, _, newValue ->
             leagueConnection.role = Role.valueOf(newValue.toString())
-            val newSortedChampionInfo = getChampionMasteryInfo()
 
+            val newSortedChampionInfo = leagueConnection.getChampionMasteryInfo()
             normalView.championListProperty.set(FXCollections.observableList(newSortedChampionInfo))
         }
 
@@ -106,7 +104,7 @@ open class MainViewController : Controller() {
 
             if (!ACCEPTABLE_GAME_MODES.contains(leagueConnection.gameMode)) return@onChampionSelectChange
 
-            x()
+            replaceDisplay()
         }
 
         leagueConnection.onClientStateChange {
@@ -121,14 +119,14 @@ open class MainViewController : Controller() {
                     leagueConnection.updateChampionMasteryInfo()
                 }
 
-                x()
+                replaceDisplay()
             }
 
             runLater { view.clientStateProperty.set("Client State: ${it.name}") }
         }
     }
 
-    private fun x() {
+    private fun replaceDisplay() {
         val gridView = when (activeView) {
             ActiveView.NONE -> find<DefaultGridView>()
             ActiveView.ARAM -> find<AramGridView>()
@@ -171,30 +169,13 @@ open class MainViewController : Controller() {
                     aramView.teamChampionListProperty.set(FXCollections.observableList(leagueConnection.championSelectInfo.teamChampions))
                 }
                 ActiveView.NORMAL -> {
-                    val championList = getChampionMasteryInfo()
+                    val championList = leagueConnection.getChampionMasteryInfo()
 
                     normalView.championListProperty.set(FXCollections.observableList(championList))
                 }
                 else -> {}
             }
         }
-    }
-
-    fun getChampionMasteryInfo(): List<ChampionInfo> {
-        var info = leagueConnection.championInfo.map { champion -> champion.value }
-            .sortedWith(
-                compareByDescending<ChampionInfo> { it.level }
-                    .thenByDescending { it.ownershipStatus }
-                    .thenByDescending { it.tokens }
-            )
-
-        if (leagueConnection.role != Role.ANY) {
-            val championsByRole = LeagueCommunityDragonAPI.getChampionsByRole(leagueConnection.role)
-
-            info = info.filter { championsByRole.contains(it.id) }
-        }
-
-        return info
     }
 }
 

@@ -118,6 +118,23 @@ class LeagueConnection {
         }
     }
 
+    fun getChampionMasteryInfo(): List<ChampionInfo> {
+        var info = championInfo.map { champion -> champion.value }
+            .sortedWith(
+                compareByDescending<ChampionInfo> { it.level }
+                    .thenByDescending { it.ownershipStatus }
+                    .thenByDescending { it.tokens }
+            )
+
+        if (role != Role.ANY) {
+            val championsByRole = LeagueCommunityDragonAPI.getChampionsByRole(role)
+
+            info = info.filter { championsByRole.contains(it.id) }
+        }
+
+        return info
+    }
+
     fun updateClientState() {
         clientState = clientApi!!.executeGet("/lol-gameflow/v1/gameflow-phase", LolGameflowGameflowPhase::class.java).responseObject
         Logging.log(clientState, LogType.DEBUG)

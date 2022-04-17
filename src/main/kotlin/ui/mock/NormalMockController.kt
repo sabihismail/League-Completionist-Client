@@ -63,7 +63,6 @@ class NormalMockController : MainViewController() {
         leagueConnection.role = if (roleFilter) Role.TOP else Role.ANY
         leagueConnection.championSelectInfo = ChampionSelectInfo(assignedRole = leagueConnection.role)
         leagueConnection.gameMode = GameMode.RANKED_FLEX
-        val sortedChampionInfo = controller.getChampionMasteryInfo()
 
         val root = find<DefaultGridView>().root
         root.children.clear()
@@ -72,6 +71,7 @@ class NormalMockController : MainViewController() {
         runLater { view.gameModeProperty.set("Game Mode: ${leagueConnection.gameMode}") }
 
         runLater {
+            val sortedChampionInfo = leagueConnection.getChampionMasteryInfo()
             regularView.championListProperty.set(FXCollections.observableList(sortedChampionInfo))
         }
 
@@ -79,8 +79,8 @@ class NormalMockController : MainViewController() {
             leagueConnection.role = Role.valueOf(newValue.toString())
             leagueConnection.gameMode = GameMode.RANKED_FLEX
             leagueConnection.championSelectInfo = ChampionSelectInfo(assignedRole = leagueConnection.role)
-            val newSortedChampionInfo = controller.getChampionMasteryInfo()
 
+            val newSortedChampionInfo = leagueConnection.getChampionMasteryInfo()
             regularView.championListProperty.set(FXCollections.observableList(newSortedChampionInfo))
         }
     }
