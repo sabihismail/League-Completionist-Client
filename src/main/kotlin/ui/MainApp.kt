@@ -16,7 +16,6 @@ import league.models.Role
 import league.models.SummonerStatus
 import tornadofx.*
 import ui.GenericConstants.ACCEPTABLE_GAME_MODES
-import ui.GenericConstants.ROLE_SPECIFIC_MODES
 import ui.ViewConstants.CHAMPION_STATUS_AVAILABLE_CHEST_COLOR
 import ui.ViewConstants.CHAMPION_STATUS_NOT_OWNED_COLOR
 import ui.ViewConstants.CHAMPION_STATUS_UNAVAILABLE_CHEST_COLOR
@@ -71,8 +70,9 @@ open class MainViewController : Controller() {
     init {
         leagueConnection.start()
 
-        normalView.selectionState.addListener { _, _, newValue ->
-            val newSortedChampionInfo = getChampionMasteryInfo(newValue)
+        normalView.currentRole.addListener { _, _, newValue ->
+            leagueConnection.role = Role.valueOf(newValue.toString())
+            val newSortedChampionInfo = getChampionMasteryInfo()
 
             normalView.championListProperty.set(FXCollections.observableList(newSortedChampionInfo))
         }
@@ -106,38 +106,7 @@ open class MainViewController : Controller() {
 
             if (!ACCEPTABLE_GAME_MODES.contains(leagueConnection.gameMode)) return@onChampionSelectChange
 
-            val gridView = when (activeView) {
-                ActiveView.NONE -> find<DefaultGridView>()
-                ActiveView.ARAM -> find<AramGridView>()
-                ActiveView.NORMAL -> find<NormalGridView>()
-            }
-
-            activeView = when (leagueConnection.gameMode) {
-                GameMode.ARAM -> ActiveView.ARAM
-                GameMode.BLIND_PICK,
-                GameMode.DRAFT_PICK,
-                GameMode.RANKED_SOLO,
-                GameMode.RANKED_FLEX,
-                GameMode.CLASH -> ActiveView.NORMAL
-                else -> ActiveView.NONE
-            }
-
-            val replacementView = when (activeView) {
-                ActiveView.ARAM -> aramView
-                ActiveView.NORMAL -> normalView
-                else -> defaultView
-            }
-
-            runLater {
-                val root = gridView.root as Pane
-
-                if (root != replacementView.root) {
-                    root.children.clear()
-                    root.children.add(replacementView.root)
-                }
-
-                updateChampionList()
-            }
+            x()
         }
 
         leagueConnection.onClientStateChange {
@@ -147,7 +116,50 @@ open class MainViewController : Controller() {
                 updateChampionList()
             }
 
+            if (it == LolGameflowGameflowPhase.LOBBY) {
+                if (leagueConnection.championInfo.isEmpty()) {
+                    leagueConnection.updateChampionMasteryInfo()
+                }
+
+                x()
+            }
+
             runLater { view.clientStateProperty.set("Client State: ${it.name}") }
+        }
+    }
+
+    private fun x() {
+        val gridView = when (activeView) {
+            ActiveView.NONE -> find<DefaultGridView>()
+            ActiveView.ARAM -> find<AramGridView>()
+            ActiveView.NORMAL -> find<NormalGridView>()
+        }
+
+        activeView = when (leagueConnection.gameMode) {
+            GameMode.ARAM -> ActiveView.ARAM
+            GameMode.BLIND_PICK,
+            GameMode.DRAFT_PICK,
+            GameMode.RANKED_SOLO,
+            GameMode.RANKED_FLEX,
+            GameMode.CLASH -> ActiveView.NORMAL
+            else -> ActiveView.NORMAL
+        }
+
+        val replacementView = when (activeView) {
+            ActiveView.ARAM -> aramView
+            ActiveView.NORMAL -> normalView
+            else -> defaultView
+        }
+
+        runLater {
+            val root = gridView.root as Pane
+
+            if (root != replacementView.root) {
+                root.children.clear()
+                root.children.add(replacementView.root)
+            }
+
+            updateChampionList()
         }
     }
 
@@ -159,7 +171,7 @@ open class MainViewController : Controller() {
                     aramView.teamChampionListProperty.set(FXCollections.observableList(leagueConnection.championSelectInfo.teamChampions))
                 }
                 ActiveView.NORMAL -> {
-                    val championList = getChampionMasteryInfo(normalView.selectionState.value)
+                    val championList = getChampionMasteryInfo()
 
                     normalView.championListProperty.set(FXCollections.observableList(championList))
                 }
@@ -168,7 +180,7 @@ open class MainViewController : Controller() {
         }
     }
 
-    fun getChampionMasteryInfo(byRole: Boolean): List<ChampionInfo> {
+    fun getChampionMasteryInfo(): List<ChampionInfo> {
         var info = leagueConnection.championInfo.map { champion -> champion.value }
             .sortedWith(
                 compareByDescending<ChampionInfo> { it.level }
@@ -176,8 +188,8 @@ open class MainViewController : Controller() {
                     .thenByDescending { it.tokens }
             )
 
-        if (byRole && ROLE_SPECIFIC_MODES.contains(leagueConnection.gameMode) && leagueConnection.championSelectInfo.assignedRole != Role.ANY) {
-            val championsByRole = LeagueCommunityDragonAPI.getChampionsByRole(leagueConnection.championSelectInfo.assignedRole)
+        if (leagueConnection.role != Role.ANY) {
+            val championsByRole = LeagueCommunityDragonAPI.getChampionsByRole(leagueConnection.role)
 
             info = info.filter { championsByRole.contains(it.id) }
         }

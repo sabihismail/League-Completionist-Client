@@ -38,5 +38,5 @@ enum class Role {
     JUNGLE,
     MIDDLE,
     BOTTOM,
-    SUPPORT
+    SUPPORT;
 }

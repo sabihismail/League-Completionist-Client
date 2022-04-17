@@ -16,10 +16,12 @@ import java.util.*
 import kotlin.concurrent.thread
 
 class LeagueConnection {
-    var clientAPI: ClientApi? = null
+    var clientApi: ClientApi? = null
     var socket: ClientWebSocket? = null
 
     var gameMode = GameMode.NONE
+    var role = Role.ANY
+
     var summonerInfo = SummonerInfo()
     var championSelectInfo = ChampionSelectInfo()
     var championInfo = mapOf<Int, ChampionInfo>()
@@ -48,7 +50,7 @@ class LeagueConnection {
                     if (isConnected != isAlive) {
                         isConnected = isAlive
 
-                        Logging.log(if (isConnected) "Client Process Connected" else "Client Process Closed", LogType.INFO)
+                        Logging.log(if (isConnected) "Client Process Detected" else "Client Process Vanished", LogType.INFO)
                         if (isConnected) {
                             startClientAPI()
                         } else {
@@ -78,21 +80,23 @@ class LeagueConnection {
     }
 
     private fun stopClientAPI() {
-        clientAPI?.stop()
-        clientAPI?.removeClientConnectionListener(clientApiListener)
+        clientApi?.stop()
+        clientApi?.removeClientConnectionListener(clientApiListener)
         socket?.close()
 
         socket = null
-        clientAPI = null
+        clientApi = null
         clientApiListener = null
 
         gameMode = GameMode.NONE
-        summonerInfo = SummonerInfo()
+        summonerInfo = SummonerInfo(SummonerStatus.NOT_LOGGED_IN)
         championSelectInfo = ChampionSelectInfo()
         championInfo = mapOf()
 
         clientState = LolGameflowGameflowPhase.NONE
         masteryChestInfo = MasteryChestInfo()
+
+        summonerChanged()
     }
 
     private fun waitForLcuServerStart() {
@@ -107,7 +111,7 @@ class LeagueConnection {
             } catch (e: Exception) {
                 when(e) {
                     is HttpException, is ConnectException -> {
-                        Logging.log("Client Server not yet running...", LogType.INFO)
+                        Logging.log("Client Server not yet running...", LogType.INFO, ignorableDuplicate = true)
                     }
                 }
             }
@@ -115,14 +119,14 @@ class LeagueConnection {
     }
 
     fun updateClientState() {
-        clientState = clientAPI!!.executeGet("/lol-gameflow/v1/gameflow-phase", LolGameflowGameflowPhase::class.java).responseObject
+        clientState = clientApi!!.executeGet("/lol-gameflow/v1/gameflow-phase", LolGameflowGameflowPhase::class.java).responseObject
         Logging.log(clientState, LogType.DEBUG)
 
         handleClientStateChange(clientState)
 
         when (clientState) {
             LolGameflowGameflowPhase.CHAMPSELECT -> {
-                val championSelectSession = clientAPI!!.executeGet("/lol-champ-select/v1/session", LolChampSelectChampSelectSession::class.java).responseObject
+                val championSelectSession = clientApi!!.executeGet("/lol-champ-select/v1/session", LolChampSelectChampSelectSession::class.java).responseObject
 
                 handleChampionSelectChange(championSelectSession)
             }
@@ -131,11 +135,11 @@ class LeagueConnection {
     }
 
     fun updateChampionMasteryInfo() {
-        val champions = clientAPI!!.executeGet("/lol-champions/v1/inventories/${summonerInfo.summonerID}/champions",
+        val champions = clientApi!!.executeGet("/lol-champions/v1/inventories/${summonerInfo.summonerID}/champions",
             Array<LolChampionsCollectionsChampion>::class.java).responseObject ?: return
         Logging.log(champions, LogType.VERBOSE)
 
-        val championMasteryList = clientAPI!!.executeGet("/lol-collections/v1/inventories/${summonerInfo.summonerID}/champion-mastery",
+        val championMasteryList = clientApi!!.executeGet("/lol-collections/v1/inventories/${summonerInfo.summonerID}/champion-mastery",
             Array<LolCollectionsCollectionsChampionMastery>::class.java).responseObject ?: return
         Logging.log(championMasteryList, LogType.VERBOSE)
 
@@ -180,7 +184,7 @@ class LeagueConnection {
             return
         }
 
-        val chestEligibility = clientAPI!!.executeGet("/lol-collections/v1/inventories/chest-eligibility",
+        val chestEligibility = clientApi!!.executeGet("/lol-collections/v1/inventories/chest-eligibility",
             LolCollectionsCollectionsChestEligibility::class.java).responseObject
 
         handleMasteryChestChange(chestEligibility)
@@ -203,7 +207,7 @@ class LeagueConnection {
     }
 
     private fun setupClientAPI() {
-        clientAPI = ClientApi()
+        clientApi = ClientApi()
 
         clientApiListener = object : ClientConnectionListener {
             override fun onClientConnected() {
@@ -219,7 +223,7 @@ class LeagueConnection {
 
                 updateChampionMasteryInfo()
 
-                socket = clientAPI?.openWebSocket()
+                socket = clientApi?.openWebSocket()
                 socket?.setSocketListener(object : ClientWebSocket.SocketListener {
                     override fun onEvent(event: ClientWebSocket.Event?) {
                         if (event == null || event.uri == null || event.data == null) return
@@ -254,7 +258,7 @@ class LeagueConnection {
             }
         }
 
-        clientAPI?.addClientConnectionListener(clientApiListener)
+        clientApi?.addClientConnectionListener(clientApiListener)
     }
 
     private fun handleMasteryChestChange(chestEligibility: LolCollectionsCollectionsChestEligibility) {
@@ -287,7 +291,7 @@ class LeagueConnection {
 
         when (gameFlowPhase) {
             LolGameflowGameflowPhase.CHAMPSELECT -> {
-                val gameFlow = clientAPI!!.executeGet("/lol-gameflow/v1/session", LolGameflowGameflowSession::class.java).responseObject ?: return
+                val gameFlow = clientApi!!.executeGet("/lol-gameflow/v1/session", LolGameflowGameflowSession::class.java).responseObject ?: return
                 Logging.log(gameFlow, LogType.DEBUG)
 
                 gameMode = when (gameFlow.gameData.queue.gameMode) {
@@ -370,17 +374,17 @@ class LeagueConnection {
     }
 
     private fun handleClientConnection(): Boolean {
-        var str = "ClientConnection: isConnected=${clientAPI?.isConnected}"
+        var str = "ClientConnection: isConnected=${clientApi?.isConnected}"
 
-        if (!clientAPI!!.isConnected) {
+        if (!clientApi!!.isConnected) {
             Logging.log("Login - " + SummonerStatus.NOT_LOGGED_IN, LogType.INFO, ignorableDuplicate = true)
             return false
         }
 
         try {
-            str += " - isAuthorized=${clientAPI?.isAuthorized}"
+            str += " - isAuthorized=${clientApi?.isAuthorized}"
 
-            if (!clientAPI!!.isAuthorized) {
+            if (!clientApi!!.isAuthorized) {
                 Logging.log("Login - " + SummonerStatus.LOGGED_IN_UNAUTHORIZED, LogType.INFO, ignorableDuplicate = true)
 
                 summonerInfo = SummonerInfo(SummonerStatus.LOGGED_IN_UNAUTHORIZED)
@@ -399,7 +403,7 @@ class LeagueConnection {
 
         Logging.log("Login - " + SummonerStatus.LOGGED_IN_AUTHORIZED, LogType.INFO, ignorableDuplicate = true)
 
-        val summoner = clientAPI!!.executeGet("/lol-summoner/v1/current-summoner", LolSummonerSummoner::class.java).responseObject
+        val summoner = clientApi!!.executeGet("/lol-summoner/v1/current-summoner", LolSummonerSummoner::class.java).responseObject
         Logging.log(summoner, LogType.DEBUG)
 
         summonerInfo = SummonerInfo(SummonerStatus.LOGGED_IN_AUTHORIZED, summoner.accountId, summoner.summonerId, summoner.displayName, summoner.internalName,

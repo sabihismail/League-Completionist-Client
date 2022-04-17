@@ -1,18 +1,19 @@
 package ui.views
 
-import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleListProperty
+import javafx.beans.property.SimpleStringProperty
 import javafx.geometry.Pos
 import javafx.scene.paint.Color
 import league.LeagueCommunityDragonAPI
 import league.models.ChampionInfo
+import league.models.Role
 import tornadofx.*
 import ui.ViewConstants
 
 
 class NormalGridView: View() {
     val championListProperty = SimpleListProperty<ChampionInfo>()
-    val selectionState = SimpleBooleanProperty(true)
+    val currentRole = SimpleStringProperty(Role.ANY.name)
 
     override val root = borderpane {
         prefHeight = 1000.0
@@ -80,7 +81,7 @@ class NormalGridView: View() {
             alignment = Pos.BOTTOM_RIGHT
             paddingAll = 24.0
 
-            checkbox("Sort by Role", selectionState)
+            combobox<String>(currentRole, Role.values().map { it.name })
         }
     }
 }
