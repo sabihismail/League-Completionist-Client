@@ -119,6 +119,10 @@ class LeagueConnection {
     }
 
     fun getChampionMasteryInfo(): List<ChampionInfo> {
+        if (championInfo.isEmpty()) {
+            updateChampionMasteryInfo()
+        }
+
         var info = championInfo.map { champion -> champion.value }
             .sortedWith(
                 compareByDescending<ChampionInfo> { it.level }

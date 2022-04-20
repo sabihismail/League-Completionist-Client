@@ -6,7 +6,7 @@ import tornadofx.runLater
 import ui.MainView
 import ui.MainViewController
 import ui.views.AramGridView
-import ui.views.DefaultGridView
+import ui.views.NormalGridView
 import java.util.*
 
 
@@ -53,7 +53,7 @@ class AramMockController : MainViewController() {
             )
         )
 
-        val root = find<DefaultGridView>().root
+        val root = find<NormalGridView>().root
         root.children.clear()
         root.children.add(aramView.root)
 

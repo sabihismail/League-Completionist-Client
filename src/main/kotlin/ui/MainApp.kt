@@ -20,13 +20,11 @@ import ui.ViewConstants.CHAMPION_STATUS_UNAVAILABLE_CHEST_COLOR
 import ui.mock.AramMockController
 import ui.mock.NormalMockController
 import ui.views.AramGridView
-import ui.views.DefaultGridView
 import ui.views.NormalGridView
 import java.util.*
 import kotlin.system.exitProcess
 
 enum class ActiveView {
-    NONE,
     ARAM,
     NORMAL,
 }
@@ -59,11 +57,10 @@ object GenericConstants {
 
 open class MainViewController : Controller() {
     private val view: MainView by inject()
-    private val defaultView: DefaultGridView by inject()
     private val aramView: AramGridView by inject()
     private val normalView: NormalGridView by inject()
     private val leagueConnection = LeagueConnection()
-    private var activeView = ActiveView.NONE
+    private var activeView = ActiveView.NORMAL
 
     init {
         leagueConnection.start()
@@ -88,6 +85,8 @@ open class MainViewController : Controller() {
 
             leagueConnection.updateMasteryChestInfo()
             leagueConnection.updateClientState()
+
+            updateChampionList()
         }
 
         leagueConnection.onMasteryChestChange {
@@ -128,7 +127,6 @@ open class MainViewController : Controller() {
 
     private fun replaceDisplay() {
         val gridView = when (activeView) {
-            ActiveView.NONE -> find<DefaultGridView>()
             ActiveView.ARAM -> find<AramGridView>()
             ActiveView.NORMAL -> find<NormalGridView>()
         }
@@ -146,7 +144,6 @@ open class MainViewController : Controller() {
         val replacementView = when (activeView) {
             ActiveView.ARAM -> aramView
             ActiveView.NORMAL -> normalView
-            else -> defaultView
         }
 
         runLater {
@@ -173,7 +170,6 @@ open class MainViewController : Controller() {
 
                     normalView.championListProperty.set(FXCollections.observableList(championList))
                 }
-                else -> {}
             }
         }
     }
@@ -209,7 +205,7 @@ class MainView: View() {
             }
 
             center = borderpane {
-                center<DefaultGridView>()
+                center<NormalGridView>()
             }
 
             bottom = vbox {

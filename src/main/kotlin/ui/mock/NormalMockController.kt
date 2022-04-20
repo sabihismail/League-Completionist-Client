@@ -6,7 +6,6 @@ import league.models.*
 import tornadofx.runLater
 import ui.MainView
 import ui.MainViewController
-import ui.views.DefaultGridView
 import ui.views.NormalGridView
 import util.KotlinExtensionUtil.getPrivateProperty
 import java.util.*
@@ -64,7 +63,7 @@ class NormalMockController : MainViewController() {
         leagueConnection.championSelectInfo = ChampionSelectInfo(assignedRole = leagueConnection.role)
         leagueConnection.gameMode = GameMode.RANKED_FLEX
 
-        val root = find<DefaultGridView>().root
+        val root = find<NormalGridView>().root
         root.children.clear()
         root.children.add(regularView.root)
 
