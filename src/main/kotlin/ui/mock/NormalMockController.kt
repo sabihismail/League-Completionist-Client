@@ -1,13 +1,11 @@
 package ui.mock
 
 import javafx.collections.FXCollections
-import league.LeagueConnection
 import league.models.*
 import tornadofx.runLater
 import ui.MainView
 import ui.MainViewController
 import ui.views.NormalGridView
-import util.KotlinExtensionUtil.getPrivateProperty
 import java.util.*
 
 
@@ -31,9 +29,6 @@ class NormalMockController : MainViewController() {
         val remainingStr = String.format("%.2f", remaining)
 
         runLater { view.chestProperty.set("Available chests: ${masteryChestInfo.chestCount} (next one in $remainingStr days)") }
-
-        val controller = MainViewController()
-        val leagueConnection = controller.getPrivateProperty("leagueConnection") as LeagueConnection
 
         leagueConnection.gameMode = GameMode.RANKED_FLEX
         leagueConnection.championInfo = mapOf(
@@ -63,13 +58,11 @@ class NormalMockController : MainViewController() {
         leagueConnection.championSelectInfo = ChampionSelectInfo(assignedRole = leagueConnection.role)
         leagueConnection.gameMode = GameMode.RANKED_FLEX
 
-        val root = find<NormalGridView>().root
-        root.children.clear()
-        root.children.add(regularView.root)
-
-        runLater { view.gameModeProperty.set("Game Mode: ${leagueConnection.gameMode}") }
-
         runLater {
+            view.gameModeProperty.set("Game Mode: ${leagueConnection.gameMode}")
+
+            view.defaultGridView.setRoot(regularView)
+
             val sortedChampionInfo = leagueConnection.getChampionMasteryInfo()
             regularView.championListProperty.set(FXCollections.observableList(sortedChampionInfo))
         }

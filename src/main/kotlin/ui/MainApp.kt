@@ -6,7 +6,6 @@ import generated.LolGameflowGameflowPhase
 import javafx.beans.property.SimpleStringProperty
 import javafx.collections.FXCollections
 import javafx.geometry.Pos
-import javafx.scene.layout.Pane
 import javafx.scene.paint.Color
 import league.LeagueConnection
 import league.models.GameMode
@@ -59,10 +58,13 @@ open class MainViewController : Controller() {
     private val view: MainView by inject()
     private val aramView: AramGridView by inject()
     private val normalView: NormalGridView by inject()
-    private val leagueConnection = LeagueConnection()
     private var activeView = ActiveView.NORMAL
 
+    protected val leagueConnection = LeagueConnection()
+
     init {
+        runLater { view.defaultGridView.setRoot(normalView) }
+
         leagueConnection.start()
 
         normalView.currentRole.addListener { _, _, newValue ->
@@ -126,11 +128,6 @@ open class MainViewController : Controller() {
     }
 
     private fun replaceDisplay() {
-        val gridView = when (activeView) {
-            ActiveView.ARAM -> find<AramGridView>()
-            ActiveView.NORMAL -> find<NormalGridView>()
-        }
-
         activeView = when (leagueConnection.gameMode) {
             GameMode.ARAM -> ActiveView.ARAM
             GameMode.BLIND_PICK,
@@ -147,12 +144,7 @@ open class MainViewController : Controller() {
         }
 
         runLater {
-            val root = gridView.root as Pane
-
-            if (root != replacementView.root) {
-                root.children.clear()
-                root.children.add(replacementView.root)
-            }
+            view.defaultGridView.setRoot(replacementView)
 
             updateChampionList()
         }
@@ -175,7 +167,29 @@ open class MainViewController : Controller() {
     }
 }
 
+class DefaultGridView: View() {
+    private var currentView = object: View() {
+        override val root = vbox {  }
+    }
+
+    override val root = borderpane {
+        center = currentView.root
+    }
+
+    fun setRoot(view: View) {
+        if (isAlreadyBound(view)) return
+
+        root.center = view.root
+    }
+
+    private fun isAlreadyBound(view: View): Boolean {
+        return currentView == view
+    }
+}
+
 class MainView: View() {
+    val defaultGridView = find(DefaultGridView::class)
+
     val summonerProperty = SimpleStringProperty()
     val chestProperty = SimpleStringProperty()
 
@@ -204,9 +218,7 @@ class MainView: View() {
                 label(gameModeProperty)
             }
 
-            center = borderpane {
-                center<NormalGridView>()
-            }
+            center = defaultGridView.root
 
             bottom = vbox {
                 vbox {
