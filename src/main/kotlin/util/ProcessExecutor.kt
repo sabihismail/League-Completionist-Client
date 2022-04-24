@@ -77,5 +77,9 @@ class ProcessExecutor(private val executable: String, private val endMarker: Str
         cmdInput?.close()
         cmdOutput?.close()
         process?.destroyForcibly()
+
+        cmdInput = null
+        cmdOutput = null
+        process = null
     }
 }
