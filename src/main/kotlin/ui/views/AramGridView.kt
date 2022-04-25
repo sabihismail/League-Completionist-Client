@@ -6,7 +6,7 @@ import javafx.scene.paint.Color
 import league.LeagueCommunityDragonAPI
 import league.models.ChampionInfo
 import tornadofx.*
-import ui.ViewConstants
+import util.constants.ViewConstants
 
 
 class AramGridView: View() {

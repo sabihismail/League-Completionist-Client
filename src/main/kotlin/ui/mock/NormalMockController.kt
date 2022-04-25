@@ -2,9 +2,13 @@ package ui.mock
 
 import javafx.collections.FXCollections
 import league.models.*
+import league.models.enums.ChampionOwnershipStatus
+import league.models.enums.GameMode
+import league.models.enums.Role
+import league.models.enums.SummonerStatus
 import tornadofx.runLater
-import ui.MainView
-import ui.MainViewController
+import ui.controllers.MainViewController
+import ui.views.MainView
 import ui.views.NormalGridView
 import java.util.*
 
@@ -17,7 +21,8 @@ class NormalMockController : MainViewController() {
 
     init {
         // onSummonerChange
-        val summonerInfo = SummonerInfo(SummonerStatus.LOGGED_IN_AUTHORIZED, -1, -1, "TestName", "TestName",
+        val summonerInfo = SummonerInfo(
+            SummonerStatus.LOGGED_IN_AUTHORIZED, -1, -1, "TestName", "TestName",
             1, 12, 1)
 
         runLater { view.summonerProperty.set("Logged in as: ${summonerInfo.displayName} (Level ${summonerInfo.summonerLevel})") }

@@ -1,6 +1,6 @@
 package league
 
-import league.models.Role
+import league.models.enums.Role
 import java.nio.file.Files
 import kotlin.io.path.fileSize
 import kotlin.test.Test

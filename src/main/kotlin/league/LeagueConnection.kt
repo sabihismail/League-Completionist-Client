@@ -5,7 +5,10 @@ import com.stirante.lolclient.libs.org.apache.http.HttpException
 import com.stirante.lolclient.libs.org.apache.http.conn.HttpHostConnectException
 import generated.*
 import league.models.*
-import league.models.Role
+import league.models.enums.Role
+import league.models.enums.ChampionOwnershipStatus
+import league.models.enums.GameMode
+import league.models.enums.SummonerStatus
 import tornadofx.*
 import util.LogType
 import util.Logging
@@ -427,7 +430,8 @@ class LeagueConnection {
         val summoner = clientApi!!.executeGet("/lol-summoner/v1/current-summoner", LolSummonerSummoner::class.java).responseObject
         Logging.log(summoner, LogType.DEBUG)
 
-        summonerInfo = SummonerInfo(SummonerStatus.LOGGED_IN_AUTHORIZED, summoner.accountId, summoner.summonerId, summoner.displayName, summoner.internalName,
+        summonerInfo = SummonerInfo(
+            SummonerStatus.LOGGED_IN_AUTHORIZED, summoner.accountId, summoner.summonerId, summoner.displayName, summoner.internalName,
             summoner.percentCompleteForNextLevel, summoner.summonerLevel, summoner.xpUntilNextLevel)
         summonerChanged()
 

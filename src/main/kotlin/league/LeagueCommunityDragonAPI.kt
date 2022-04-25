@@ -2,9 +2,13 @@ package league
 
 import javafx.scene.effect.*
 import javafx.scene.image.Image
-import league.models.*
-import ui.ViewConstants
+import league.models.ChampionInfo
+import league.models.QueueInfo
+import league.models.RoleMapping
+import league.models.enums.ChampionOwnershipStatus
+import league.models.enums.Role
 import util.StringUtil
+import util.constants.ViewConstants
 import java.io.FileOutputStream
 import java.net.URL
 import java.nio.channels.Channels

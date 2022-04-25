@@ -6,9 +6,9 @@ import javafx.geometry.Pos
 import javafx.scene.paint.Color
 import league.LeagueCommunityDragonAPI
 import league.models.ChampionInfo
-import league.models.Role
+import league.models.enums.Role
 import tornadofx.*
-import ui.ViewConstants
+import util.constants.ViewConstants
 
 
 class NormalGridView: View() {

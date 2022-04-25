@@ -2,10 +2,13 @@ package ui.mock
 
 import javafx.collections.FXCollections
 import league.models.*
+import league.models.enums.ChampionOwnershipStatus
+import league.models.enums.GameMode
+import league.models.enums.SummonerStatus
 import tornadofx.runLater
-import ui.MainView
-import ui.MainViewController
+import ui.controllers.MainViewController
 import ui.views.AramGridView
+import ui.views.MainView
 import java.util.*
 
 
