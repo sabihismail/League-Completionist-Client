@@ -12,7 +12,6 @@ import tornadofx.runLater
 import ui.views.AramGridView
 import ui.views.MainView
 import ui.views.NormalGridView
-import util.constants.GenericConstants
 import java.util.*
 
 
@@ -65,7 +64,7 @@ open class MainViewController : Controller() {
         leagueConnection.onChampionSelectChange {
             runLater { view.gameModeProperty.set("Game Mode: ${leagueConnection.gameMode}") }
 
-            if (!GenericConstants.ACCEPTABLE_GAME_MODES.contains(leagueConnection.gameMode)) return@onChampionSelectChange
+            if (!ACCEPTABLE_GAME_MODES.contains(leagueConnection.gameMode)) return@onChampionSelectChange
 
             replaceDisplay()
         }
@@ -77,7 +76,7 @@ open class MainViewController : Controller() {
                 updateChampionList()
             }
 
-            if (it == LolGameflowGameflowPhase.LOBBY) {
+            if (DRAFT_PICK_MODES.contains(it)) {
                 if (leagueConnection.championInfo.isEmpty()) {
                     leagueConnection.updateChampionMasteryInfo()
                 }
@@ -126,5 +125,21 @@ open class MainViewController : Controller() {
                 }
             }
         }
+    }
+
+    companion object {
+        private val DRAFT_PICK_MODES = setOf(LolGameflowGameflowPhase.NONE, LolGameflowGameflowPhase.LOBBY, LolGameflowGameflowPhase.ENDOFGAME)
+
+        private val ROLE_SPECIFIC_MODES = listOf(
+            GameMode.DRAFT_PICK,
+            GameMode.RANKED_SOLO,
+            GameMode.RANKED_FLEX,
+            GameMode.CLASH,
+        )
+
+        private val ACCEPTABLE_GAME_MODES = ROLE_SPECIFIC_MODES + listOf(
+            GameMode.ARAM,
+            GameMode.BLIND_PICK,
+        )
     }
 }
