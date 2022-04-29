@@ -5,9 +5,9 @@ import com.stirante.lolclient.libs.org.apache.http.HttpException
 import com.stirante.lolclient.libs.org.apache.http.conn.HttpHostConnectException
 import generated.*
 import league.models.*
-import league.models.enums.Role
 import league.models.enums.ChampionOwnershipStatus
 import league.models.enums.GameMode
+import league.models.enums.Role
 import league.models.enums.SummonerStatus
 import tornadofx.*
 import util.LogType
@@ -131,6 +131,7 @@ class LeagueConnection {
                 compareByDescending<ChampionInfo> { it.level }
                     .thenByDescending { it.ownershipStatus }
                     .thenByDescending { it.tokens }
+                    .thenByDescending { it.name }
             )
 
         if (role != Role.ANY) {
@@ -159,6 +160,8 @@ class LeagueConnection {
     }
 
     fun updateChampionMasteryInfo() {
+        Logging.log("updateChampionMasteryInfo", LogType.INFO)
+
         val champions = clientApi!!.executeGet("/lol-champions/v1/inventories/${summonerInfo.summonerID}/champions",
             Array<LolChampionsCollectionsChampion>::class.java).responseObject ?: return
         Logging.log(champions, LogType.VERBOSE)

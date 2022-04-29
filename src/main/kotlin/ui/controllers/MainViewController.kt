@@ -76,7 +76,7 @@ open class MainViewController : Controller() {
                 updateChampionList()
             }
 
-            if (DRAFT_PICK_MODES.contains(it)) {
+            if (STATES_TO_REFRESH_DISPLAY.contains(it)) {
                 if (leagueConnection.championInfo.isEmpty()) {
                     leagueConnection.updateChampionMasteryInfo()
                 }
@@ -128,7 +128,8 @@ open class MainViewController : Controller() {
     }
 
     companion object {
-        private val DRAFT_PICK_MODES = setOf(LolGameflowGameflowPhase.NONE, LolGameflowGameflowPhase.LOBBY, LolGameflowGameflowPhase.ENDOFGAME)
+        private val STATES_TO_REFRESH_DISPLAY = setOf(LolGameflowGameflowPhase.NONE, LolGameflowGameflowPhase.LOBBY, LolGameflowGameflowPhase.CHAMPSELECT,
+            LolGameflowGameflowPhase.ENDOFGAME)
 
         private val ROLE_SPECIFIC_MODES = listOf(
             GameMode.DRAFT_PICK,
