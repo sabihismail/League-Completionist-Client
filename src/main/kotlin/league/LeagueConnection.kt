@@ -26,13 +26,13 @@ class LeagueConnection {
     var role = Role.ANY
 
     var summonerInfo = SummonerInfo()
+    var masteryChestInfo = MasteryChestInfo()
     var championSelectInfo = ChampionSelectInfo()
     var championInfo = mapOf<Int, ChampionInfo>()
 
     private var clientApiListener: ClientConnectionListener? = null
 
     private var clientState = LolGameflowGameflowPhase.NONE
-    private var masteryChestInfo = MasteryChestInfo()
 
     private val onSummonerChangeList = ArrayList<(SummonerInfo) -> Unit>()
     private val onMasteryChestChangeList = ArrayList<(MasteryChestInfo) -> Unit>()
@@ -144,7 +144,10 @@ class LeagueConnection {
     }
 
     fun updateClientState() {
-        clientState = clientApi!!.executeGet("/lol-gameflow/v1/gameflow-phase", LolGameflowGameflowPhase::class.java).responseObject
+        val newClientState = clientApi!!.executeGet("/lol-gameflow/v1/gameflow-phase", LolGameflowGameflowPhase::class.java).responseObject
+        if (newClientState == clientState) return
+
+        clientState = newClientState
         Logging.log(clientState, LogType.DEBUG)
 
         handleClientStateChange(clientState)
@@ -154,14 +157,14 @@ class LeagueConnection {
                 val championSelectSession = clientApi!!.executeGet("/lol-champ-select/v1/session", LolChampSelectChampSelectSession::class.java).responseObject
 
                 handleChampionSelectChange(championSelectSession)
+
+                role = championSelectInfo.assignedRole
             }
             else -> return
         }
     }
 
     fun updateChampionMasteryInfo() {
-        Logging.log("updateChampionMasteryInfo", LogType.INFO)
-
         val champions = clientApi!!.executeGet("/lol-champions/v1/inventories/${summonerInfo.summonerID}/champions",
             Array<LolChampionsCollectionsChampion>::class.java).responseObject ?: return
         Logging.log(champions, LogType.VERBOSE)

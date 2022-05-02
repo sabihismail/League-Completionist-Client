@@ -1,5 +1,6 @@
 package ui.controllers
 
+import db.DatabaseImpl
 import generated.LolGameflowGameflowPhase
 import javafx.collections.FXCollections
 import league.LeagueConnection
@@ -19,7 +20,9 @@ open class MainViewController : Controller() {
     private val view: MainView by inject()
     private val aramView: AramGridView by inject()
     private val normalView: NormalGridView by inject()
+
     private var activeView = ActiveView.NORMAL
+    private var manualRoleSelect = false
 
     protected val leagueConnection = LeagueConnection()
 
@@ -29,6 +32,8 @@ open class MainViewController : Controller() {
         leagueConnection.start()
 
         normalView.currentRole.addListener { _, _, newValue ->
+            manualRoleSelect = true
+
             leagueConnection.role = Role.valueOf(newValue.toString())
 
             val newSortedChampionInfo = leagueConnection.getChampionMasteryInfo()
@@ -47,6 +52,7 @@ open class MainViewController : Controller() {
             if (it.status != SummonerStatus.LOGGED_IN_AUTHORIZED) return@onSummonerChange
 
             leagueConnection.updateMasteryChestInfo()
+            leagueConnection.updateChampionMasteryInfo()
             leagueConnection.updateClientState()
 
             updateChampionList()
@@ -59,6 +65,8 @@ open class MainViewController : Controller() {
             val remainingStr = String.format("%.2f", remaining)
 
             runLater { view.chestProperty.set("Available chests: ${it.chestCount} (next one in $remainingStr days)") }
+
+            DatabaseImpl.setMasteryInfo(leagueConnection.summonerInfo, leagueConnection.masteryChestInfo, remaining)
         }
 
         leagueConnection.onChampionSelectChange {
@@ -76,8 +84,12 @@ open class MainViewController : Controller() {
                 updateChampionList()
             }
 
+            if (it == LolGameflowGameflowPhase.CHAMPSELECT) {
+                manualRoleSelect = false
+            }
+
             if (STATES_TO_REFRESH_DISPLAY.contains(it)) {
-                if (leagueConnection.championInfo.isEmpty()) {
+                while (leagueConnection.championInfo.isEmpty()) {
                     leagueConnection.updateChampionMasteryInfo()
                 }
 
@@ -104,6 +116,12 @@ open class MainViewController : Controller() {
             ActiveView.NORMAL -> normalView
         }
 
+        if (ROLE_SPECIFIC_MODES.contains(leagueConnection.gameMode) && !manualRoleSelect) {
+            runLater {
+                normalView.currentRole.set(leagueConnection.championSelectInfo.assignedRole.toString())
+            }
+        }
+
         runLater {
             view.defaultGridView.setRoot(replacementView)
 
@@ -128,17 +146,20 @@ open class MainViewController : Controller() {
     }
 
     companion object {
+        const val CHEST_MAX_COUNT = 4
+        const val CHEST_WAIT_TIME = 7.0
+
         private val STATES_TO_REFRESH_DISPLAY = setOf(LolGameflowGameflowPhase.NONE, LolGameflowGameflowPhase.LOBBY, LolGameflowGameflowPhase.CHAMPSELECT,
             LolGameflowGameflowPhase.ENDOFGAME)
 
-        private val ROLE_SPECIFIC_MODES = listOf(
+        private val ROLE_SPECIFIC_MODES = setOf(
             GameMode.DRAFT_PICK,
             GameMode.RANKED_SOLO,
             GameMode.RANKED_FLEX,
             GameMode.CLASH,
         )
 
-        private val ACCEPTABLE_GAME_MODES = ROLE_SPECIFIC_MODES + listOf(
+        private val ACCEPTABLE_GAME_MODES = ROLE_SPECIFIC_MODES + setOf(
             GameMode.ARAM,
             GameMode.BLIND_PICK,
         )
