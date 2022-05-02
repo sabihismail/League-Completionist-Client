@@ -73,3 +73,4 @@ outTmp/
 kotlin-ide/
 
 cache/
+database.db
