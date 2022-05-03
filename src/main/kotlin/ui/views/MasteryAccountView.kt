@@ -15,8 +15,12 @@ class MasteryAccountView: View() {
         paddingBottom = 8.0
     }
 
+    init {
+        run()
+    }
+
     fun run() {
-        root.children.removeAll()
+        root.children.clear()
 
         val lst = DatabaseImpl.getMasteryChestEntryCount()
         lst.forEachIndexed { i, entry ->
