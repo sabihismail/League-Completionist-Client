@@ -1,6 +1,6 @@
 package db
 
-import db.models.MasteryBoxTable
+import db.models.MasteryChestTable
 import league.models.MasteryChestInfo
 import league.models.SummonerInfo
 import org.jetbrains.exposed.sql.*
@@ -18,15 +18,15 @@ object DatabaseImpl {
         TransactionManager.manager.defaultIsolationLevel = Connection.TRANSACTION_SERIALIZABLE
 
         transaction {
-            SchemaUtils.createMissingTablesAndColumns(MasteryBoxTable)
+            SchemaUtils.createMissingTablesAndColumns(MasteryChestTable)
         }
     }
 
-    fun setMasteryInfo(summonerInfo: SummonerInfo, masteryChestInfo: MasteryChestInfo, extra: Double) {
+    fun setMasteryInfo(summonerInfo: SummonerInfo, masteryChestInfo: MasteryChestInfo, currentBoxRemainingTime: Double) {
         val finalDate = if (CHEST_MAX_COUNT == masteryChestInfo.chestCount) {
             LocalDateTime.now().plusMinutes((CHEST_WAIT_TIME * CHEST_MAX_COUNT * 24 * 60).toLong())
         } else {
-            val count = ((CHEST_MAX_COUNT - masteryChestInfo.chestCount - 1) * CHEST_WAIT_TIME + extra) * 24 * 60
+            val count = ((CHEST_MAX_COUNT - masteryChestInfo.chestCount - 1) * CHEST_WAIT_TIME + currentBoxRemainingTime) * 24 * 60
 
             LocalDateTime.now().plusMinutes(count.toLong())
         }
@@ -34,16 +34,30 @@ object DatabaseImpl {
         transaction {
             val uniqueAccountId = summonerInfo.accountID.xor(summonerInfo.summonerID)
 
-            if (MasteryBoxTable.select { MasteryBoxTable.accountId eq uniqueAccountId }.count() >= 1) {
-                MasteryBoxTable.update({ MasteryBoxTable.accountId eq uniqueAccountId }) { update ->
+            val query: (SqlExpressionBuilder.() -> Op<Boolean>) = { MasteryChestTable.accountId eq uniqueAccountId }
+            if (MasteryChestTable.select(query).count() >= 1) {
+                MasteryChestTable.update(query) { update ->
+                    update[name] = summonerInfo.displayName
                     update[lastBoxDate] = finalDate
                 }
             } else {
-                MasteryBoxTable.insert { insert ->
+                MasteryChestTable.insert { insert ->
                     insert[accountId] = uniqueAccountId
+                    insert[name] = summonerInfo.displayName
                     insert[lastBoxDate] = finalDate
                 }
             }
         }
+    }
+
+    fun getMasteryChestEntryCount(): MutableList<Int> {
+        val lst = mutableListOf<Int>()
+        transaction {
+            val elements = MasteryChestTable.selectAll().map { entry -> entry[MasteryChestTable.id].value }
+
+            lst.addAll(elements)
+        }
+
+        return lst
     }
 }
