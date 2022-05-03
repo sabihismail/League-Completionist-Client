@@ -79,7 +79,8 @@ class NormalGridView: View() {
 
         bottom = vbox {
             alignment = Pos.BOTTOM_RIGHT
-            paddingAll = 24.0
+            paddingBottom = 24.0
+            paddingRight = 24.0
 
             combobox<String>(currentRole, Role.values().map { it.name })
         }
