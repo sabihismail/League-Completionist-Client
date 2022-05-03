@@ -54,11 +54,14 @@ object DatabaseImpl {
     fun getMasteryChestEntryCount(): MutableList<ResultRow> {
         val lst = mutableListOf<ResultRow>()
         transaction {
-            val elements = MasteryChestTable.selectAll().sortedBy { entry -> entry[MasteryChestTable.lastBoxDate] }
-            val maxChests = elements.filter { entry -> Duration.between(LocalDateTime.now(), entry[MasteryChestTable.lastBoxDate]) <= Duration.ZERO }
+            val now = LocalDateTime.now()
+            val elements = MasteryChestTable.selectAll().sortedWith(
+                compareBy<ResultRow> { entry -> Duration.between(now, entry[MasteryChestTable.lastBoxDate]) <= Duration.ZERO }
+                    .thenBy { entry -> entry[MasteryChestTable.lastBoxDate] }
+                    .thenBy { entry -> entry[MasteryChestTable.name] }
+            )
 
-            val finalElements = elements.subtract(maxChests.toSet()) + maxChests
-            lst.addAll(finalElements)
+            lst.addAll(elements)
         }
 
         return lst
