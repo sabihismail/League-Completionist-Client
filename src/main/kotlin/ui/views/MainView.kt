@@ -4,6 +4,7 @@ import DEBUG_FAKE_UI_DATA_ARAM
 import DEBUG_FAKE_UI_DATA_NORMAL
 import javafx.beans.property.SimpleStringProperty
 import javafx.geometry.Pos
+import javafx.scene.control.ScrollPane
 import tornadofx.*
 import ui.controllers.MainViewController
 import ui.mock.AramMockController
@@ -82,8 +83,13 @@ class MainView: View() {
                     paddingBottom = 6.0
                 }
 
-                borderpane {
-                    center = masteryAccountView.root
+                scrollpane {
+                    vbarPolicy = ScrollPane.ScrollBarPolicy.NEVER
+                    style = "-fx-background-color:transparent;"
+
+                    borderpane {
+                        center = masteryAccountView.root
+                    }
                 }
             }
         }

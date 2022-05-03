@@ -9,7 +9,9 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import ui.controllers.MainViewController.Companion.CHEST_MAX_COUNT
 import ui.controllers.MainViewController.Companion.CHEST_WAIT_TIME
 import java.sql.Connection
+import java.time.Duration
 import java.time.LocalDateTime
+import java.time.ZoneId
 
 object DatabaseImpl {
     init {
@@ -24,7 +26,7 @@ object DatabaseImpl {
 
     fun setMasteryInfo(summonerInfo: SummonerInfo, masteryChestInfo: MasteryChestInfo, currentBoxRemainingTime: Double) {
         val finalDate = if (CHEST_MAX_COUNT == masteryChestInfo.chestCount) {
-            LocalDateTime.now().plusMinutes((CHEST_WAIT_TIME * CHEST_MAX_COUNT * 24 * 60).toLong())
+            LocalDateTime.now()
         } else {
             val count = ((CHEST_MAX_COUNT - masteryChestInfo.chestCount - 1) * CHEST_WAIT_TIME + currentBoxRemainingTime) * 24 * 60
 
@@ -54,8 +56,10 @@ object DatabaseImpl {
         val lst = mutableListOf<ResultRow>()
         transaction {
             val elements = MasteryChestTable.selectAll().sortedBy { entry -> entry[MasteryChestTable.lastBoxDate] }
+            val maxChests = elements.filter { entry -> Duration.between(LocalDateTime.now(), entry[MasteryChestTable.lastBoxDate]) <= Duration.ZERO }
 
-            lst.addAll(elements)
+            val finalElements = elements.subtract(maxChests.toSet()) + maxChests
+            lst.addAll(finalElements)
         }
 
         return lst
