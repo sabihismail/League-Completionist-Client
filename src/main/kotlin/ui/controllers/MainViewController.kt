@@ -67,6 +67,8 @@ open class MainViewController : Controller() {
             runLater { view.chestProperty.set("Available chests: ${it.chestCount} (next one in $remainingStr days)") }
 
             DatabaseImpl.setMasteryInfo(leagueConnection.summonerInfo, leagueConnection.masteryChestInfo, remaining)
+
+            runLater { view.masteryAccountView.run() }
         }
 
         leagueConnection.onChampionSelectChange {

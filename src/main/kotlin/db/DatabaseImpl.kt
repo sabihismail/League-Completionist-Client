@@ -50,10 +50,10 @@ object DatabaseImpl {
         }
     }
 
-    fun getMasteryChestEntryCount(): MutableList<Int> {
-        val lst = mutableListOf<Int>()
+    fun getMasteryChestEntryCount(): MutableList<ResultRow> {
+        val lst = mutableListOf<ResultRow>()
         transaction {
-            val elements = MasteryChestTable.selectAll().map { entry -> entry[MasteryChestTable.id].value }
+            val elements = MasteryChestTable.selectAll().sortedBy { entry -> entry[MasteryChestTable.lastBoxDate] }
 
             lst.addAll(elements)
         }
