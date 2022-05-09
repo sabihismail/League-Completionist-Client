@@ -157,8 +157,6 @@ class LeagueConnection {
                 val championSelectSession = clientApi!!.executeGet("/lol-champ-select/v1/session", LolChampSelectChampSelectSession::class.java).responseObject
 
                 handleChampionSelectChange(championSelectSession)
-
-                role = championSelectInfo.assignedRole
             }
             else -> return
         }
@@ -401,6 +399,8 @@ class LeagueConnection {
 
         championSelectInfo = ChampionSelectInfo(teamChampions, benchedChampions, assignedRole)
         championSelectChanged()
+
+        role = championSelectInfo.assignedRole
     }
 
     private fun handleClientConnection(): Boolean {

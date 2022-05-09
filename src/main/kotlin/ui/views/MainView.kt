@@ -83,7 +83,7 @@ class MainView: View() {
                     paddingBottom = 6.0
                 }
 
-                scrollpane {
+                scrollpane(fitToHeight = true) {
                     vbarPolicy = ScrollPane.ScrollBarPolicy.NEVER
                     style = "-fx-background-color:transparent;"
 
