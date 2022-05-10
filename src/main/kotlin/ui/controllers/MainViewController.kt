@@ -98,6 +98,7 @@ open class MainViewController : Controller() {
                 replaceDisplay()
             }
 
+            runLater { view.masteryAccountView.run() }
             runLater { view.clientStateProperty.set("Client State: ${it.name}") }
         }
     }

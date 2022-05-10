@@ -12,7 +12,7 @@ import ui.mock.NormalMockController
 import util.constants.ViewConstants
 
 
-class MainView: View() {
+class MainView: View("LoL Mastery Box Client") {
     val defaultGridView = find(DefaultGridView::class)
 
     val summonerProperty = SimpleStringProperty()
@@ -79,7 +79,6 @@ class MainView: View() {
                 }
 
                 separator {
-                    paddingTop = 10.0
                     paddingBottom = 6.0
                 }
 
