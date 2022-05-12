@@ -3,17 +3,21 @@ package ui.controllers
 import db.DatabaseImpl
 import generated.LolGameflowGameflowPhase
 import javafx.collections.FXCollections
+import league.LeagueCommunityDragonAPI
 import league.LeagueConnection
-import league.models.enums.ActiveView
-import league.models.enums.GameMode
-import league.models.enums.Role
-import league.models.enums.SummonerStatus
+import league.models.ChallengeInfoRank
+import league.models.enums.*
 import tornadofx.Controller
 import tornadofx.runLater
 import ui.views.AramGridView
 import ui.views.MainView
 import ui.views.NormalGridView
+import util.LogType
+import util.Logging
+import java.nio.file.Files
 import java.util.*
+import java.util.concurrent.atomic.AtomicInteger
+import kotlin.concurrent.thread
 
 
 open class MainViewController : Controller() {
@@ -42,6 +46,39 @@ open class MainViewController : Controller() {
 
         leagueConnection.onLoggedIn {
             leagueConnection.updateChallengesInfo()
+
+            val badChallengeInfoRanks = setOf(ChallengeInfoRank.NONE, ChallengeInfoRank.GRANDMASTER, ChallengeInfoRank.CHALLENGER)
+            val elements = ChallengeInfoRank.values()
+                .toList()
+                .filter { !badChallengeInfoRanks.contains(it) }
+                .flatMap {
+                    leagueConnection.challengeInfo.values.flatMap { challengeInfos ->
+                        challengeInfos.map { challengeInfo -> Pair(challengeInfo.id, it.name.lowercase()) }
+                    }
+                }
+                .toList()
+
+            val maxCount = elements.count()
+            val fileWalk = Files.walk(LeagueCommunityDragonAPI.getPath(ImageCacheType.CHALLENGE)).count()
+            if (fileWalk < maxCount) {
+                thread {
+                    Logging.log("Challenges - Starting Cache Download...", LogType.INFO)
+
+                    val num = AtomicInteger(0)
+                    elements.parallelStream()
+                        .forEach {
+                            LeagueCommunityDragonAPI.getImagePath(ImageCacheType.CHALLENGE, it.first, it.second)
+
+                            num.incrementAndGet()
+                        }
+
+                    while (num.get() != maxCount) {
+                        Thread.sleep(1000)
+                    }
+
+                    Logging.log("Challenges - Finished Cache Download.", LogType.INFO)
+                }
+            }
         }
 
         leagueConnection.onSummonerChange {

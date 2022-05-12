@@ -5,7 +5,7 @@ import generated.LolChallengesUIChallenge
 
 
 @Suppress("unused", "UNUSED_PARAMETER")
-enum class ChallengeInfoRole(i: Int) {
+enum class ChallengeInfoRank(i: Int) {
     @SerializedName("NONE")
     NONE(0),
     @SerializedName("IRON")
@@ -44,5 +44,6 @@ class ChallengeThresholdInfo {
 
 @Suppress("unused")
 class ChallengeInfo : LolChallengesUIChallenge() {
+    @SerializedName("thresholds")
     var thresholds: List<ChallengeThresholdInfo>? = null
 }

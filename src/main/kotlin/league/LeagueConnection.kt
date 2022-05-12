@@ -1,6 +1,7 @@
 package league
 
 import com.stirante.lolclient.*
+import com.stirante.lolclient.libs.com.google.gson.GsonBuilder
 import com.stirante.lolclient.libs.org.apache.http.HttpException
 import com.stirante.lolclient.libs.org.apache.http.conn.HttpHostConnectException
 import generated.*
@@ -13,6 +14,7 @@ import tornadofx.*
 import util.LogType
 import util.Logging
 import util.ProcessExecutor
+import util.SuperclassExclusionStrategy
 import java.io.*
 import java.net.ConnectException
 import java.util.*
@@ -221,7 +223,12 @@ class LeagueConnection {
     }
 
     fun updateChallengesInfo() {
-        val challenges = clientApi!!.executeGet("/lol-challenges/v1/challenges/local-player", Array<ChallengeInfo>::class.java).responseObject
+        val challengesOld = clientApi!!.executeGet("/lol-challenges/v1/challenges/local-player", Array<LolChallengesUIChallenge>::class.java).responseObject
+        val gson = GsonBuilder().addSerializationExclusionStrategy(SuperclassExclusionStrategy())
+            .addDeserializationExclusionStrategy(SuperclassExclusionStrategy())
+            .create()
+        val challenges = gson.fromJson(gson.toJson(challengesOld), Array<ChallengeInfo>::class.java)
+
         val sections = challenges.groupBy { it.category!! }
             .map {
                 Pair(it.key, it.value.sortedWith(

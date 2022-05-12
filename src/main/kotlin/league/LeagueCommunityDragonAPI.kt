@@ -6,8 +6,11 @@ import league.models.*
 import league.models.enums.ChampionOwnershipStatus
 import league.models.enums.ImageCacheType
 import league.models.enums.Role
+import util.LogType
+import util.Logging
 import util.StringUtil
 import util.constants.ViewConstants
+import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.net.URL
 import java.nio.channels.Channels
@@ -22,7 +25,7 @@ object LeagueCommunityDragonAPI {
     private const val CHAMPION_ROLE_ENDPOINT = "https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-champion-statistics/global/default/rcp-fe-lol-champion-statistics.js"
     private const val QUEUE_TYPE_ENDPOINT = "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/queues.json"
 
-    private val CACHE_MAPPING = mapOf(
+    val CACHE_MAPPING = mapOf(
         ImageCacheType.CHAMPION to ImageCacheInfo("champion", "https://cdn.communitydragon.org/latest/champion/%s/square"),
         ImageCacheType.CHALLENGE to ImageCacheInfo("challenge", "https://raw.communitydragon.org/latest/game/assets/challenges/config/%s/tokens/%s.png")
     )
@@ -51,13 +54,16 @@ object LeagueCommunityDragonAPI {
     fun getImage(t: ImageCacheType, vararg params: Any): Image {
         val path = getImagePath(t, *params)
 
-        return Image(path.toUri().toString())
+        return Image(path!!.toUri().toString())
     }
 
-    fun getImagePath(t: ImageCacheType, vararg params: Any): Path {
+    fun getPath(t: ImageCacheType): Path {
         val info = CACHE_MAPPING[t]!!
+        return Paths.get(Paths.get("").toAbsolutePath().toString(), "/cache/${info.folder}")
+    }
 
-        val path = Paths.get(Paths.get("").toAbsolutePath().toString(), "/cache/${info.folder}")
+    fun getImagePath(t: ImageCacheType, vararg params: Any): Path? {
+        val path = getPath(t)
 
         if (path.notExists()) {
             path.createDirectory()
@@ -65,15 +71,23 @@ object LeagueCommunityDragonAPI {
 
         val imagePath = path.resolve(params.joinToString("-") + ".png")
         if (!imagePath.exists()) {
-            val urlStr = info.endpoint.format(*params)
+            val urlStr = CACHE_MAPPING[t]!!.endpoint.format(*params)
 
             val connection = URL(urlStr).openConnection()
             connection.setRequestProperty("User-Agent", "LoL-Mastery-Box-Client")
 
-            val readableByteChannel = Channels.newChannel(connection.getInputStream())
-            val fileOutputStream = FileOutputStream(imagePath.toFile())
+            try {
+                val readableByteChannel = Channels.newChannel(connection.getInputStream())
+                val fileOutputStream = FileOutputStream(imagePath.toFile())
 
-            fileOutputStream.channel.transferFrom(readableByteChannel, 0, Long.MAX_VALUE)
+                fileOutputStream.channel.transferFrom(readableByteChannel, 0, Long.MAX_VALUE)
+            } catch (e: FileNotFoundException) {
+                if (t == ImageCacheType.CHALLENGE) return null
+
+                throw e
+            }
+
+            Logging.log("Image Download: '$imagePath'", LogType.INFO)
         }
 
         return imagePath
