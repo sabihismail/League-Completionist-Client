@@ -5,7 +5,6 @@ import generated.LolGameflowGameflowPhase
 import javafx.collections.FXCollections
 import league.LeagueCommunityDragonAPI
 import league.LeagueConnection
-import league.models.ChallengeInfoRank
 import league.models.enums.*
 import tornadofx.Controller
 import tornadofx.runLater
@@ -47,12 +46,10 @@ open class MainViewController : Controller() {
         leagueConnection.onLoggedIn {
             leagueConnection.updateChallengesInfo()
 
-            val badChallengeInfoRanks = setOf(ChallengeInfoRank.NONE, ChallengeInfoRank.GRANDMASTER, ChallengeInfoRank.CHALLENGER)
-            val elements = ChallengeInfoRank.values()
-                .filter { !badChallengeInfoRanks.contains(it) }
-                .flatMap {
-                    leagueConnection.challengeInfo.values.flatMap { challengeInfos ->
-                        challengeInfos.map { challengeInfo -> Pair(challengeInfo.id, it) }
+            val elements = leagueConnection.challengeInfo.values
+                .flatMap { challengeInfos ->
+                    challengeInfos.flatMap {
+                        challengeInfo -> challengeInfo.thresholds!!.keys.map { rank -> Pair(challengeInfo.id, rank) }
                     }
                 }
                 .toList()
