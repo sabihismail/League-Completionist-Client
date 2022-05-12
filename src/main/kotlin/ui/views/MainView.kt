@@ -101,7 +101,7 @@ class MainView: View("LoL Mastery Box Client") {
 
                         val fragment = find<ChallengesFragment>()
                         fragment.challengesMap.set(FXCollections.observableMap(controller.leagueConnection.challengeInfo))
-                        fragment.challengeKeys.set(FXCollections.observableList(controller.leagueConnection.challengeInfo.keys.toList()))
+                        fragment.challengeKeys.set(FXCollections.observableList(controller.leagueConnection.challengeInfo.keys.sortedBy { it }))
                         fragment.openWindow()
                     }
                 }

@@ -27,12 +27,12 @@ internal class LeagueCommunityDragonAPITest {
 
         val image = LeagueCommunityDragonAPI.getImagePath(ImageCacheType.CHAMPION, imageID)
 
-        assert(Files.exists(image))
+        assert(Files.exists(image!!))
         assert(image.fileSize() > 0)
 
         val image2 = LeagueCommunityDragonAPI.getImagePath(ImageCacheType.CHAMPION, imageID)
 
-        assert(Files.exists(image2))
+        assert(Files.exists(image2!!))
         assert(image2.fileSize() > 0)
     }
 
@@ -43,12 +43,12 @@ internal class LeagueCommunityDragonAPITest {
 
         val image = LeagueCommunityDragonAPI.getImagePath(ImageCacheType.CHALLENGE, imageId, rankId)
 
-        assert(Files.exists(image))
+        assert(Files.exists(image!!))
         assert(image.fileSize() > 0)
 
         val image2 = LeagueCommunityDragonAPI.getImagePath(ImageCacheType.CHALLENGE, imageId, rankId)
 
-        assert(Files.exists(image2))
+        assert(Files.exists(image2!!))
         assert(image2.fileSize() > 0)
     }
 }

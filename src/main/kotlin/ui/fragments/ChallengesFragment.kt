@@ -5,79 +5,108 @@ import javafx.beans.property.SimpleMapProperty
 import javafx.geometry.Pos
 import javafx.scene.paint.Color
 import javafx.scene.text.Font
-import javafx.scene.text.FontWeight
 import javafx.scene.text.TextAlignment
 import league.LeagueCommunityDragonAPI
+import league.models.ChallengeCategory
 import league.models.ChallengeInfo
+import league.models.ChallengeInfoRank
 import league.models.enums.ImageCacheType
 import tornadofx.*
 import util.constants.ViewConstants
+import kotlin.math.roundToInt
 
 class ChallengesFragment : Fragment("LoL Challenges") {
-    val challengeKeys = SimpleListProperty<String>()
-    val challengesMap = SimpleMapProperty<String, List<ChallengeInfo>>()
+    val challengeKeys = SimpleListProperty<ChallengeCategory>()
+    val challengesMap = SimpleMapProperty<ChallengeCategory, List<ChallengeInfo>>()
 
     override val root = vbox {
         alignment = Pos.CENTER
-        minWidth = 800.0
-        minHeight = 800.0
+        minWidth = 820.0
+        minHeight = 972.0
 
         datagrid(challengeKeys) {
             maxCellsInRow = 1
             cellWidth = 800.0
-            minHeight = 800.0
+            cellHeight = ViewConstants.CHALLENGE_IMAGE_WIDTH + verticalCellSpacing + 16.0 + 30.0
+            minHeight = 980.0
+            verticalCellSpacing = 2.0
 
             cellCache {
-                label("$it:") {
-                    paddingHorizontal = 8
-                    textFill = Color.WHITE
-                    font = Font.font("Arial", FontWeight.BOLD, 16.0)
-                    textAlignment = TextAlignment.LEFT
+                vbox {
+                    alignment = Pos.CENTER_LEFT
+                    maxHeight = ViewConstants.CHALLENGE_IMAGE_WIDTH + verticalCellSpacing + 16.0 + 30.0
+                    minHeight = ViewConstants.CHALLENGE_IMAGE_WIDTH + verticalCellSpacing + 16.0 + 30.0
 
-                    style {
-                        backgroundColor += Color.BLACK
+                    label("$it:") {
+                        textFill = Color.WHITE
+                        font = Font.font(15.0)
+                        textAlignment = TextAlignment.LEFT
+
+                        fitToParentWidth()
+                        style {
+                            backgroundColor += Color.BLACK
+                        }
                     }
-                }
 
-                datagrid(challengesMap[it]) {
-                    alignment = Pos.CENTER
-                    paddingBottom = 16.0
-                    minWidth = (ViewConstants.IMAGE_WIDTH + this.horizontalCellSpacing) * challengesMap[it]!!.size
+                    datagrid(challengesMap[it]) {
+                        alignment = Pos.CENTER
+                        maxRows = 1
 
-                    maxCellsInRow = challengesMap[it]!!.count()
-                    cellWidth = ViewConstants.IMAGE_WIDTH
-                    cellHeight = ViewConstants.IMAGE_WIDTH
+                        cellWidth = ViewConstants.CHALLENGE_IMAGE_WIDTH
+                        cellHeight = ViewConstants.CHALLENGE_IMAGE_WIDTH
 
-                    cellCache {
-                        stackpane {
-                            alignment = Pos.TOP_CENTER
+                        cellCache {
+                            stackpane {
+                                alignment = Pos.TOP_CENTER
+                                maxHeight = ViewConstants.CHALLENGE_IMAGE_WIDTH
 
-                            imageview {
-                                val currentLevel = if (it.currentLevel.lowercase() == "none") "iron" else it.currentLevel.lowercase()
-                                val img = LeagueCommunityDragonAPI.getImage(ImageCacheType.CHALLENGE, it.id, currentLevel).apply {
-                                    effect = LeagueCommunityDragonAPI.getChallengeImageEffect(it)
+                                imageview {
+                                    val currentLevel = if (it.currentLevel == ChallengeInfoRank.NONE) "iron" else it.currentLevel!!.name.lowercase()
+                                    val img = LeagueCommunityDragonAPI.getImage(ImageCacheType.CHALLENGE, it.id!!, currentLevel).apply {
+                                        effect = LeagueCommunityDragonAPI.getChallengeImageEffect(it)
+                                    }
+
+                                    image = img
+                                    fitWidth = ViewConstants.CHALLENGE_IMAGE_WIDTH
+                                    fitHeight = ViewConstants.CHALLENGE_IMAGE_WIDTH
                                 }
 
-                                image = img
-                                fitWidth = ViewConstants.IMAGE_WIDTH
-                                fitHeight = ViewConstants.IMAGE_WIDTH
-                            }
+                                label(it.description!!) {
+                                    paddingHorizontal = 8
+                                    textFill = Color.WHITE
+                                    font = Font.font(9.0)
+                                    textAlignment = TextAlignment.CENTER
+                                    isWrapText = true
 
-                            label(it.description!!) {
-                                paddingHorizontal = 8
-                                textFill = Color.WHITE
-                                font = Font.font("Arial", FontWeight.BOLD, 10.0)
-                                textAlignment = TextAlignment.CENTER
-                                isWrapText = true
+                                    style {
+                                        backgroundColor += Color.BLACK
+                                    }
+                                }
 
-                                style {
-                                    backgroundColor += Color.BLACK
+                                stackpane {
+                                    alignment = Pos.BOTTOM_CENTER
+
+                                    label("${it.currentLevel} (${it.currentThreshold!!.roundToInt()}/${it.nextThreshold!!.roundToInt()})") {
+                                        paddingHorizontal = 8
+                                        textFill = Color.WHITE
+                                        font = Font.font(9.0)
+                                        textAlignment = TextAlignment.CENTER
+                                        isWrapText = true
+
+                                        style {
+                                            backgroundColor += Color.BLACK
+                                        }
+                                    }
                                 }
                             }
                         }
                     }
                 }
             }
+        }
+
+        hbox {
+            checkbox("Hide")
         }
     }
 }

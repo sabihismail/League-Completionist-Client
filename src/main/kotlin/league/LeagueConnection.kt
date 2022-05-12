@@ -1,7 +1,6 @@
 package league
 
 import com.stirante.lolclient.*
-import com.stirante.lolclient.libs.com.google.gson.GsonBuilder
 import com.stirante.lolclient.libs.org.apache.http.HttpException
 import com.stirante.lolclient.libs.org.apache.http.conn.HttpHostConnectException
 import generated.*
@@ -14,7 +13,6 @@ import tornadofx.*
 import util.LogType
 import util.Logging
 import util.ProcessExecutor
-import util.SuperclassExclusionStrategy
 import java.io.*
 import java.net.ConnectException
 import java.util.*
@@ -31,7 +29,7 @@ class LeagueConnection {
     var masteryChestInfo = MasteryChestInfo()
     var championSelectInfo = ChampionSelectInfo()
     var championInfo = mapOf<Int, ChampionInfo>()
-    var challengeInfo = mapOf<String, List<ChallengeInfo>>()
+    var challengeInfo = mapOf<ChallengeCategory, List<ChallengeInfo>>()
 
     private var clientApiListener: ClientConnectionListener? = null
 
@@ -217,22 +215,19 @@ class LeagueConnection {
         }
 
         val chestEligibility = clientApi!!.executeGet("/lol-collections/v1/inventories/chest-eligibility",
-            LolCollectionsCollectionsChestEligibility::class.java).responseObject
+            LolCollectionsCollectionsChestEligibility::class.java).responseObject ?: return
 
         handleMasteryChestChange(chestEligibility)
     }
 
     fun updateChallengesInfo() {
-        val challengesOld = clientApi!!.executeGet("/lol-challenges/v1/challenges/local-player", Array<LolChallengesUIChallenge>::class.java).responseObject
-        val gson = GsonBuilder().addSerializationExclusionStrategy(SuperclassExclusionStrategy())
-            .addDeserializationExclusionStrategy(SuperclassExclusionStrategy())
-            .create()
-        val challenges = gson.fromJson(gson.toJson(challengesOld), Array<ChallengeInfo>::class.java)
+        val challenges = clientApi!!.executeGet("/lol-challenges/v1/challenges/local-player", Array<ChallengeInfo>::class.java).responseObject
 
         val sections = challenges.groupBy { it.category!! }
-            .map {
-                Pair(it.key, it.value.sortedWith(
-                    compareByDescending { challenge -> challenge.currentLevel }
+            .map { entry ->
+                Pair(entry.key, entry.value.sortedWith(
+                    compareBy<ChallengeInfo> { it.isComplete }
+                        .thenByDescending { it.currentLevel }
                 ))
             }
             .toMap()

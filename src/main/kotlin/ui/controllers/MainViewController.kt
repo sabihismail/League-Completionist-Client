@@ -49,11 +49,10 @@ open class MainViewController : Controller() {
 
             val badChallengeInfoRanks = setOf(ChallengeInfoRank.NONE, ChallengeInfoRank.GRANDMASTER, ChallengeInfoRank.CHALLENGER)
             val elements = ChallengeInfoRank.values()
-                .toList()
                 .filter { !badChallengeInfoRanks.contains(it) }
                 .flatMap {
                     leagueConnection.challengeInfo.values.flatMap { challengeInfos ->
-                        challengeInfos.map { challengeInfo -> Pair(challengeInfo.id, it.name.lowercase()) }
+                        challengeInfos.map { challengeInfo -> Pair(challengeInfo.id, it) }
                     }
                 }
                 .toList()
@@ -67,7 +66,7 @@ open class MainViewController : Controller() {
                     val num = AtomicInteger(0)
                     elements.parallelStream()
                         .forEach {
-                            LeagueCommunityDragonAPI.getImagePath(ImageCacheType.CHALLENGE, it.first, it.second)
+                            LeagueCommunityDragonAPI.getImagePath(ImageCacheType.CHALLENGE, it.first.toString().lowercase(), it.second)
 
                             num.incrementAndGet()
                         }

@@ -119,7 +119,7 @@ object LeagueCommunityDragonAPI {
     }
 
     fun getChallengeImageEffect(challengeInfo: ChallengeInfo): Effect? {
-        if (challengeInfo.currentLevel.lowercase() != "none") return null
+        if (challengeInfo.currentLevel != ChallengeInfoRank.NONE) return null
 
         return ColorAdjust(0.0, -1.0, -0.7, -0.1)
     }
