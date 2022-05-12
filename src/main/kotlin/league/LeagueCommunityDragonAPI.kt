@@ -2,10 +2,9 @@ package league
 
 import javafx.scene.effect.*
 import javafx.scene.image.Image
-import league.models.ChampionInfo
-import league.models.QueueInfo
-import league.models.RoleMapping
+import league.models.*
 import league.models.enums.ChampionOwnershipStatus
+import league.models.enums.ImageCacheType
 import league.models.enums.Role
 import util.StringUtil
 import util.constants.ViewConstants
@@ -18,11 +17,15 @@ import kotlin.io.path.createDirectory
 import kotlin.io.path.exists
 import kotlin.io.path.notExists
 
+
 object LeagueCommunityDragonAPI {
-    private const val IMAGE_ENDPOINT = "https://cdn.communitydragon.org/latest/champion/%d/square"
     private const val CHAMPION_ROLE_ENDPOINT = "https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-champion-statistics/global/default/rcp-fe-lol-champion-statistics.js"
     private const val QUEUE_TYPE_ENDPOINT = "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/queues.json"
-    private val IMAGE_CACHE_FOLDER = Paths.get(Paths.get("").toAbsolutePath().toString(), "/cache")
+
+    private val CACHE_MAPPING = mapOf(
+        ImageCacheType.CHAMPION to ImageCacheInfo("champion", "https://cdn.communitydragon.org/latest/champion/%s/square"),
+        ImageCacheType.CHALLENGE to ImageCacheInfo("challenge", "https://raw.communitydragon.org/latest/game/assets/challenges/config/%s/tokens/%s.png")
+    )
 
     var ROLE_MAPPING = hashMapOf<Role, HashMap<Int, Float>>()
     var QUEUE_MAPPING = hashMapOf<Int, QueueInfo>()
@@ -45,21 +48,24 @@ object LeagueCommunityDragonAPI {
         return sorted!!
     }
 
-    fun getChampionImage(id: Int): Image {
-        val path = getChampionImagePath(id)
+    fun getImage(t: ImageCacheType, vararg params: Any): Image {
+        val path = getImagePath(t, *params)
 
         return Image(path.toUri().toString())
     }
 
-    fun getChampionImagePath(id: Int): Path {
-        if (IMAGE_CACHE_FOLDER.notExists()) {
-            IMAGE_CACHE_FOLDER.createDirectory()
+    fun getImagePath(t: ImageCacheType, vararg params: Any): Path {
+        val info = CACHE_MAPPING[t]!!
+
+        val path = Paths.get(Paths.get("").toAbsolutePath().toString(), "/cache/${info.folder}")
+
+        if (path.notExists()) {
+            path.createDirectory()
         }
 
-        val imagePath = IMAGE_CACHE_FOLDER.resolve("$id.png")
-
+        val imagePath = path.resolve(params.joinToString("-") + ".png")
         if (!imagePath.exists()) {
-            val urlStr = IMAGE_ENDPOINT.format(id)
+            val urlStr = info.endpoint.format(*params)
 
             val connection = URL(urlStr).openConnection()
             connection.setRequestProperty("User-Agent", "LoL-Mastery-Box-Client")
@@ -96,6 +102,12 @@ object LeagueCommunityDragonAPI {
         }
 
         return blend
+    }
+
+    fun getChallengeImageEffect(challengeInfo: ChallengeInfo): Effect? {
+        if (challengeInfo.currentLevel.lowercase() != "none") return null
+
+        return ColorAdjust(0.0, -1.0, -0.7, -0.1)
     }
 
     private fun populateQueueMapping() {

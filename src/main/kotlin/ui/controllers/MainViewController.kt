@@ -24,7 +24,7 @@ open class MainViewController : Controller() {
     private var activeView = ActiveView.NORMAL
     private var manualRoleSelect = false
 
-    protected val leagueConnection = LeagueConnection()
+    val leagueConnection = LeagueConnection()
 
     init {
         runLater { view.defaultGridView.setRoot(normalView) }
@@ -38,6 +38,10 @@ open class MainViewController : Controller() {
 
             val newSortedChampionInfo = leagueConnection.getChampionMasteryInfo()
             normalView.championListProperty.set(FXCollections.observableList(newSortedChampionInfo))
+        }
+
+        leagueConnection.onLoggedIn {
+            leagueConnection.updateChallengesInfo()
         }
 
         leagueConnection.onSummonerChange {

@@ -1,5 +1,6 @@
 package league
 
+import league.models.enums.ImageCacheType
 import league.models.enums.Role
 import java.nio.file.Files
 import kotlin.io.path.fileSize
@@ -24,12 +25,28 @@ internal class LeagueCommunityDragonAPITest {
     fun getChampionImagePath() {
         val imageID = 412 // thresh
 
-        val image = LeagueCommunityDragonAPI.getChampionImagePath(imageID)
+        val image = LeagueCommunityDragonAPI.getImagePath(ImageCacheType.CHAMPION, imageID)
 
         assert(Files.exists(image))
         assert(image.fileSize() > 0)
 
-        val image2 = LeagueCommunityDragonAPI.getChampionImagePath(imageID)
+        val image2 = LeagueCommunityDragonAPI.getImagePath(ImageCacheType.CHAMPION, imageID)
+
+        assert(Files.exists(image2))
+        assert(image2.fileSize() > 0)
+    }
+
+    @Test
+    fun getChallengeImagePath() {
+        val imageId = 120001 // Co-Op vs AI challenge Id
+        val rankId = "bronze"
+
+        val image = LeagueCommunityDragonAPI.getImagePath(ImageCacheType.CHALLENGE, imageId, rankId)
+
+        assert(Files.exists(image))
+        assert(image.fileSize() > 0)
+
+        val image2 = LeagueCommunityDragonAPI.getImagePath(ImageCacheType.CHALLENGE, imageId, rankId)
 
         assert(Files.exists(image2))
         assert(image2.fileSize() > 0)

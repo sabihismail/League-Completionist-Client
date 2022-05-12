@@ -29,6 +29,7 @@ class LeagueConnection {
     var masteryChestInfo = MasteryChestInfo()
     var championSelectInfo = ChampionSelectInfo()
     var championInfo = mapOf<Int, ChampionInfo>()
+    var challengeInfo = mapOf<String, List<ChallengeInfo>>()
 
     private var clientApiListener: ClientConnectionListener? = null
 
@@ -38,6 +39,7 @@ class LeagueConnection {
     private val onMasteryChestChangeList = ArrayList<(MasteryChestInfo) -> Unit>()
     private val onChampionSelectChangeList = ArrayList<(ChampionSelectInfo) -> Unit>()
     private val onClientStateChangeList = ArrayList<(LolGameflowGameflowPhase) -> Unit>()
+    private val onLoggedInList = ArrayList<() -> Unit>()
 
     private var isConnected = false
 
@@ -218,6 +220,19 @@ class LeagueConnection {
         handleMasteryChestChange(chestEligibility)
     }
 
+    fun updateChallengesInfo() {
+        val challenges = clientApi!!.executeGet("/lol-challenges/v1/challenges/local-player", Array<ChallengeInfo>::class.java).responseObject
+        val sections = challenges.groupBy { it.category!! }
+            .map {
+                Pair(it.key, it.value.sortedWith(
+                    compareByDescending { challenge -> challenge.currentLevel }
+                ))
+            }
+            .toMap()
+
+        challengeInfo = sections
+    }
+
     fun onSummonerChange(callable: (SummonerInfo) -> Unit) {
         onSummonerChangeList.add(callable)
     }
@@ -232,6 +247,10 @@ class LeagueConnection {
 
     fun onClientStateChange(callable: (LolGameflowGameflowPhase) -> Unit) {
         onClientStateChangeList.add(callable)
+    }
+
+    fun onLoggedIn(callable: () -> Unit) {
+        onLoggedInList.add(callable)
     }
 
     private fun setupClientAPI() {
@@ -266,6 +285,16 @@ class LeagueConnection {
                                     Logging.log(event.data, LogType.DEBUG, event.uri + " - " + event.eventType)
                                 }
 
+                                /*
+                                if (event.uri.contains("lol-challenges/v1/suggested-challenges/local-player")) {
+                                    Logging.log(event.data, LogType.DEBUG, event.uri + " - " + event.eventType)
+                                }
+
+                                if (event.uri.contains("lol-challenges/v1/challenges/local-player")) {
+                                    Logging.log(event.data, LogType.DEBUG, event.uri + " - " + event.eventType)
+                                }
+                                */
+
                                 Logging.log(event.data, LogType.VERBOSE, "ClientAPI WebSocket: " + event.uri + " - " + event.eventType)
                             }
                         }
@@ -277,6 +306,8 @@ class LeagueConnection {
                         summonerInfo = SummonerInfo(SummonerStatus.NOT_LOGGED_IN)
                     }
                 })
+
+                loggedIn()
             }
 
             override fun onClientDisconnected() {
@@ -458,5 +489,9 @@ class LeagueConnection {
 
     private fun clientStateChanged() {
         onClientStateChangeList.forEach { it(clientState) }
+    }
+
+    private fun loggedIn() {
+        onLoggedInList.forEach { it() }
     }
 }

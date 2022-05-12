@@ -3,10 +3,12 @@ package ui.views
 import DEBUG_FAKE_UI_DATA_ARAM
 import DEBUG_FAKE_UI_DATA_NORMAL
 import javafx.beans.property.SimpleStringProperty
+import javafx.collections.FXCollections
 import javafx.geometry.Pos
 import javafx.scene.control.ScrollPane
 import tornadofx.*
 import ui.controllers.MainViewController
+import ui.fragments.ChallengesFragment
 import ui.mock.AramMockController
 import ui.mock.NormalMockController
 import util.constants.ViewConstants
@@ -88,6 +90,19 @@ class MainView: View("LoL Mastery Box Client") {
 
                     borderpane {
                         center = masteryAccountView.root
+                    }
+                }
+
+                hbox {
+                    alignment = Pos.BOTTOM_CENTER
+
+                    button("View Challenges").action {
+                        controller.leagueConnection.updateChallengesInfo()
+
+                        val fragment = find<ChallengesFragment>()
+                        fragment.challengesMap.set(FXCollections.observableMap(controller.leagueConnection.challengeInfo))
+                        fragment.challengeKeys.set(FXCollections.observableList(controller.leagueConnection.challengeInfo.keys.toList()))
+                        fragment.openWindow()
                     }
                 }
             }

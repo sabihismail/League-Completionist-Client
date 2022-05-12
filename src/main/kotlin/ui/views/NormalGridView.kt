@@ -6,6 +6,7 @@ import javafx.geometry.Pos
 import javafx.scene.paint.Color
 import league.LeagueCommunityDragonAPI
 import league.models.ChampionInfo
+import league.models.enums.ImageCacheType
 import league.models.enums.Role
 import tornadofx.*
 import util.constants.ViewConstants
@@ -36,7 +37,7 @@ class NormalGridView: View() {
                     stackpane {
                         alignment = Pos.TOP_CENTER
 
-                        imageview(LeagueCommunityDragonAPI.getChampionImage(it.id)) { effect = LeagueCommunityDragonAPI.getChampionImageEffect(it) }
+                        imageview(LeagueCommunityDragonAPI.getImage(ImageCacheType.CHAMPION, it.id)) { effect = LeagueCommunityDragonAPI.getChampionImageEffect(it) }
 
                         borderpane {
                             left = stackpane {

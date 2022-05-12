@@ -50,7 +50,7 @@ class MasteryAccountView: View() {
             "${String.format("%.2f", diff % CHEST_WAIT_TIME)} days"
         } else {
             val duration = Duration.ofSeconds(((diff % CHEST_WAIT_TIME) * 24 * 60 * 60).toLong())
-            "${String.format("%02d:%02d", duration.toHours(), duration.toMinutes() % 60)} minutes"
+            String.format("%02d:%02d", duration.toHours(), duration.toMinutes() % 60)
         }
 
         if (diff > 0) {
