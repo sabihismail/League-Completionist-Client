@@ -7,6 +7,7 @@ import org.jetbrains.exposed.sql.ResultRow
 import tornadofx.*
 import ui.controllers.MainViewController.Companion.CHEST_MAX_COUNT
 import ui.controllers.MainViewController.Companion.CHEST_WAIT_TIME
+import java.time.Duration
 import java.time.LocalDateTime
 import java.time.ZoneId
 
@@ -41,12 +42,19 @@ class MasteryAccountView: View() {
     private fun getMasteryString(entry: ResultRow): String {
         val zoneId = ZoneId.systemDefault()
         val diff = (entry[MasteryChestTable.lastBoxDate].atZone(zoneId).toEpochSecond() - LocalDateTime.now().atZone(zoneId).toEpochSecond()) / (24 * 60 * 60.0)
-        val currentChestCount = (CHEST_MAX_COUNT - (diff / CHEST_WAIT_TIME)).toInt()
+        val currentChestCount = CHEST_MAX_COUNT.coerceAtMost((CHEST_MAX_COUNT - (diff / CHEST_WAIT_TIME)).toInt())
 
         var s = "${entry[MasteryChestTable.name]} - $currentChestCount"
 
+        val time = if (diff % CHEST_WAIT_TIME > 1) {
+            "${String.format("%.2f", diff % CHEST_WAIT_TIME)} days"
+        } else {
+            val duration = Duration.ofSeconds(((diff % CHEST_WAIT_TIME) * 24 * 60 * 60).toLong())
+            "${String.format("%02d:%02d", duration.toHours(), duration.toMinutes() % 60)} minutes"
+        }
+
         if (diff > 0) {
-            s += " (next in ${String.format("%.2f", diff % CHEST_WAIT_TIME)} days)"
+            s += " (next in $time)"
         }
 
         return s

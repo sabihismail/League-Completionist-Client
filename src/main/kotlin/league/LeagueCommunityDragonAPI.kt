@@ -123,6 +123,6 @@ object LeagueCommunityDragonAPI {
         ROLE_MAPPING[Role.JUNGLE] = json.jungle
         ROLE_MAPPING[Role.MIDDLE] = json.middle
         ROLE_MAPPING[Role.BOTTOM] = json.bottom
-        ROLE_MAPPING[Role.SUPPORT] = json.support
+        ROLE_MAPPING[Role.SUPPORT] = if (json.support.isNullOrEmpty()) json.utility!! else json.support
     }
 }
