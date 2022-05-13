@@ -3,12 +3,10 @@ package ui.views
 import DEBUG_FAKE_UI_DATA_ARAM
 import DEBUG_FAKE_UI_DATA_NORMAL
 import javafx.beans.property.SimpleStringProperty
-import javafx.collections.FXCollections
 import javafx.geometry.Pos
 import javafx.scene.control.ScrollPane
 import tornadofx.*
 import ui.controllers.MainViewController
-import ui.fragments.ChallengesFragment
 import ui.mock.AramMockController
 import ui.mock.NormalMockController
 import util.constants.ViewConstants
@@ -99,9 +97,34 @@ class MainView: View("LoL Mastery Box Client") {
                     button("View Challenges").action {
                         controller.leagueConnection.updateChallengesInfo()
 
-                        val fragment = find<ChallengesFragment>()
-                        fragment.challengesMap.set(FXCollections.observableMap(controller.leagueConnection.challengeInfo))
-                        fragment.challengeKeys.set(FXCollections.observableList(controller.leagueConnection.challengeInfo.keys.sortedBy { it }))
+                        val cringe = setOf(
+                            "Earn points from challenges",
+                            "Mastery Points",
+                            "Obtain ",
+                            "Collect ",
+                            "Increase your summoner level",
+                            "Finish any season",
+                            "Reach ",
+                            "Achieve milestone",
+                            "Rekindle an Eternals ",
+                        )
+
+                        val fragment = find<ChallengesView>()
+                        fragment.setChallenges(controller.leagueConnection.challengeInfo.toList()
+                            .associate { (k, v) -> k to v.filter { challengeInfo -> !cringe.any { x -> challengeInfo.description!!.contains(x) } } },
+                            controller.leagueConnection.challengeInfo.keys.sortedBy { it })
+                        fragment.hideEarnPointChallenges.onChange { isChecked ->
+                            if (!isChecked) {
+                                fragment.setChallenges(controller.leagueConnection.challengeInfo, controller.leagueConnection.challengeInfo.keys.sortedBy { it })
+                                return@onChange
+                            }
+
+                            val tmpMap = controller.leagueConnection.challengeInfo.toList()
+                                .associate { (k, v) -> k to v.filter { challengeInfo -> !challengeInfo.description!!.contains("Earn points from challenges") } }
+
+                            fragment.setChallenges(tmpMap, controller.leagueConnection.challengeInfo.keys.sortedBy { it })
+                        }
+
                         fragment.openWindow()
                     }
                 }
