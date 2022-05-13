@@ -1,4 +1,4 @@
-package league.models
+package league.models.json
 
 import kotlinx.serialization.SerialName
 

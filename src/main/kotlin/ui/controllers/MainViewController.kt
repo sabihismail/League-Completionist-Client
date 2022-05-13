@@ -3,8 +3,8 @@ package ui.controllers
 import db.DatabaseImpl
 import generated.LolGameflowGameflowPhase
 import javafx.collections.FXCollections
-import league.LeagueCommunityDragonAPI
 import league.LeagueConnection
+import league.api.LeagueCommunityDragonAPI
 import league.models.enums.*
 import tornadofx.Controller
 import tornadofx.runLater

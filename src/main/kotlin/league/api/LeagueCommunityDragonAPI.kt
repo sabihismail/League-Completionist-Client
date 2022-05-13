@@ -1,11 +1,16 @@
-package league
+package league.api
 
 import javafx.scene.effect.*
 import javafx.scene.image.Image
-import league.models.*
+import league.models.ChampionInfo
+import league.models.ImageCacheInfo
+import league.models.enums.ChallengeInfoRank
 import league.models.enums.ChampionOwnershipStatus
 import league.models.enums.ImageCacheType
 import league.models.enums.Role
+import league.models.json.ChallengeInfo
+import league.models.json.QueueInfo
+import league.models.json.RoleMapping
 import util.LogType
 import util.Logging
 import util.StringUtil

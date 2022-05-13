@@ -4,7 +4,7 @@ import javafx.beans.property.SimpleListProperty
 import javafx.beans.property.SimpleStringProperty
 import javafx.geometry.Pos
 import javafx.scene.paint.Color
-import league.LeagueCommunityDragonAPI
+import league.api.LeagueCommunityDragonAPI
 import league.models.ChampionInfo
 import league.models.enums.ImageCacheType
 import league.models.enums.Role

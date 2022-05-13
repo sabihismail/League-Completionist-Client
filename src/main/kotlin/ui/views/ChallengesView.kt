@@ -12,10 +12,12 @@ import javafx.scene.control.ScrollPane
 import javafx.scene.paint.Color
 import javafx.scene.text.Font
 import javafx.scene.text.TextAlignment
-import league.LeagueCommunityDragonAPI
-import league.models.ChallengeCategory
-import league.models.ChallengeInfo
-import league.models.ChallengeInfoRank
+import league.api.LeagueCommunityDragonAPI
+import league.models.ChallengeUiRefreshData
+import league.models.ChallengeFilter
+import league.models.json.ChallengeInfo
+import league.models.enums.ChallengeCategory
+import league.models.enums.ChallengeInfoRank
 import league.models.enums.ImageCacheType
 import tornadofx.*
 import ui.controllers.MainViewController
@@ -24,19 +26,43 @@ import ui.mock.NormalMockController
 import util.constants.ViewConstants
 import kotlin.math.roundToInt
 
+
 class ChallengesView : View("LoL Challenges") {
-    private val challengeKeys = SimpleListProperty<ChallengeCategory>()
-    private val challengesMap = SimpleMapProperty<ChallengeCategory, List<ChallengeInfo>>()
+    private val allChallengeKeys = SimpleListProperty<ChallengeCategory>()
+    private val allChallengeMap = SimpleMapProperty<ChallengeCategory, List<ChallengeInfo>>()
+    private val sortedChallengeMap = SimpleMapProperty<ChallengeCategory, List<ChallengeInfo>>()
 
-    val hideEarnPointChallenges = SimpleBooleanProperty(true)
-    val currentSearchText = SimpleStringProperty("")
+    private val hideEarnPointChallenges = SimpleBooleanProperty(true)
+    private val hideCompletedChallenges = SimpleBooleanProperty(true)
+    private val currentSearchText = SimpleStringProperty("")
 
-    fun setChallenges(challengeInfo: Map<ChallengeCategory, List<ChallengeInfo>>, sortedBy: List<ChallengeCategory>) {
+    private lateinit var grid: DataGrid<ChallengeCategory>
+
+    fun setChallenges(challengeInfo: Map<ChallengeCategory, List<ChallengeInfo>> = allChallengeMap.value, categories: List<ChallengeCategory> = allChallengeKeys.value) {
         runAsync {
-            Pair(FXCollections.observableMap(challengeInfo), FXCollections.observableList(sortedBy))
+            val filters = listOf(
+                ChallengeFilter(hideEarnPointChallenges.get()) { challengeInfo ->
+                    !CRINGE_MISSIONS.any { x -> challengeInfo.description!!.contains(x) }
+                },
+
+                ChallengeFilter(hideCompletedChallenges.get()) { challengeInfo ->
+                    !challengeInfo.isComplete
+                },
+
+                ChallengeFilter(currentSearchText.value.isNotEmpty()) { challengeInfo ->
+                    challengeInfo.description!!.contains(currentSearchText.value)
+                },
+            )
+
+            val sortedMap = challengeInfo.toList().associate { (k, v) -> k to v.filter { challengeInfo -> filters.filter { it.isSet }.all { it.action(challengeInfo) } } }
+
+            ChallengeUiRefreshData(FXCollections.observableMap(challengeInfo), FXCollections.observableMap(sortedMap), FXCollections.observableList(categories))
         } ui {
-            challengesMap.value = it.first
-            challengeKeys.value = it.second
+            allChallengeMap.value = it.allChallengeInfo
+            allChallengeKeys.value = it.categories
+            sortedChallengeMap.value = it.sortedChallengeInfo
+
+            grid.cellWidth = (ViewConstants.CHALLENGE_IMAGE_WIDTH + DEFAULT_SPACING * 2) * (allChallengeKeys.maxOfOrNull { key -> allChallengeMap[key]!!.size } ?: 1)
         }
     }
 
@@ -49,7 +75,10 @@ class ChallengesView : View("LoL Challenges") {
 
     init {
         ROW_COUNT = controller.leagueConnection.challengeInfo.keys.size
-        OUTER_GRID_PANE_HEIGHT = (INNER_CELL_HEIGHT + SPACING_BETWEEN_ROW * 2) * ROW_COUNT + DEFAULT_VERTICAL_SPACING * 2
+        OUTER_GRID_PANE_HEIGHT = (INNER_CELL_HEIGHT + SPACING_BETWEEN_ROW * 2) * ROW_COUNT + DEFAULT_SPACING * 2
+
+        hideEarnPointChallenges.onChange { setChallenges() }
+        currentSearchText.onChange { setChallenges() }
     }
 
     override val root = vbox {
@@ -61,10 +90,9 @@ class ChallengesView : View("LoL Challenges") {
             minHeight = OUTER_GRID_PANE_HEIGHT
             maxHeight = OUTER_GRID_PANE_HEIGHT
 
-            datagrid(challengeKeys) {
+            grid = datagrid(allChallengeKeys) {
                 maxCellsInRow = 1
                 verticalCellSpacing = SPACING_BETWEEN_ROW
-                cellWidth = ViewConstants.CHALLENGE_IMAGE_WIDTH * controller.leagueConnection.challengeInfo.values.maxOf { it.size }
                 cellHeight = INNER_CELL_HEIGHT
                 minHeight = OUTER_GRID_PANE_HEIGHT
 
@@ -85,7 +113,7 @@ class ChallengesView : View("LoL Challenges") {
                             }
                         }
 
-                        datagrid(challengesMap[it]) {
+                        datagrid(allChallengeMap[it]) {
                             alignment = Pos.CENTER
                             maxRows = 1
                             cellWidth = ViewConstants.CHALLENGE_IMAGE_WIDTH
@@ -175,13 +203,25 @@ class ChallengesView : View("LoL Challenges") {
 
     companion object {
         private const val HEADER_FONT_SIZE = 14.0
-        private const val DEFAULT_VERTICAL_SPACING = 8.0
+        private const val DEFAULT_SPACING = 8.0
         private const val SPACING_BETWEEN_ROW = 4.0
         // image_height + 2 * verticalCellSpacing + font size of label
-        private const val INNER_CELL_HEIGHT = ViewConstants.CHALLENGE_IMAGE_WIDTH + (DEFAULT_VERTICAL_SPACING * 2) + HEADER_FONT_SIZE
+        private const val INNER_CELL_HEIGHT = ViewConstants.CHALLENGE_IMAGE_WIDTH + (DEFAULT_SPACING * 2) + HEADER_FONT_SIZE
 
         private var ROW_COUNT = 6
         // cell + row_spacing for 6 rows + vert spacing
-        private var OUTER_GRID_PANE_HEIGHT = (INNER_CELL_HEIGHT + SPACING_BETWEEN_ROW * 2) * ROW_COUNT + DEFAULT_VERTICAL_SPACING * 2
+        private var OUTER_GRID_PANE_HEIGHT = (INNER_CELL_HEIGHT + SPACING_BETWEEN_ROW * 2) * ROW_COUNT + DEFAULT_SPACING * 2
+
+        private val CRINGE_MISSIONS = setOf(
+            "Earn points from challenges",
+            "Mastery Points",
+            "Obtain ",
+            "Collect ",
+            "Increase your summoner level",
+            "Finish any season",
+            "Reach ",
+            "Achieve milestone",
+            "Rekindle an Eternals ",
+        )
     }
 }

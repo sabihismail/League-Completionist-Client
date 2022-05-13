@@ -1,4 +1,4 @@
-package league
+package league.util
 
 import com.stirante.lolclient.ProcessWatcher
 import com.stirante.lolclient.libs.org.apache.http.client.methods.HttpGet

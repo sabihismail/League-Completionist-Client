@@ -4,11 +4,12 @@ import com.stirante.lolclient.*
 import com.stirante.lolclient.libs.org.apache.http.HttpException
 import com.stirante.lolclient.libs.org.apache.http.conn.HttpHostConnectException
 import generated.*
+import league.api.LeagueCommunityDragonAPI
 import league.models.*
-import league.models.enums.ChampionOwnershipStatus
-import league.models.enums.GameMode
+import league.models.enums.*
 import league.models.enums.Role
-import league.models.enums.SummonerStatus
+import league.models.json.ChallengeInfo
+import league.util.LeagueConnectionUtil
 import tornadofx.*
 import util.LogType
 import util.Logging

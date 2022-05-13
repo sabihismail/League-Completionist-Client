@@ -1,5 +1,6 @@
 package league
 
+import league.api.LeagueCommunityDragonAPI
 import league.models.enums.ImageCacheType
 import league.models.enums.Role
 import java.nio.file.Files

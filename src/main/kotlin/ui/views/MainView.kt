@@ -97,34 +97,8 @@ class MainView: View("LoL Mastery Box Client") {
                     button("View Challenges").action {
                         controller.leagueConnection.updateChallengesInfo()
 
-                        val cringe = setOf(
-                            "Earn points from challenges",
-                            "Mastery Points",
-                            "Obtain ",
-                            "Collect ",
-                            "Increase your summoner level",
-                            "Finish any season",
-                            "Reach ",
-                            "Achieve milestone",
-                            "Rekindle an Eternals ",
-                        )
-
                         val fragment = find<ChallengesView>()
-                        fragment.setChallenges(controller.leagueConnection.challengeInfo.toList()
-                            .associate { (k, v) -> k to v.filter { challengeInfo -> !cringe.any { x -> challengeInfo.description!!.contains(x) } } },
-                            controller.leagueConnection.challengeInfo.keys.sortedBy { it })
-                        fragment.hideEarnPointChallenges.onChange { isChecked ->
-                            if (!isChecked) {
-                                fragment.setChallenges(controller.leagueConnection.challengeInfo, controller.leagueConnection.challengeInfo.keys.sortedBy { it })
-                                return@onChange
-                            }
-
-                            val tmpMap = controller.leagueConnection.challengeInfo.toList()
-                                .associate { (k, v) -> k to v.filter { challengeInfo -> !challengeInfo.description!!.contains("Earn points from challenges") } }
-
-                            fragment.setChallenges(tmpMap, controller.leagueConnection.challengeInfo.keys.sortedBy { it })
-                        }
-
+                        fragment.setChallenges(controller.leagueConnection.challengeInfo, controller.leagueConnection.challengeInfo.keys.sortedBy { it })
                         fragment.openWindow()
                     }
                 }

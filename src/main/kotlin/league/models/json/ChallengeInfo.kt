@@ -1,62 +1,9 @@
-package league.models
+package league.models.json
 
-import com.stirante.lolclient.libs.com.google.gson.annotations.SerializedName
 import generated.LolChallengesFriendLevelsData
+import league.models.enums.ChallengeCategory
+import league.models.enums.ChallengeInfoRank
 
-
-@Suppress("unused", "UNUSED_PARAMETER")
-enum class ChallengeInfoRank(i: Int) {
-    @SerializedName("NONE")
-    NONE(0),
-    @SerializedName("IRON")
-    IRON(1),
-    @SerializedName("BRONZE")
-    BRONZE(2),
-    @SerializedName("SILVER")
-    SILVER(3),
-    @SerializedName("GOLD")
-    GOLD(4),
-    @SerializedName("PLATINUM")
-    PLATINUM(5),
-    @SerializedName("DIAMOND")
-    DIAMOND(6),
-    @SerializedName("MASTER")
-    MASTER(7),
-    @SerializedName("GRANDMASTER")
-    GRANDMASTER(8),
-    @SerializedName("CHALLENGER")
-    CHALLENGER(9),
-}
-
-@Suppress("unused", "UNUSED_PARAMETER")
-enum class ChallengeCategory(i: Int) {
-    @SerializedName("EXPERTISE")
-    EXPERTISE(1),
-    @SerializedName("TEAMWORK")
-    TEAMWORK(2),
-    @SerializedName("IMAGINATION")
-    IMAGINATION(3),
-    @SerializedName("VETERANCY")
-    VETERANCY(4),
-    @SerializedName("COLLECTION")
-    COLLECTION(5),
-    @SerializedName("LEGACY")
-    LEGACY(6),
-}
-
-@Suppress("unused")
-class ChallengeThresholdRewardInfo {
-    var asset: String? = null
-    var category: String? = null
-    var name: String? = null
-    var quantity: Double? = null
-}
-
-@Suppress("unused")
-class ChallengeThresholdInfo {
-    var rewards: List<ChallengeThresholdRewardInfo>? = null
-    var value: Double? = null
-}
 
 @Suppress("unused")
 class ChallengeInfo {
