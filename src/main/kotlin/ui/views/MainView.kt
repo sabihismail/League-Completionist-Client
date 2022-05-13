@@ -2,6 +2,7 @@ package ui.views
 
 import DEBUG_FAKE_UI_DATA_ARAM
 import DEBUG_FAKE_UI_DATA_NORMAL
+import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleStringProperty
 import javafx.geometry.Pos
 import javafx.scene.control.ScrollPane
@@ -14,14 +15,13 @@ import util.constants.ViewConstants
 
 class MainView: View("LoL Mastery Box Client") {
     val defaultGridView = find(DefaultGridView::class)
+    val masteryAccountView = find(MasteryAccountView::class)
 
+    val isLoggedInProperty = SimpleBooleanProperty()
     val summonerProperty = SimpleStringProperty()
     val chestProperty = SimpleStringProperty()
-
     val clientStateProperty = SimpleStringProperty()
     val gameModeProperty = SimpleStringProperty()
-
-    val masteryAccountView = find(MasteryAccountView::class)
 
     @Suppress("unused")
     private val controller = find(
@@ -94,12 +94,15 @@ class MainView: View("LoL Mastery Box Client") {
                 hbox {
                     alignment = Pos.BOTTOM_CENTER
 
-                    button("View Challenges").action {
-                        controller.leagueConnection.updateChallengesInfo()
+                    button("View Challenges").apply {
+                        enableWhen { isLoggedInProperty }
+                        action {
+                            controller.leagueConnection.updateChallengesInfo()
 
-                        val fragment = find<ChallengesView>()
-                        fragment.setChallenges(controller.leagueConnection.challengeInfo, controller.leagueConnection.challengeInfo.keys.sortedBy { it })
-                        fragment.openWindow()
+                            val fragment = find<ChallengesView>()
+                            fragment.setChallenges(controller.leagueConnection.challengeInfo, controller.leagueConnection.challengeInfo.keys.sortedBy { it })
+                            fragment.openWindow()
+                        }
                     }
                 }
             }

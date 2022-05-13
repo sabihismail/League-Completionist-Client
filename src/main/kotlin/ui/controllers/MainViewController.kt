@@ -84,7 +84,10 @@ open class MainViewController : Controller() {
                 SummonerStatus.LOGGED_IN_AUTHORIZED -> "Logged in as: ${it.displayName} (Level ${it.summonerLevel})"
             }
 
-            runLater { view.summonerProperty.set(str) }
+            runLater {
+                view.summonerProperty.set(str)
+                view.isLoggedInProperty.set(it.status == SummonerStatus.LOGGED_IN_AUTHORIZED)
+            }
 
             if (it.status != SummonerStatus.LOGGED_IN_AUTHORIZED) return@onSummonerChange
 

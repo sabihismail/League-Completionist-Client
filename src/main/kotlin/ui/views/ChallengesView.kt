@@ -13,12 +13,12 @@ import javafx.scene.paint.Color
 import javafx.scene.text.Font
 import javafx.scene.text.TextAlignment
 import league.api.LeagueCommunityDragonAPI
-import league.models.ChallengeUiRefreshData
 import league.models.ChallengeFilter
-import league.models.json.ChallengeInfo
+import league.models.ChallengeUiRefreshData
 import league.models.enums.ChallengeCategory
 import league.models.enums.ChallengeInfoRank
 import league.models.enums.ImageCacheType
+import league.models.json.ChallengeInfo
 import tornadofx.*
 import ui.controllers.MainViewController
 import ui.mock.AramMockController
@@ -28,29 +28,27 @@ import kotlin.math.roundToInt
 
 
 class ChallengesView : View("LoL Challenges") {
-    private val allChallengeKeys = SimpleListProperty<ChallengeCategory>()
-    private val allChallengeMap = SimpleMapProperty<ChallengeCategory, List<ChallengeInfo>>()
-    private val sortedChallengeMap = SimpleMapProperty<ChallengeCategory, List<ChallengeInfo>>()
+    private val categoriesProperty = SimpleListProperty<ChallengeCategory>()
+    private val allChallengeInfoMapProperty = SimpleMapProperty<ChallengeCategory, List<ChallengeInfo>>()
+    private val sortedChallengeInfoMapProperty = SimpleMapProperty<ChallengeCategory, List<ChallengeInfo>>()
 
-    private val hideEarnPointChallenges = SimpleBooleanProperty(true)
-    private val hideCompletedChallenges = SimpleBooleanProperty(true)
-    private val currentSearchText = SimpleStringProperty("")
+    private val hideEarnPointChallengesProperty = SimpleBooleanProperty(true)
+    private val hideCompletedChallengesProperty = SimpleBooleanProperty(true)
+    private val currentSearchTextProperty = SimpleStringProperty("")
 
     private lateinit var grid: DataGrid<ChallengeCategory>
 
-    fun setChallenges(challengeInfo: Map<ChallengeCategory, List<ChallengeInfo>> = allChallengeMap.value, categories: List<ChallengeCategory> = allChallengeKeys.value) {
+    fun setChallenges(challengeInfo: Map<ChallengeCategory, List<ChallengeInfo>> = allChallengeInfoMapProperty.value, categories: List<ChallengeCategory> = categoriesProperty.value) {
         runAsync {
             val filters = listOf(
-                ChallengeFilter(hideEarnPointChallenges.get()) { challengeInfo ->
+                ChallengeFilter(hideEarnPointChallengesProperty.get()) { challengeInfo ->
                     !CRINGE_MISSIONS.any { x -> challengeInfo.description!!.contains(x) }
                 },
 
-                ChallengeFilter(hideCompletedChallenges.get()) { challengeInfo ->
-                    !challengeInfo.isComplete
-                },
+                ChallengeFilter(hideCompletedChallengesProperty.get()) { challengeInfo -> !challengeInfo.isComplete },
 
-                ChallengeFilter(currentSearchText.value.isNotEmpty()) { challengeInfo ->
-                    challengeInfo.description!!.contains(currentSearchText.value)
+                ChallengeFilter(currentSearchTextProperty.value.isNotEmpty()) { challengeInfo ->
+                    challengeInfo.description!!.lowercase().contains(currentSearchTextProperty.value.lowercase())
                 },
             )
 
@@ -58,11 +56,12 @@ class ChallengesView : View("LoL Challenges") {
 
             ChallengeUiRefreshData(FXCollections.observableMap(challengeInfo), FXCollections.observableMap(sortedMap), FXCollections.observableList(categories))
         } ui {
-            allChallengeMap.value = it.allChallengeInfo
-            allChallengeKeys.value = it.categories
-            sortedChallengeMap.value = it.sortedChallengeInfo
+            categoriesProperty.value = it.categories
+            allChallengeInfoMapProperty.value = it.allChallengeInfo
+            sortedChallengeInfoMapProperty.value = it.sortedChallengeInfo
 
-            grid.cellWidth = (ViewConstants.CHALLENGE_IMAGE_WIDTH + DEFAULT_SPACING * 2) * (allChallengeKeys.maxOfOrNull { key -> allChallengeMap[key]!!.size } ?: 1)
+            grid.cellWidth = (ViewConstants.CHALLENGE_IMAGE_WIDTH + DEFAULT_SPACING * 2) *
+                    (categoriesProperty.maxOfOrNull { key -> sortedChallengeInfoMapProperty[key]!!.size } ?: 1)
         }
     }
 
@@ -77,8 +76,9 @@ class ChallengesView : View("LoL Challenges") {
         ROW_COUNT = controller.leagueConnection.challengeInfo.keys.size
         OUTER_GRID_PANE_HEIGHT = (INNER_CELL_HEIGHT + SPACING_BETWEEN_ROW * 2) * ROW_COUNT + DEFAULT_SPACING * 2
 
-        hideEarnPointChallenges.onChange { setChallenges() }
-        currentSearchText.onChange { setChallenges() }
+        hideEarnPointChallengesProperty.onChange { setChallenges() }
+        hideCompletedChallengesProperty.onChange { setChallenges() }
+        currentSearchTextProperty.onChange { setChallenges() }
     }
 
     override val root = vbox {
@@ -90,7 +90,7 @@ class ChallengesView : View("LoL Challenges") {
             minHeight = OUTER_GRID_PANE_HEIGHT
             maxHeight = OUTER_GRID_PANE_HEIGHT
 
-            grid = datagrid(allChallengeKeys) {
+            grid = datagrid(categoriesProperty) {
                 maxCellsInRow = 1
                 verticalCellSpacing = SPACING_BETWEEN_ROW
                 cellHeight = INNER_CELL_HEIGHT
@@ -113,7 +113,7 @@ class ChallengesView : View("LoL Challenges") {
                             }
                         }
 
-                        datagrid(allChallengeMap[it]) {
+                        datagrid(sortedChallengeInfoMapProperty[it]) {
                             alignment = Pos.CENTER
                             maxRows = 1
                             cellWidth = ViewConstants.CHALLENGE_IMAGE_WIDTH
@@ -190,13 +190,17 @@ class ChallengesView : View("LoL Challenges") {
 
         vbox {
             textfield {
-                setOnKeyTyped {
-                    currentSearchText.set(this.text)
+                textProperty().addListener { _, _, newValue ->
+                    currentSearchTextProperty.set(newValue)
                 }
             }
 
             hbox {
-                checkbox("Hide Time Forced Missions", hideEarnPointChallenges)
+                paddingHorizontal = 10.0
+                spacing = 10.0
+
+                checkbox("Hide Grind/Time Missions", hideEarnPointChallengesProperty)
+                checkbox("Hide Completed Missions", hideCompletedChallengesProperty)
             }
         }
     }
