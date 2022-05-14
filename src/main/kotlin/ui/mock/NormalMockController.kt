@@ -1,7 +1,12 @@
 package ui.mock
 
+import generated.LolStatstonesStatstone
+import generated.LolStatstonesStatstoneSet
 import javafx.collections.FXCollections
-import league.models.*
+import league.models.ChampionInfo
+import league.models.ChampionSelectInfo
+import league.models.MasteryChestInfo
+import league.models.SummonerInfo
 import league.models.enums.ChampionOwnershipStatus
 import league.models.enums.GameMode
 import league.models.enums.Role
@@ -55,7 +60,34 @@ class NormalMockController : MainViewController() {
             1 to ChampionInfo(1, "Vex", ChampionOwnershipStatus.BOX_NOT_ATTAINED, 52155, level = 3),
             2 to ChampionInfo(2, "Yuumi", ChampionOwnershipStatus.BOX_ATTAINED, 626271, level = 5),
             4 to ChampionInfo(4, "Fiora", ChampionOwnershipStatus.FREE_TO_PLAY, 15256120, level = 7),
-            7 to ChampionInfo(7, "Syndra", ChampionOwnershipStatus.BOX_NOT_ATTAINED, 1626110, level = 2),
+            39 to ChampionInfo(39, "Irelia", ChampionOwnershipStatus.BOX_NOT_ATTAINED, 1626110, level = 2, isSummonerSelectedChamp = true,
+                eternal = LolStatstonesStatstoneSet().apply {
+                    name = "Series 1"
+                    statstones = listOf(
+                        LolStatstonesStatstone().apply {
+                            completionValue = 0.042100001126527786
+                            description = "Damage mitigated with Defiant Dance (W)"
+                            formattedMilestoneLevel = "11"
+                            formattedValue = "150,421"
+                            nextMilestone = "160,000"
+                        },
+                        LolStatstonesStatstone().apply {
+                            completionValue = 0.42406249046325684
+                            description = "Total resets of Bladesurge (Q)"
+                            formattedMilestoneLevel = "4"
+                            formattedValue = "6,657"
+                            nextMilestone = "8,500"
+                        },
+                        LolStatstonesStatstone().apply {
+                            completionValue = 0.0
+                            description = "Multiple (2+) enemy champions hit with Vanguard's Edge (R)"
+                            formattedMilestoneLevel = "15"
+                            formattedValue = "200"
+                            nextMilestone = "210"
+                        }
+                    )
+                }
+            ),
             8 to ChampionInfo(8, "Volibear", ChampionOwnershipStatus.BOX_NOT_ATTAINED, 522110, level = 0),
         )
 

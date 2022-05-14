@@ -1,7 +1,10 @@
 package ui.mock
 
 import javafx.collections.FXCollections
-import league.models.*
+import league.models.ChampionInfo
+import league.models.ChampionSelectInfo
+import league.models.MasteryChestInfo
+import league.models.SummonerInfo
 import league.models.enums.ChampionOwnershipStatus
 import league.models.enums.GameMode
 import league.models.enums.SummonerStatus

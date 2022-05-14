@@ -93,6 +93,8 @@ class MainView: View("LoL Mastery Box Client") {
 
                 hbox {
                     alignment = Pos.BOTTOM_CENTER
+                    paddingHorizontal = 8.0
+                    spacing = 8.0
 
                     button("View Challenges").apply {
                         enableWhen { isLoggedInProperty }

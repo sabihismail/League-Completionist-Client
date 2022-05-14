@@ -23,7 +23,9 @@ import tornadofx.*
 import ui.controllers.MainViewController
 import ui.mock.AramMockController
 import ui.mock.NormalMockController
-import util.constants.ViewConstants
+import util.constants.ViewConstants.CHALLENGE_IMAGE_WIDTH
+import util.constants.ViewConstants.DEFAULT_SPACING
+import util.constants.ViewConstants.SCROLLBAR_HEIGHT
 import kotlin.math.roundToInt
 
 
@@ -60,7 +62,7 @@ class ChallengesView : View("LoL Challenges") {
             allChallengeInfoMapProperty.value = it.allChallengeInfo
             sortedChallengeInfoMapProperty.value = it.sortedChallengeInfo
 
-            grid.cellWidth = (ViewConstants.CHALLENGE_IMAGE_WIDTH + DEFAULT_SPACING * 2) *
+            grid.cellWidth = (CHALLENGE_IMAGE_WIDTH + DEFAULT_SPACING * 2) *
                     (categoriesProperty.maxOfOrNull { key -> sortedChallengeInfoMapProperty[key]!!.size } ?: 1)
         }
     }
@@ -116,17 +118,17 @@ class ChallengesView : View("LoL Challenges") {
                         datagrid(sortedChallengeInfoMapProperty[it]) {
                             alignment = Pos.CENTER
                             maxRows = 1
-                            cellWidth = ViewConstants.CHALLENGE_IMAGE_WIDTH
-                            cellHeight = ViewConstants.CHALLENGE_IMAGE_WIDTH
+                            cellWidth = CHALLENGE_IMAGE_WIDTH
+                            cellHeight = CHALLENGE_IMAGE_WIDTH
 
                             cellFormat {
                                 graphic = stackpane {
                                     alignment = Pos.TOP_CENTER
-                                    maxHeight = ViewConstants.CHALLENGE_IMAGE_WIDTH
+                                    maxHeight = CHALLENGE_IMAGE_WIDTH
 
                                     imageview {
-                                        fitWidth = ViewConstants.CHALLENGE_IMAGE_WIDTH
-                                        fitHeight = ViewConstants.CHALLENGE_IMAGE_WIDTH
+                                        fitWidth = CHALLENGE_IMAGE_WIDTH
+                                        fitHeight = CHALLENGE_IMAGE_WIDTH
 
                                         val currentLevel = if (it.currentLevel == ChallengeInfoRank.NONE)
                                             ChallengeInfoRank.IRON.name.lowercase()
@@ -207,14 +209,14 @@ class ChallengesView : View("LoL Challenges") {
 
     companion object {
         private const val HEADER_FONT_SIZE = 14.0
-        private const val DEFAULT_SPACING = 8.0
         private const val SPACING_BETWEEN_ROW = 4.0
+
         // image_height + 2 * verticalCellSpacing + font size of label
-        private const val INNER_CELL_HEIGHT = ViewConstants.CHALLENGE_IMAGE_WIDTH + (DEFAULT_SPACING * 2) + HEADER_FONT_SIZE
+        private const val INNER_CELL_HEIGHT = CHALLENGE_IMAGE_WIDTH + (DEFAULT_SPACING * 2) + HEADER_FONT_SIZE
 
         private var ROW_COUNT = 6
         // cell + row_spacing for 6 rows + vert spacing
-        private var OUTER_GRID_PANE_HEIGHT = (INNER_CELL_HEIGHT + SPACING_BETWEEN_ROW * 2) * ROW_COUNT + DEFAULT_SPACING * 2
+        private var OUTER_GRID_PANE_HEIGHT = (INNER_CELL_HEIGHT + SPACING_BETWEEN_ROW * 2) * ROW_COUNT + DEFAULT_SPACING * 2 + SCROLLBAR_HEIGHT
 
         private val CRINGE_MISSIONS = setOf(
             "Earn points from challenges",

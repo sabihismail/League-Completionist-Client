@@ -31,6 +31,7 @@ class LeagueConnection {
     var championSelectInfo = ChampionSelectInfo()
     var championInfo = mapOf<Int, ChampionInfo>()
     var challengeInfo = mapOf<ChallengeCategory, List<ChallengeInfo>>()
+    var eternalsValidQueues = setOf<Int>()
 
     private var clientApiListener: ClientConnectionListener? = null
 
@@ -203,7 +204,11 @@ class LeagueConnection {
                     }
                 }
 
-                ChampionInfo(it.id, it.name, championOwnershipStatus, championPoints, championLevel, tokens)
+                val eternal = clientApi!!.executeGet("/lol-statstones/v2/player-statstones-self/${it.id}", Array<LolStatstonesStatstoneSet>::class.java)
+                    .responseObject
+                    .firstOrNull { set -> set.name == "Series 1" && set.stonesOwned > 0 }
+
+                ChampionInfo(it.id, it.name, championOwnershipStatus, championPoints, championLevel, tokens, eternal=eternal)
             }
 
         championInfo = masteryPairing.associateBy({ it.id }, { it })
@@ -475,7 +480,15 @@ class LeagueConnection {
             summoner.percentCompleteForNextLevel, summoner.summonerLevel, summoner.xpUntilNextLevel)
         summonerChanged()
 
+        getEternalsQueueIds()
+
         return true
+    }
+
+    private fun getEternalsQueueIds() {
+        val queues = clientApi!!.executeGet("/lol-statstones/v1/statstones-enabled-queue-ids", Array<Int>::class.java).responseObject
+
+        eternalsValidQueues = queues.toSet()
     }
 
     private fun summonerChanged() {
