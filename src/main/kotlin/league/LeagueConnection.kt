@@ -135,6 +135,7 @@ class LeagueConnection {
                 compareByDescending<ChampionInfo> { it.level }
                     .thenByDescending { it.ownershipStatus }
                     .thenByDescending { it.tokens }
+                    .thenByDescending { it.eternal != null }
                     .thenByDescending { it.name }
             )
 

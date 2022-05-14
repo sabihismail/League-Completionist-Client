@@ -4,18 +4,16 @@ import javafx.beans.property.SimpleListProperty
 import javafx.beans.property.SimpleStringProperty
 import javafx.geometry.Pos
 import javafx.scene.paint.Color
-import javafx.scene.text.Font
 import league.api.LeagueCommunityDragonAPI
 import league.models.ChampionInfo
 import league.models.enums.ImageCacheType
 import league.models.enums.Role
 import tornadofx.*
+import ui.views.fragments.EternalsFragment
 import util.constants.ViewConstants
 
 
 class NormalGridView: View() {
-    private val eternalDescriptionRegex = Regex(".*(\\([A-Z]\\)).*")
-
     val championListProperty = SimpleListProperty<ChampionInfo>()
     val currentRole = SimpleStringProperty(Role.ANY.name)
 
@@ -77,34 +75,7 @@ class NormalGridView: View() {
                             }
 
                             if (it.eternal != null) {
-                                bottom = stackpane {
-                                    alignment = Pos.BOTTOM_LEFT
-
-                                    vbox {
-                                        it.eternal!!.statstones.forEach {
-                                            val regexVal = if (eternalDescriptionRegex.matches(it.description))
-                                                eternalDescriptionRegex.find(it.description)!!.groups[1]!!.value + " "
-                                            else
-                                                ""
-
-                                            label(regexVal + "LVL ${it.formattedMilestoneLevel} ${it.formattedValue}/${it.nextMilestone}") {
-                                                tooltip = tooltip(it.description) {
-                                                    style {
-                                                        font = Font.font(9.0)
-                                                    }
-                                                }
-                                                font = Font.font(9.0)
-                                                textFill = Color.WHITE
-                                                paddingHorizontal = 8
-                                                isWrapText
-
-                                                style {
-                                                    backgroundColor += Color.BLACK
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
+                                bottom = find<EternalsFragment>(mapOf(EternalsFragment::eternal to it.eternal)).root
                             }
                         }
                     }

@@ -7,6 +7,7 @@ import league.api.LeagueCommunityDragonAPI
 import league.models.ChampionInfo
 import league.models.enums.ImageCacheType
 import tornadofx.*
+import ui.views.fragments.EternalsFragment
 import util.constants.ViewConstants
 
 
@@ -89,6 +90,12 @@ class AramGridView: View() {
                                     backgroundColor += Color.BLACK
                                 }
                             }
+                        }
+
+                        if (it.eternal != null) {
+                            alignment = Pos.BOTTOM_LEFT
+
+                            bottom = find<EternalsFragment>(mapOf(EternalsFragment::eternal to it.eternal)).root
                         }
                     }
                 }
