@@ -1,8 +1,8 @@
 package league.models.json
 
 @Suppress("unused")
-class ChallengeThresholdInfo {
-    var rewards: List<ChallengeThresholdRewardInfo>? = null
+class ChallengeThreshold {
+    var rewards: List<ChallengeThresholdReward>? = null
     var value: Double? = null
 
     override fun toString(): String {

@@ -176,13 +176,18 @@ class LeagueConnection {
             Array<LolCollectionsCollectionsChampionMastery>::class.java).responseObject ?: return
         Logging.log(championMasteryList, LogType.VERBOSE)
 
+        val eternalSummary = clientApi!!.executeGet("/lol-statstones/v2/player-summary-self", Array<LolStatstonesChampionStatstoneSummary>::class.java)
+            .responseObject
+            .associate { it.championId to (it.sets.first { set -> set.name == "Series 1" }.stonesOwned > 0) }
+        Logging.log(eternalSummary, LogType.VERBOSE)
+
         val masteryPairing = champions.filter { it.id != -1 }
             .map {
-                lateinit var championOwnershipStatus: ChampionOwnershipStatus
                 var championPoints = 0
                 var championLevel = 0
                 var tokens = 0
 
+                lateinit var championOwnershipStatus: ChampionOwnershipStatus
                 if (!it.ownership.owned) {
                     championOwnershipStatus = if (it.ownership.rental.rented) {
                         ChampionOwnershipStatus.RENTAL
@@ -205,9 +210,12 @@ class LeagueConnection {
                     }
                 }
 
-                val eternal = clientApi!!.executeGet("/lol-statstones/v2/player-statstones-self/${it.id}", Array<LolStatstonesStatstoneSet>::class.java)
-                    .responseObject
-                    .firstOrNull { set -> set.name == "Series 1" && set.stonesOwned > 0 }
+                var eternal: LolStatstonesStatstoneSet? = null
+                if (eternalSummary[it.id] == true) {
+                    eternal = clientApi!!.executeGet("/lol-statstones/v2/player-statstones-self/${it.id}", Array<LolStatstonesStatstoneSet>::class.java)
+                        .responseObject
+                        .first { set -> set.name == "Series 1" && set.stonesOwned > 0 }
+                }
 
                 ChampionInfo(it.id, it.name, championOwnershipStatus, championPoints, championLevel, tokens, eternal=eternal)
             }
@@ -234,6 +242,10 @@ class LeagueConnection {
             .map { entry ->
                 Pair(entry.key, entry.value.sortedWith(
                     compareBy<ChallengeInfo> { it.isComplete }
+                        .thenBy {
+                            it.getRewardTitle()
+                            it.hasRewardTitle
+                        }
                         .thenByDescending { it.currentLevel }
                 ))
             }

@@ -16,7 +16,7 @@ import league.api.LeagueCommunityDragonAPI
 import league.models.ChallengeFilter
 import league.models.ChallengeUiRefreshData
 import league.models.enums.ChallengeCategory
-import league.models.enums.ChallengeInfoRank
+import league.models.enums.ChallengeRank
 import league.models.enums.ImageCacheType
 import league.models.json.ChallengeInfo
 import tornadofx.*
@@ -131,8 +131,8 @@ class ChallengesView : View("LoL Challenges") {
                                         fitWidth = CHALLENGE_IMAGE_WIDTH
                                         fitHeight = CHALLENGE_IMAGE_WIDTH
 
-                                        val currentLevel = if (it.currentLevel == ChallengeInfoRank.NONE)
-                                            ChallengeInfoRank.IRON.name.lowercase()
+                                        val currentLevel = if (it.currentLevel == ChallengeRank.NONE)
+                                            ChallengeRank.IRON.name.lowercase()
                                         else
                                             it.currentLevel!!.name.lowercase()
 
@@ -156,6 +156,20 @@ class ChallengesView : View("LoL Challenges") {
                                     stackpane {
                                         vbox {
                                             alignment = Pos.BOTTOM_CENTER
+
+                                            if (it.hasRewardTitle) {
+                                                label("Title: ${it.rewardTitle}") {
+                                                    textFill = Color.WHITE
+                                                    textAlignment = TextAlignment.CENTER
+                                                    isWrapText = true
+                                                    paddingHorizontal = 8
+                                                    font = Font.font(9.0)
+
+                                                    style {
+                                                        backgroundColor += Color.BLACK
+                                                    }
+                                                }
+                                            }
 
                                             label("${it.currentLevel} (${it.thresholds!!.keys.sorted().indexOf(it.currentLevel) + 1}/${it.thresholds!!.count()})") {
                                                 textFill = Color.WHITE

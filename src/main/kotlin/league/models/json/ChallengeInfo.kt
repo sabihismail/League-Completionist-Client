@@ -2,7 +2,8 @@ package league.models.json
 
 import generated.LolChallengesFriendLevelsData
 import league.models.enums.ChallengeCategory
-import league.models.enums.ChallengeInfoRank
+import league.models.enums.ChallengeRank
+import league.models.enums.ChallengeThresholdRewardCategory
 
 
 @Suppress("unused")
@@ -39,11 +40,26 @@ class ChallengeInfo {
     //var thresholds: Any? = null
     var valueMapping: String? = null
 
-    var thresholds: Map<ChallengeInfoRank, ChallengeThresholdInfo>? = null
+    var thresholds: Map<ChallengeRank, ChallengeThreshold>? = null
     var category: ChallengeCategory? = null
-    var currentLevel: ChallengeInfoRank? = null
+    var currentLevel: ChallengeRank? = null
 
     val isComplete get() = currentLevel == thresholds!!.keys.maxOf { x -> x }
+    var rewardTitle = ""
+    var hasRewardTitle = false
+
+    fun getRewardTitle() {
+        val rewards = thresholds!!.values.sortedByDescending { it.value }[0].rewards!!
+        val category = rewards.firstOrNull { it.category == ChallengeThresholdRewardCategory.TITLE }
+
+        if (category != null) {
+            rewardTitle = category.name!!
+            hasRewardTitle = true
+            return
+        }
+
+        hasRewardTitle = false
+    }
 
     override fun toString(): String {
         return "ChallengeInfo(capstoneGroupId=$capstoneGroupId, capstoneGroupName=$capstoneGroupName, capstoneId=$capstoneId, " +

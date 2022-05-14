@@ -1,9 +1,11 @@
 package league.models.json
 
+import league.models.enums.ChallengeThresholdRewardCategory
+
 @Suppress("unused")
-class ChallengeThresholdRewardInfo {
+class ChallengeThresholdReward {
     var asset: String? = null
-    var category: String? = null
+    var category: ChallengeThresholdRewardCategory? = null
     var name: String? = null
     var quantity: Double? = null
 

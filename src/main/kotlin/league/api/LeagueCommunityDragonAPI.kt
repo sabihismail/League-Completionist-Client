@@ -4,7 +4,7 @@ import javafx.scene.effect.*
 import javafx.scene.image.Image
 import league.models.ChampionInfo
 import league.models.ImageCacheInfo
-import league.models.enums.ChallengeInfoRank
+import league.models.enums.ChallengeRank
 import league.models.enums.ChampionOwnershipStatus
 import league.models.enums.ImageCacheType
 import league.models.enums.Role
@@ -124,7 +124,7 @@ object LeagueCommunityDragonAPI {
     }
 
     fun getChallengeImageEffect(challengeInfo: ChallengeInfo): Effect? {
-        if (challengeInfo.currentLevel != ChallengeInfoRank.NONE) return null
+        if (challengeInfo.currentLevel != ChallengeRank.NONE) return null
 
         return ColorAdjust(0.0, -1.0, -0.7, -0.1)
     }

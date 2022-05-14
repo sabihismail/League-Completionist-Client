@@ -3,7 +3,7 @@ package league.models.enums
 import com.stirante.lolclient.libs.com.google.gson.annotations.SerializedName
 
 @Suppress("unused", "UNUSED_PARAMETER")
-enum class ChallengeInfoRank(i: Int) {
+enum class ChallengeRank(i: Int) {
     @SerializedName("NONE")
     NONE(0),
     @SerializedName("IRON")
