@@ -23,7 +23,6 @@ import tornadofx.*
 import ui.controllers.MainViewController
 import ui.mock.AramMockController
 import ui.mock.NormalMockController
-import util.constants.ViewConstants.CHALLENGE_IMAGE_WIDTH
 import util.constants.ViewConstants.DEFAULT_SPACING
 import util.constants.ViewConstants.SCROLLBAR_HEIGHT
 import kotlin.math.roundToInt
@@ -36,6 +35,7 @@ class ChallengesView : View("LoL Challenges") {
 
     private val hideEarnPointChallengesProperty = SimpleBooleanProperty(true)
     private val hideCompletedChallengesProperty = SimpleBooleanProperty(true)
+    private val showOnlyTitleChallengesProperty = SimpleBooleanProperty(false)
     private val currentSearchTextProperty = SimpleStringProperty("")
 
     private lateinit var grid: DataGrid<ChallengeCategory>
@@ -49,6 +49,8 @@ class ChallengesView : View("LoL Challenges") {
                 },
 
                 ChallengeFilter(hideCompletedChallengesProperty.get()) { challengeInfo -> !challengeInfo.isComplete },
+
+                ChallengeFilter(showOnlyTitleChallengesProperty.get()) { challengeInfo -> challengeInfo.hasRewardTitle },
 
                 ChallengeFilter(currentSearchTextProperty.value.isNotEmpty()) { challengeInfo ->
                     challengeInfo.description!!.lowercase().contains(currentSearchTextProperty.value.lowercase())
@@ -81,6 +83,7 @@ class ChallengesView : View("LoL Challenges") {
 
         hideEarnPointChallengesProperty.onChange { setChallenges() }
         hideCompletedChallengesProperty.onChange { setChallenges() }
+        showOnlyTitleChallengesProperty.onChange { setChallenges() }
         currentSearchTextProperty.onChange { setChallenges() }
     }
 
@@ -158,7 +161,10 @@ class ChallengesView : View("LoL Challenges") {
                                             alignment = Pos.BOTTOM_CENTER
 
                                             if (it.hasRewardTitle) {
-                                                label("Title: ${it.rewardTitle}") {
+                                                var s = "Title: ${it.rewardTitle}"
+                                                s += if (it.rewardLevel <= it.currentLevel!!) " ✓" else " (${it.rewardLevel.toString()[0]})"
+
+                                                label(s) {
                                                     textFill = Color.WHITE
                                                     textAlignment = TextAlignment.CENTER
                                                     isWrapText = true
@@ -218,6 +224,7 @@ class ChallengesView : View("LoL Challenges") {
 
                 checkbox("Hide Grind/Time Missions", hideEarnPointChallengesProperty)
                 checkbox("Hide Completed Missions", hideCompletedChallengesProperty)
+                checkbox("Show Title Missions", showOnlyTitleChallengesProperty)
             }
         }
     }
@@ -225,6 +232,7 @@ class ChallengesView : View("LoL Challenges") {
     companion object {
         private const val HEADER_FONT_SIZE = 14.0
         private const val SPACING_BETWEEN_ROW = 4.0
+        private const val CHALLENGE_IMAGE_WIDTH = 116.0
 
         // image_height + 2 * verticalCellSpacing + font size of label
         private const val INNER_CELL_HEIGHT = CHALLENGE_IMAGE_WIDTH + (DEFAULT_SPACING * 2) + HEADER_FONT_SIZE

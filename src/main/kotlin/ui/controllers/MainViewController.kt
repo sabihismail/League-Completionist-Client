@@ -9,6 +9,7 @@ import league.models.enums.*
 import tornadofx.Controller
 import tornadofx.runLater
 import ui.views.AramGridView
+import ui.views.ChallengesView
 import ui.views.MainView
 import ui.views.NormalGridView
 import util.LogType
@@ -45,6 +46,7 @@ open class MainViewController : Controller() {
 
         leagueConnection.onLoggedIn {
             leagueConnection.updateChallengesInfo()
+            setChallengesView()
 
             val elements = leagueConnection.challengeInfo.values
                 .flatMap { challengeInfos ->
@@ -130,6 +132,14 @@ open class MainViewController : Controller() {
                 manualRoleSelect = false
             }
 
+            if (it == LolGameflowGameflowPhase.ENDOFGAME) {
+                leagueConnection.updateChallengesInfo()
+
+                if (view.find<ChallengesView>().primaryStage.isShowing) {
+                    setChallengesView()
+                }
+            }
+
             if (STATES_TO_REFRESH_DISPLAY.contains(it)) {
                 while (leagueConnection.championInfo.isEmpty()) {
                     leagueConnection.updateChampionMasteryInfo()
@@ -186,6 +196,10 @@ open class MainViewController : Controller() {
                 }
             }
         }
+    }
+
+    fun setChallengesView() {
+        view.find<ChallengesView>().setChallenges(leagueConnection.challengeInfo, leagueConnection.challengeInfo.keys.sortedBy { it })
     }
 
     companion object {

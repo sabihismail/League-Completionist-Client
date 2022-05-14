@@ -242,11 +242,12 @@ class LeagueConnection {
             .map { entry ->
                 Pair(entry.key, entry.value.sortedWith(
                     compareBy<ChallengeInfo> { it.isComplete }
-                        .thenBy {
+                        .thenByDescending { it.currentLevel }
+                        .thenByDescending {
                             it.getRewardTitle()
                             it.hasRewardTitle
                         }
-                        .thenByDescending { it.currentLevel }
+                        .thenByDescending { it.currentThreshold?.div(it.nextThreshold!!) }
                 ))
             }
             .toMap()

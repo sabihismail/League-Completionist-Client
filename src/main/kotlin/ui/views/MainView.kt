@@ -103,7 +103,7 @@ class MainView: View("LoL Mastery Box Client") {
                             controller.leagueConnection.updateChallengesInfo()
 
                             val fragment = find<ChallengesView>()
-                            fragment.setChallenges(controller.leagueConnection.challengeInfo, controller.leagueConnection.challengeInfo.keys.sortedBy { it })
+                            controller.setChallengesView()
                             fragment.openWindow()
                         }
                     }

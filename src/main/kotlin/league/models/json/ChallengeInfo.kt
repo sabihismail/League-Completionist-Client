@@ -46,14 +46,15 @@ class ChallengeInfo {
 
     val isComplete get() = currentLevel == thresholds!!.keys.maxOf { x -> x }
     var rewardTitle = ""
+    var rewardLevel = ChallengeRank.NONE
     var hasRewardTitle = false
 
     fun getRewardTitle() {
-        val rewards = thresholds!!.values.sortedByDescending { it.value }[0].rewards!!
-        val category = rewards.firstOrNull { it.category == ChallengeThresholdRewardCategory.TITLE }
-
-        if (category != null) {
-            rewardTitle = category.name!!
+        val rewardCategory = thresholds!!.map { it.key to it.value.rewards!!.firstOrNull { reward -> reward.category == ChallengeThresholdRewardCategory.TITLE } }
+            .firstOrNull { it.second != null }
+        if (rewardCategory != null) {
+            rewardTitle = rewardCategory.second!!.name.toString()
+            rewardLevel = rewardCategory.first
             hasRewardTitle = true
             return
         }
