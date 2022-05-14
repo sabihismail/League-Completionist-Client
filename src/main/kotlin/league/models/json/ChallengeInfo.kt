@@ -44,4 +44,14 @@ class ChallengeInfo {
     var currentLevel: ChallengeInfoRank? = null
 
     val isComplete get() = currentLevel == thresholds!!.keys.maxOf { x -> x }
+
+    override fun toString(): String {
+        return "ChallengeInfo(capstoneGroupId=$capstoneGroupId, capstoneGroupName=$capstoneGroupName, capstoneId=$capstoneId, " +
+                "currentLevelAchievedTime=$currentLevelAchievedTime, currentThreshold=$currentThreshold, currentValue=$currentValue, " +
+                "description=$description, descriptionShort=$descriptionShort, friendsAtLevels=$friendsAtLevels, gameModes=$gameModes, " +
+                "hasLeaderboard=$hasLeaderboard, iconPath=$iconPath, id=$id, isApex=$isApex, isCapstone=$isCapstone, isReverseDirection=$isReverseDirection, " +
+                "levelToIconPath=$levelToIconPath, name=$name, nextLevel=$nextLevel, nextLevelIconPath=$nextLevelIconPath, nextThreshold=$nextThreshold, " +
+                "percentile=$percentile, pointsAwarded=$pointsAwarded, position=$position, previousLevel=$previousLevel, previousValue=$previousValue, source=$source, " +
+                "valueMapping=$valueMapping, thresholds=$thresholds, category=$category, currentLevel=$currentLevel)"
+    }
 }

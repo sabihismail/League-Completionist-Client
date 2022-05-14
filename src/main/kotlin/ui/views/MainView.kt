@@ -5,12 +5,13 @@ import DEBUG_FAKE_UI_DATA_NORMAL
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleStringProperty
 import javafx.geometry.Pos
-import javafx.scene.control.ScrollPane
+import javafx.scene.text.Font
 import tornadofx.*
 import ui.controllers.MainViewController
 import ui.mock.AramMockController
 import ui.mock.NormalMockController
 import util.constants.ViewConstants
+import util.constants.ViewConstants.DEFAULT_SPACING
 
 
 class MainView: View("LoL Mastery Box Client") {
@@ -83,8 +84,8 @@ class MainView: View("LoL Mastery Box Client") {
                 }
 
                 scrollpane(fitToHeight = true) {
-                    vbarPolicy = ScrollPane.ScrollBarPolicy.NEVER
                     style = "-fx-background-color:transparent;"
+                    minHeight = Font.getDefault().size + DEFAULT_SPACING * 2 + DEFAULT_SPACING * 2 // default_font_size + hbox_padding + label_padding
 
                     borderpane {
                         center = masteryAccountView.root

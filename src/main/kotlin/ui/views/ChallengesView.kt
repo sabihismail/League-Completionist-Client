@@ -40,7 +40,8 @@ class ChallengesView : View("LoL Challenges") {
 
     private lateinit var grid: DataGrid<ChallengeCategory>
 
-    fun setChallenges(challengeInfo: Map<ChallengeCategory, List<ChallengeInfo>> = allChallengeInfoMapProperty.value, categories: List<ChallengeCategory> = categoriesProperty.value) {
+    fun setChallenges(challengeInfo: Map<ChallengeCategory, List<ChallengeInfo>> = allChallengeInfoMapProperty.value,
+                      categories: List<ChallengeCategory> = categoriesProperty.value) {
         runAsync {
             val filters = listOf(
                 ChallengeFilter(hideEarnPointChallengesProperty.get()) { challengeInfo ->
@@ -228,6 +229,10 @@ class ChallengesView : View("LoL Challenges") {
             "Reach ",
             "Achieve milestone",
             "Rekindle an Eternals ",
+            "Earn Mastery ",
+            "Win games ",
+            "Get ",
+            "Takedown ",
         )
     }
 }

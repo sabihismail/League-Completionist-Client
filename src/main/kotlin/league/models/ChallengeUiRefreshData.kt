@@ -7,4 +7,8 @@ import league.models.json.ChallengeInfo
 
 data class ChallengeUiRefreshData(val allChallengeInfo: ObservableMap<ChallengeCategory, List<ChallengeInfo>>,
                                   val sortedChallengeInfo: ObservableMap<ChallengeCategory, List<ChallengeInfo>>,
-                                  val categories: ObservableList<ChallengeCategory>)
+                                  val categories: ObservableList<ChallengeCategory>) {
+    override fun toString(): String {
+        return "ChallengeUiRefreshData(allChallengeInfo=$allChallengeInfo, sortedChallengeInfo=$sortedChallengeInfo, categories=$categories)"
+    }
+}
