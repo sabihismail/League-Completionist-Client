@@ -6,5 +6,14 @@ enum class Role {
     JUNGLE,
     MIDDLE,
     BOTTOM,
-    SUPPORT
+    SUPPORT;
+
+    companion object {
+        fun fromString(str: String): Role {
+            val upper = str.uppercase()
+            val r = values().firstOrNull { it.name == upper }
+
+            return r ?: ANY
+        }
+    }
 }

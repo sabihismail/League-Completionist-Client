@@ -1,6 +1,7 @@
 package league
 
 import league.api.LeagueCommunityDragonAPI
+import league.models.enums.ChallengeLevel
 import league.models.enums.ImageCacheType
 import league.models.enums.Role
 import java.nio.file.Files
@@ -20,6 +21,13 @@ internal class LeagueCommunityDragonAPITest {
         assert(LeagueCommunityDragonAPI.ROLE_MAPPING.size == 0)
         assert(LeagueCommunityDragonAPI.getChampionsByRole(Role.TOP).isNotEmpty())
         assert(LeagueCommunityDragonAPI.ROLE_MAPPING.size == 5)
+    }
+
+    @Test
+    fun checkLeagueChallengeMappingAPI() {
+        assert(LeagueCommunityDragonAPI.CHALLENGE_MAPPING.size == 0)
+        assert(LeagueCommunityDragonAPI.getChallenge("CRYSTAL", ChallengeLevel.BRONZE) > 0)
+        assert(LeagueCommunityDragonAPI.QUEUE_MAPPING.size > 0)
     }
 
     @Test

@@ -15,7 +15,6 @@ import ui.views.NormalGridView
 import util.LogType
 import util.Logging
 import java.nio.file.Files
-import java.util.*
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.concurrent.thread
 
@@ -80,16 +79,7 @@ open class MainViewController : Controller() {
         }
 
         leagueConnection.onSummonerChange {
-            val str = when (it.status) {
-                SummonerStatus.NOT_LOGGED_IN, SummonerStatus.NOT_CHECKED -> "Not logged in."
-                SummonerStatus.LOGGED_IN_UNAUTHORIZED -> "Unauthorized Login."
-                SummonerStatus.LOGGED_IN_AUTHORIZED -> "Logged in as: ${it.displayName} (Level ${it.summonerLevel})"
-            }
-
-            runLater {
-                view.summonerProperty.set(str)
-                view.isLoggedInProperty.set(it.status == SummonerStatus.LOGGED_IN_AUTHORIZED)
-            }
+            runLater { view.summonerProperty.set(it) }
 
             if (it.status != SummonerStatus.LOGGED_IN_AUTHORIZED) return@onSummonerChange
 
@@ -103,18 +93,15 @@ open class MainViewController : Controller() {
         leagueConnection.onMasteryChestChange {
             if (it.nextChestDate == null) return@onMasteryChestChange
 
-            val remaining = (it.nextChestDate!!.time - Calendar.getInstance().timeInMillis) / (1000.0 * 60 * 60 * 24)
-            val remainingStr = String.format("%.2f", remaining)
+            runLater { view.chestProperty.set(it) }
 
-            runLater { view.chestProperty.set("Available chests: ${it.chestCount} (next one in $remainingStr days)") }
-
-            DatabaseImpl.setMasteryInfo(leagueConnection.summonerInfo, leagueConnection.masteryChestInfo, remaining)
+            DatabaseImpl.setMasteryInfo(leagueConnection.summonerInfo, leagueConnection.masteryChestInfo, it.remainingTime)
 
             runLater { view.masteryAccountView.run() }
         }
 
         leagueConnection.onChampionSelectChange {
-            runLater { view.gameModeProperty.set("Game Mode: ${leagueConnection.gameMode}") }
+            runLater { view.gameModeProperty.set(leagueConnection.gameMode) }
 
             if (!ACCEPTABLE_GAME_MODES.contains(leagueConnection.gameMode)) return@onChampionSelectChange
 
@@ -149,7 +136,7 @@ open class MainViewController : Controller() {
             }
 
             runLater { view.masteryAccountView.run() }
-            runLater { view.clientStateProperty.set("Client State: ${it.name}") }
+            runLater { view.clientStateProperty.set(it) }
         }
     }
 
@@ -199,7 +186,8 @@ open class MainViewController : Controller() {
     }
 
     fun setChallengesView() {
-        view.find<ChallengesView>().setChallenges(leagueConnection.challengeInfo, leagueConnection.challengeInfo.keys.sortedBy { it })
+        view.find<ChallengesView>().setChallenges(leagueConnection.challengeInfoSummary, leagueConnection.challengeInfo,
+            leagueConnection.challengeInfo.keys.sortedBy { it })
     }
 
     companion object {

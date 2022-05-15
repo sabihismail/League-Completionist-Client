@@ -1,13 +1,14 @@
 package league.models.json
 
-import generated.LolChallengesFriendLevelsData
 import league.models.enums.ChallengeCategory
-import league.models.enums.ChallengeRank
+import league.models.enums.ChallengeLevel
 import league.models.enums.ChallengeThresholdRewardCategory
 
 
+@kotlinx.serialization.Serializable
 @Suppress("unused")
 class ChallengeInfo {
+    var id: Long? = null
     var capstoneGroupId: Long? = null
     var capstoneGroupName: String? = null
     var capstoneId: Long? = null
@@ -18,15 +19,12 @@ class ChallengeInfo {
     var currentValue: Double? = null
     var description: String? = null
     var descriptionShort: String? = null
-    var friendsAtLevels: List<LolChallengesFriendLevelsData>? = null
     var gameModes: List<String>? = null
     var hasLeaderboard: Boolean? = null
     var iconPath: String? = null
-    var id: Long? = null
     var isApex: Boolean? = null
     var isCapstone: Boolean? = null
     var isReverseDirection: Boolean? = null
-    var levelToIconPath: Any? = null
     var name: String? = null
     var nextLevel: String? = null
     var nextLevelIconPath: String? = null
@@ -40,13 +38,13 @@ class ChallengeInfo {
     //var thresholds: Any? = null
     var valueMapping: String? = null
 
-    var thresholds: Map<ChallengeRank, ChallengeThreshold>? = null
+    var thresholds: Map<ChallengeLevel, ChallengeThreshold>? = null
     var category: ChallengeCategory? = null
-    var currentLevel: ChallengeRank? = null
+    var currentLevel: ChallengeLevel? = null
 
     val isComplete get() = currentLevel == thresholds!!.keys.maxOf { x -> x }
     var rewardTitle = ""
-    var rewardLevel = ChallengeRank.NONE
+    var rewardLevel = ChallengeLevel.NONE
     var hasRewardTitle = false
 
     fun getRewardTitle() {
@@ -63,12 +61,12 @@ class ChallengeInfo {
     }
 
     override fun toString(): String {
-        return "ChallengeInfo(capstoneGroupId=$capstoneGroupId, capstoneGroupName=$capstoneGroupName, capstoneId=$capstoneId, " +
-                "currentLevelAchievedTime=$currentLevelAchievedTime, currentThreshold=$currentThreshold, currentValue=$currentValue, " +
-                "description=$description, descriptionShort=$descriptionShort, friendsAtLevels=$friendsAtLevels, gameModes=$gameModes, " +
-                "hasLeaderboard=$hasLeaderboard, iconPath=$iconPath, id=$id, isApex=$isApex, isCapstone=$isCapstone, isReverseDirection=$isReverseDirection, " +
-                "levelToIconPath=$levelToIconPath, name=$name, nextLevel=$nextLevel, nextLevelIconPath=$nextLevelIconPath, nextThreshold=$nextThreshold, " +
-                "percentile=$percentile, pointsAwarded=$pointsAwarded, position=$position, previousLevel=$previousLevel, previousValue=$previousValue, source=$source, " +
-                "valueMapping=$valueMapping, thresholds=$thresholds, category=$category, currentLevel=$currentLevel)"
+        return "ChallengeInfo(id=$id, capstoneGroupId=$capstoneGroupId, capstoneGroupName=$capstoneGroupName, capstoneId=$capstoneId, " +
+                "currentLevelAchievedTime=$currentLevelAchievedTime, currentThreshold=$currentThreshold, currentValue=$currentValue, description=$description, " +
+                "descriptionShort=$descriptionShort, gameModes=$gameModes, hasLeaderboard=$hasLeaderboard, iconPath=$iconPath, " +
+                "isApex=$isApex, isCapstone=$isCapstone, isReverseDirection=$isReverseDirection, name=$name, nextLevel=$nextLevel, " +
+                "nextLevelIconPath=$nextLevelIconPath, nextThreshold=$nextThreshold, percentile=$percentile, pointsAwarded=$pointsAwarded, position=$position, " +
+                "previousLevel=$previousLevel, previousValue=$previousValue, source=$source, valueMapping=$valueMapping, thresholds=$thresholds, category=$category, " +
+                "currentLevel=$currentLevel, rewardTitle='$rewardTitle', rewardLevel=$rewardLevel, hasRewardTitle=$hasRewardTitle)"
     }
 }

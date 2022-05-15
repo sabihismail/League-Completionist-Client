@@ -9,6 +9,7 @@ import league.models.*
 import league.models.enums.*
 import league.models.enums.Role
 import league.models.json.ChallengeInfo
+import league.models.json.ChallengeSummary
 import league.util.LeagueConnectionUtil
 import tornadofx.*
 import util.LogType
@@ -31,6 +32,7 @@ class LeagueConnection {
     var championSelectInfo = ChampionSelectInfo()
     var championInfo = mapOf<Int, ChampionInfo>()
     var challengeInfo = mapOf<ChallengeCategory, List<ChallengeInfo>>()
+    var challengeInfoSummary = ChallengeSummary()
     var eternalsValidQueues = setOf<Int>()
 
     private var clientApiListener: ClientConnectionListener? = null
@@ -253,6 +255,7 @@ class LeagueConnection {
             .toMap()
 
         challengeInfo = sections
+        challengeInfoSummary = clientApi!!.executeGet("/lol-challenges/v1/summary-player-data/local-player", ChallengeSummary::class.java).responseObject
     }
 
     fun onSummonerChange(callable: (SummonerInfo) -> Unit) {
@@ -307,16 +310,6 @@ class LeagueConnection {
                                     Logging.log(event.data, LogType.DEBUG, event.uri + " - " + event.eventType)
                                 }
 
-                                /*
-                                if (event.uri.contains("lol-challenges/v1/suggested-challenges/local-player")) {
-                                    Logging.log(event.data, LogType.DEBUG, event.uri + " - " + event.eventType)
-                                }
-
-                                if (event.uri.contains("lol-challenges/v1/challenges/local-player")) {
-                                    Logging.log(event.data, LogType.DEBUG, event.uri + " - " + event.eventType)
-                                }
-                                */
-
                                 Logging.log(event.data, LogType.VERBOSE, "ClientAPI WebSocket: " + event.uri + " - " + event.eventType)
                             }
                         }
@@ -370,44 +363,15 @@ class LeagueConnection {
     private fun handleClientStateChange(gameFlowPhase: LolGameflowGameflowPhase) {
         Logging.log(gameFlowPhase, LogType.DEBUG)
 
-        when (gameFlowPhase) {
+        gameMode = when (gameFlowPhase) {
             LolGameflowGameflowPhase.CHAMPSELECT -> {
                 val gameFlow = clientApi!!.executeGet("/lol-gameflow/v1/session", LolGameflowGameflowSession::class.java).responseObject ?: return
                 Logging.log(gameFlow, LogType.DEBUG)
 
-                gameMode = when (gameFlow.gameData.queue.gameMode) {
-                    "CLASSIC" -> GameMode.BLIND_PICK
-                    "RANKED_SOLO_5x5" -> GameMode.RANKED_SOLO
-                    "RANKED_FLEX_SR" -> GameMode.RANKED_FLEX
-                    "CLASH" -> GameMode.CLASH
-                    "ARAM" -> GameMode.ARAM
-                    "HEXAKILL" -> GameMode.HEXAKILL
-                    "ONEFORALL" -> GameMode.ONE_FOR_ALL
-                    "URF" -> GameMode.URF
-                    "TUTORIAL" -> GameMode.TUTORIAL
-                    "BOT" -> GameMode.BOT
-                    "PRACTICETOOL" -> GameMode.PRACTICE_TOOL
-                    else -> GameMode.UNKNOWN
-                }
-
-                if (gameMode == GameMode.BLIND_PICK) {
-                    val gameType = LeagueCommunityDragonAPI.getQueueMapping(gameFlow.gameData.queue.id)
-
-                    gameMode = when (gameType.description) {
-                        "Blind Pick" -> GameMode.BLIND_PICK
-                        "Draft Pick" -> GameMode.DRAFT_PICK
-                        "Ranked Solo/Duo" -> GameMode.RANKED_SOLO
-                        "Ranked Flex" -> GameMode.RANKED_FLEX
-                        "Clash" -> GameMode.CLASH
-                        "Beginner" -> GameMode.BOT
-                        "Intermediate" -> GameMode.BOT
-                        "Co-op vs. AI" -> GameMode.BOT
-                        else -> GameMode.UNKNOWN
-                    }
-                }
+                GameMode.fromGameMode(gameFlow.gameData.queue.gameMode, gameFlow.gameData.queue.id)
             }
             else -> {
-                gameMode = GameMode.NONE
+                GameMode.NONE
             }
         }
 
@@ -441,14 +405,7 @@ class LeagueConnection {
             it.isSummonerSelectedChamp = it.id == selectedChamp.championId
         }
 
-        val assignedRole = when (selectedChamp.assignedPosition.uppercase()) {
-            "TOP" -> Role.TOP
-            "JUNGLE" -> Role.JUNGLE
-            "MIDDLE" -> Role.MIDDLE
-            "BOTTOM" -> Role.BOTTOM
-            "UTILITY" -> Role.SUPPORT
-            else -> Role.ANY
-        }
+        val assignedRole = Role.fromString(selectedChamp.assignedPosition)
 
         championSelectInfo = ChampionSelectInfo(teamChampions, benchedChampions, assignedRole)
         championSelectChanged()

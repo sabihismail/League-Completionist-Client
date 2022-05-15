@@ -25,15 +25,11 @@ class AramMockController : MainViewController() {
             SummonerStatus.LOGGED_IN_AUTHORIZED, -1, -1, "TestName", "TestName",
             1, 12, 1)
 
-        runLater { view.summonerProperty.set("Logged in as: ${summonerInfo.displayName} (Level ${summonerInfo.summonerLevel})") }
+        runLater { view.summonerProperty.set(summonerInfo) }
 
         // onMasteryChestChange
         val masteryChestInfo = MasteryChestInfo(Calendar.getInstance().apply { add(Calendar.DATE, 1) }.time, 3)
-
-        val remaining = (masteryChestInfo.nextChestDate!!.time - Calendar.getInstance().timeInMillis) / (1000.0 * 60 * 60 * 24)
-        val remainingStr = String.format("%.2f", remaining)
-
-        runLater { view.chestProperty.set("Available chests: ${masteryChestInfo.chestCount} (next one in $remainingStr days)") }
+        runLater { view.chestProperty.set(masteryChestInfo) }
 
         // onChampionSelectChange
         val championSelectInfo = ChampionSelectInfo(
@@ -60,8 +56,7 @@ class AramMockController : MainViewController() {
 
         runLater {
             view.defaultGridView.setRoot(aramView)
-
-            view.gameModeProperty.set("Game Mode: ${GameMode.ARAM}")
+            view.gameModeProperty.set(GameMode.ARAM)
 
             aramView.benchedChampionListProperty.set(FXCollections.observableList(championSelectInfo.benchedChampions))
             aramView.teamChampionListProperty.set(FXCollections.observableList(championSelectInfo.teamChampions))

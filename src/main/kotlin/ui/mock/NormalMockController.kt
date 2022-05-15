@@ -25,20 +25,13 @@ class NormalMockController : MainViewController() {
     private val regularView: NormalGridView by inject()
 
     init {
-        // onSummonerChange
         val summonerInfo = SummonerInfo(
             SummonerStatus.LOGGED_IN_AUTHORIZED, -1, -1, "TestName", "TestName",
             1, 12, 1)
+        runLater { view.summonerProperty.set(summonerInfo) }
 
-        runLater { view.summonerProperty.set("Logged in as: ${summonerInfo.displayName} (Level ${summonerInfo.summonerLevel})") }
-
-        // onMasteryChestChange
         val masteryChestInfo = MasteryChestInfo(Calendar.getInstance().apply { add(Calendar.DATE, 1) }.time, 3)
-
-        val remaining = (masteryChestInfo.nextChestDate!!.time - Calendar.getInstance().timeInMillis) / (1000.0 * 60 * 60 * 24)
-        val remainingStr = String.format("%.2f", remaining)
-
-        runLater { view.chestProperty.set("Available chests: ${masteryChestInfo.chestCount} (next one in $remainingStr days)") }
+        runLater { view.chestProperty.set(masteryChestInfo) }
 
         leagueConnection.gameMode = GameMode.RANKED_FLEX
         leagueConnection.championInfo = mapOf(
@@ -96,8 +89,7 @@ class NormalMockController : MainViewController() {
         leagueConnection.gameMode = GameMode.RANKED_FLEX
 
         runLater {
-            view.gameModeProperty.set("Game Mode: ${leagueConnection.gameMode}")
-
+            view.gameModeProperty.set(leagueConnection.gameMode)
             view.defaultGridView.setRoot(regularView)
 
             val sortedChampionInfo = leagueConnection.getChampionMasteryInfo()

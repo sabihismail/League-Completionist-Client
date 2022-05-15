@@ -4,12 +4,13 @@ import javafx.scene.effect.*
 import javafx.scene.image.Image
 import league.models.ChampionInfo
 import league.models.ImageCacheInfo
-import league.models.enums.ChallengeRank
+import league.models.enums.ChallengeLevel
 import league.models.enums.ChampionOwnershipStatus
 import league.models.enums.ImageCacheType
 import league.models.enums.Role
+import league.models.json.ApiChallengeInfo
+import league.models.json.ApiQueueInfo
 import league.models.json.ChallengeInfo
-import league.models.json.QueueInfo
 import league.models.json.RoleMapping
 import util.LogType
 import util.Logging
@@ -29,16 +30,18 @@ import kotlin.io.path.notExists
 object LeagueCommunityDragonAPI {
     private const val CHAMPION_ROLE_ENDPOINT = "https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-champion-statistics/global/default/rcp-fe-lol-champion-statistics.js"
     private const val QUEUE_TYPE_ENDPOINT = "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/queues.json"
+    private const val CHALLENGES_ENDPOINT = "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/challenges.json"
 
-    val CACHE_MAPPING = mapOf(
+    private val CACHE_MAPPING = mapOf(
         ImageCacheType.CHAMPION to ImageCacheInfo("champion", "https://cdn.communitydragon.org/latest/champion/%s/square"),
         ImageCacheType.CHALLENGE to ImageCacheInfo("challenge", "https://raw.communitydragon.org/latest/game/assets/challenges/config/%s/tokens/%s.png")
     )
 
     var ROLE_MAPPING = hashMapOf<Role, HashMap<Int, Float>>()
-    var QUEUE_MAPPING = hashMapOf<Int, QueueInfo>()
+    var QUEUE_MAPPING = hashMapOf<Int, ApiQueueInfo>()
+    var CHALLENGE_MAPPING = hashMapOf<String, Long>()
 
-    fun getQueueMapping(id: Int): QueueInfo {
+    fun getQueueMapping(id: Int): ApiQueueInfo {
         if (QUEUE_MAPPING.isEmpty()) {
             populateQueueMapping()
         }
@@ -54,6 +57,14 @@ object LeagueCommunityDragonAPI {
         val sorted = ROLE_MAPPING[role]?.map { it.key }
 
         return sorted!!
+    }
+
+    fun getChallenge(id: String, challengeLevel: ChallengeLevel): Long {
+        if (CHALLENGE_MAPPING.isEmpty()) {
+            populateChallengeMapping()
+        }
+
+        return CHALLENGE_MAPPING[id + challengeLevel.name]!!
     }
 
     fun getImage(t: ImageCacheType, vararg params: Any): Image {
@@ -124,7 +135,7 @@ object LeagueCommunityDragonAPI {
     }
 
     fun getChallengeImageEffect(challengeInfo: ChallengeInfo): Effect? {
-        if (challengeInfo.currentLevel != ChallengeRank.NONE) return null
+        if (challengeInfo.currentLevel != ChallengeLevel.NONE) return null
 
         return ColorAdjust(0.0, -1.0, -0.7, -0.1)
     }
@@ -132,11 +143,8 @@ object LeagueCommunityDragonAPI {
     private fun populateQueueMapping() {
         QUEUE_MAPPING.clear()
 
-        val connection = URL(QUEUE_TYPE_ENDPOINT).openConnection()
-        connection.setRequestProperty("User-Agent", "LoL-Mastery-Box-Client")
-
-        val jsonStr = connection.getInputStream().bufferedReader().use { it.readText() }
-        val json = StringUtil.extractJSONMapFromString<QueueInfo>(jsonStr)
+        val jsonStr = sendRequest(QUEUE_TYPE_ENDPOINT)
+        val json = StringUtil.extractJSONMapFromString<ApiQueueInfo>(jsonStr)
 
         QUEUE_MAPPING = HashMap(json.mapKeys { it.key.toInt() })
     }
@@ -144,10 +152,7 @@ object LeagueCommunityDragonAPI {
     private fun populateRoleMapping() {
         ROLE_MAPPING.clear()
 
-        val connection = URL(CHAMPION_ROLE_ENDPOINT).openConnection()
-        connection.setRequestProperty("User-Agent", "LoL-Mastery-Box-Client")
-
-        val jsonStr = connection.getInputStream().bufferedReader().use { it.readText() }
+        val jsonStr = sendRequest(CHAMPION_ROLE_ENDPOINT)
         val json = StringUtil.extractJSONFromString<RoleMapping>(jsonStr, "a.exports=")
 
         ROLE_MAPPING[Role.TOP] = json.top
@@ -155,5 +160,22 @@ object LeagueCommunityDragonAPI {
         ROLE_MAPPING[Role.MIDDLE] = json.middle
         ROLE_MAPPING[Role.BOTTOM] = json.bottom
         ROLE_MAPPING[Role.SUPPORT] = if (json.support.isNullOrEmpty()) json.utility!! else json.support
+    }
+
+    private fun populateChallengeMapping() {
+        CHALLENGE_MAPPING.clear()
+
+        val jsonStr = sendRequest(CHALLENGES_ENDPOINT)
+        val json = StringUtil.extractJSONFromString<ApiChallengeInfo>(jsonStr)
+
+        CHALLENGE_MAPPING = HashMap(json.challenges.values.flatMap { c -> c.thresholds!!.map { (k, v) -> (c.name!! + k.name) to v.value!!.toLong() } }
+            .toMap())
+    }
+
+    private fun sendRequest(url: String): String {
+        val connection = URL(url).openConnection()
+        connection.setRequestProperty("User-Agent", "LoL-Mastery-Box-Client")
+
+        return connection.getInputStream().bufferedReader().use { it.readText() }
     }
 }

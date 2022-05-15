@@ -2,6 +2,7 @@ package league.models.json
 
 import league.models.enums.ChallengeThresholdRewardCategory
 
+@kotlinx.serialization.Serializable
 @Suppress("unused")
 class ChallengeThresholdReward {
     var asset: String? = null

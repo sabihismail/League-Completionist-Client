@@ -2,23 +2,22 @@ package ui.views
 
 import DEBUG_FAKE_UI_DATA_ARAM
 import DEBUG_FAKE_UI_DATA_NORMAL
-import javafx.beans.property.SimpleBooleanProperty
-import javafx.beans.property.SimpleListProperty
-import javafx.beans.property.SimpleMapProperty
-import javafx.beans.property.SimpleStringProperty
+import javafx.beans.property.*
 import javafx.collections.FXCollections
 import javafx.geometry.Pos
 import javafx.scene.control.ScrollPane
 import javafx.scene.paint.Color
 import javafx.scene.text.Font
+import javafx.scene.text.FontWeight
 import javafx.scene.text.TextAlignment
 import league.api.LeagueCommunityDragonAPI
 import league.models.ChallengeFilter
 import league.models.ChallengeUiRefreshData
 import league.models.enums.ChallengeCategory
-import league.models.enums.ChallengeRank
+import league.models.enums.ChallengeLevel
 import league.models.enums.ImageCacheType
 import league.models.json.ChallengeInfo
+import league.models.json.ChallengeSummary
 import tornadofx.*
 import ui.controllers.MainViewController
 import ui.mock.AramMockController
@@ -29,9 +28,10 @@ import kotlin.math.roundToInt
 
 
 class ChallengesView : View("LoL Challenges") {
+    private val challengesSummaryProperty = SimpleObjectProperty<ChallengeSummary>()
     private val categoriesProperty = SimpleListProperty<ChallengeCategory>()
-    private val allChallengeInfoMapProperty = SimpleMapProperty<ChallengeCategory, List<ChallengeInfo>>()
-    private val sortedChallengeInfoMapProperty = SimpleMapProperty<ChallengeCategory, List<ChallengeInfo>>()
+    private val allChallengesProperty = SimpleMapProperty<ChallengeCategory, List<ChallengeInfo>>()
+    private val filteredChallengesProperty = SimpleMapProperty<ChallengeCategory, List<ChallengeInfo>>()
 
     private val hideEarnPointChallengesProperty = SimpleBooleanProperty(true)
     private val hideCompletedChallengesProperty = SimpleBooleanProperty(true)
@@ -40,7 +40,8 @@ class ChallengesView : View("LoL Challenges") {
 
     private lateinit var grid: DataGrid<ChallengeCategory>
 
-    fun setChallenges(challengeInfo: Map<ChallengeCategory, List<ChallengeInfo>> = allChallengeInfoMapProperty.value,
+    fun setChallenges(summary: ChallengeSummary = challengesSummaryProperty.value,
+                      challengeInfo: Map<ChallengeCategory, List<ChallengeInfo>> = allChallengesProperty.value,
                       categories: List<ChallengeCategory> = categoriesProperty.value) {
         runAsync {
             val filters = listOf(
@@ -59,14 +60,15 @@ class ChallengesView : View("LoL Challenges") {
 
             val sortedMap = challengeInfo.toList().associate { (k, v) -> k to v.filter { challengeInfo -> filters.filter { it.isSet }.all { it.action(challengeInfo) } } }
 
-            ChallengeUiRefreshData(FXCollections.observableMap(challengeInfo), FXCollections.observableMap(sortedMap), FXCollections.observableList(categories))
+            ChallengeUiRefreshData(summary, FXCollections.observableMap(challengeInfo), FXCollections.observableMap(sortedMap), FXCollections.observableList(categories))
         } ui {
+            challengesSummaryProperty.value = it.challengesSummary
             categoriesProperty.value = it.categories
-            allChallengeInfoMapProperty.value = it.allChallengeInfo
-            sortedChallengeInfoMapProperty.value = it.sortedChallengeInfo
+            allChallengesProperty.value = it.allChallenges
+            filteredChallengesProperty.value = it.filteredChallenges
 
             grid.cellWidth = (CHALLENGE_IMAGE_WIDTH + DEFAULT_SPACING * 2) *
-                    (categoriesProperty.maxOfOrNull { key -> sortedChallengeInfoMapProperty[key]!!.size } ?: 1)
+                    (categoriesProperty.maxOfOrNull { key -> filteredChallengesProperty[key]!!.size } ?: 1)
         }
     }
 
@@ -81,15 +83,56 @@ class ChallengesView : View("LoL Challenges") {
         ROW_COUNT = controller.leagueConnection.challengeInfo.keys.size
         OUTER_GRID_PANE_HEIGHT = (INNER_CELL_HEIGHT + SPACING_BETWEEN_ROW * 2) * ROW_COUNT + DEFAULT_SPACING * 2
 
-        hideEarnPointChallengesProperty.onChange { setChallenges() }
-        hideCompletedChallengesProperty.onChange { setChallenges() }
-        showOnlyTitleChallengesProperty.onChange { setChallenges() }
-        currentSearchTextProperty.onChange { setChallenges() }
+        setOf(
+            hideEarnPointChallengesProperty,
+            hideCompletedChallengesProperty,
+            showOnlyTitleChallengesProperty,
+            currentSearchTextProperty,
+        ).forEach { it.onChange { setChallenges() } }
+    }
+
+    private fun getWorldPercentage(percentage: Double): StringProperty {
+        return ("%.2f".format(percentage) + "% of World").toProperty()
+    }
+
+    private fun getChallengeString(level: ChallengeLevel, key: String, current: Long): StringProperty {
+        val maxPoints = LeagueCommunityDragonAPI.getChallenge(key, ChallengeLevel.values()[level.ordinal + 1])
+        val currentPercentage = "%.2f".format(current.toDouble().div(maxPoints)) + "%"
+
+        return "$level - $currentPercentage ($current/$maxPoints)".toProperty()
     }
 
     override val root = vbox {
         alignment = Pos.CENTER
         minWidth = 820.0
+
+        hbox {
+            spacing = 0.0
+
+            label(challengesSummaryProperty.select { getChallengeString(it.overallChallengeLevel!!, TOTAL_CHALLENGE_POINTS_KEY, it.totalChallengeScore!!) }) {
+                textFill = Color.WHITE
+                font = Font.font(Font.getDefault().family, FontWeight.BOLD, HEADER_FONT_SIZE + 2.0)
+                paddingHorizontal = 16.0
+                paddingVertical = 0.0
+
+                fitToParentWidth()
+                style {
+                    backgroundColor += Color.BLACK
+                }
+            }
+
+            label(challengesSummaryProperty.select { getWorldPercentage(it.positionPercentile!!) }) {
+                textFill = Color.WHITE
+                alignment = Pos.TOP_RIGHT
+                font = Font.font(Font.getDefault().family, FontWeight.BOLD, HEADER_FONT_SIZE + 2.0)
+                paddingHorizontal = 8.0
+
+                fitToParentWidth()
+                style {
+                    backgroundColor += Color.BLACK
+                }
+            }
+        }
 
         scrollpane(fitToWidth = true) {
             vbarPolicy = ScrollPane.ScrollBarPolicy.NEVER
@@ -108,10 +151,18 @@ class ChallengesView : View("LoL Challenges") {
                         maxHeight = INNER_CELL_HEIGHT
                         minHeight = INNER_CELL_HEIGHT
 
-                        label("$it:") {
+                        label(
+                            challengesSummaryProperty.select { summary ->
+                                val category = summary.categoryProgress!!.firstOrNull { category -> category.category == it }
+                                if (category == null)
+                                    "".toProperty()
+                                else
+                                    (getChallengeString(category.level!!, category.category!!.name, category.current!!.toLong()).value + " --- " +
+                                            getWorldPercentage(category.positionPercentile!!).value).toProperty()
+                            }
+                        ) {
                             textFill = Color.WHITE
                             font = Font.font(HEADER_FONT_SIZE)
-                            textAlignment = TextAlignment.LEFT
 
                             fitToParentWidth()
                             style {
@@ -119,7 +170,7 @@ class ChallengesView : View("LoL Challenges") {
                             }
                         }
 
-                        datagrid(sortedChallengeInfoMapProperty[it]) {
+                        datagrid(filteredChallengesProperty[it]) {
                             alignment = Pos.CENTER
                             maxRows = 1
                             cellWidth = CHALLENGE_IMAGE_WIDTH
@@ -134,8 +185,8 @@ class ChallengesView : View("LoL Challenges") {
                                         fitWidth = CHALLENGE_IMAGE_WIDTH
                                         fitHeight = CHALLENGE_IMAGE_WIDTH
 
-                                        val currentLevel = if (it.currentLevel == ChallengeRank.NONE)
-                                            ChallengeRank.IRON.name.lowercase()
+                                        val currentLevel = if (it.currentLevel == ChallengeLevel.NONE)
+                                            ChallengeLevel.IRON.name.lowercase()
                                         else
                                             it.currentLevel!!.name.lowercase()
 
@@ -230,9 +281,11 @@ class ChallengesView : View("LoL Challenges") {
     }
 
     companion object {
+        private const val TOTAL_CHALLENGE_POINTS_KEY = "CRYSTAL"
+
         private const val HEADER_FONT_SIZE = 14.0
         private const val SPACING_BETWEEN_ROW = 4.0
-        private const val CHALLENGE_IMAGE_WIDTH = 116.0
+        private const val CHALLENGE_IMAGE_WIDTH = 112.0
 
         // image_height + 2 * verticalCellSpacing + font size of label
         private const val INNER_CELL_HEIGHT = CHALLENGE_IMAGE_WIDTH + (DEFAULT_SPACING * 2) + HEADER_FONT_SIZE

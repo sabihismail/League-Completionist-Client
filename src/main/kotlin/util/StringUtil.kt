@@ -8,6 +8,7 @@ import kotlinx.serialization.json.jsonObject
 object StringUtil {
     val JSON_FORMAT = Json {
         isLenient = true
+        ignoreUnknownKeys = true
     }
 
     fun extractJSON(s: String, trim_until_str: String? = null): String {

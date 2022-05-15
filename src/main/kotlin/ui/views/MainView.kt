@@ -2,10 +2,14 @@ package ui.views
 
 import DEBUG_FAKE_UI_DATA_ARAM
 import DEBUG_FAKE_UI_DATA_NORMAL
-import javafx.beans.property.SimpleBooleanProperty
-import javafx.beans.property.SimpleStringProperty
+import generated.LolGameflowGameflowPhase
+import javafx.beans.property.SimpleObjectProperty
 import javafx.geometry.Pos
 import javafx.scene.text.Font
+import league.models.MasteryChestInfo
+import league.models.SummonerInfo
+import league.models.enums.GameMode
+import league.models.enums.SummonerStatus
 import tornadofx.*
 import ui.controllers.MainViewController
 import ui.mock.AramMockController
@@ -18,11 +22,10 @@ class MainView: View("LoL Mastery Box Client") {
     val defaultGridView = find(DefaultGridView::class)
     val masteryAccountView = find(MasteryAccountView::class)
 
-    val isLoggedInProperty = SimpleBooleanProperty()
-    val summonerProperty = SimpleStringProperty()
-    val chestProperty = SimpleStringProperty()
-    val clientStateProperty = SimpleStringProperty()
-    val gameModeProperty = SimpleStringProperty()
+    val summonerProperty = SimpleObjectProperty(SummonerInfo())
+    val chestProperty = SimpleObjectProperty(MasteryChestInfo())
+    val clientStateProperty = SimpleObjectProperty(LolGameflowGameflowPhase.NONE)
+    val gameModeProperty = SimpleObjectProperty(GameMode.NONE)
 
     @Suppress("unused")
     private val controller = find(
@@ -40,10 +43,10 @@ class MainView: View("LoL Mastery Box Client") {
                 alignment = Pos.CENTER
                 paddingBottom = 16.0
 
-                label(summonerProperty)
-                label(chestProperty)
-                label(clientStateProperty)
-                label(gameModeProperty)
+                label(summonerProperty.select { it.toDisplayString().toProperty() })
+                label(chestProperty.select { "Available chests: ${it.chestCount} (next one in ${it.remainingStr} days)".toProperty() })
+                label(clientStateProperty.select { "Client State: ${it.name}".toProperty() })
+                label(gameModeProperty.select { "Game Mode: $it".toProperty() })
             }
 
             center = defaultGridView.root
@@ -98,7 +101,7 @@ class MainView: View("LoL Mastery Box Client") {
                     spacing = 8.0
 
                     button("View Challenges").apply {
-                        enableWhen { isLoggedInProperty }
+                        enableWhen { summonerProperty.select { (it.status == SummonerStatus.LOGGED_IN_AUTHORIZED).toProperty() } }
                         action {
                             controller.leagueConnection.updateChallengesInfo()
 
