@@ -106,6 +106,9 @@ open class MainViewController : Controller() {
             if (!ACCEPTABLE_GAME_MODES.contains(leagueConnection.gameMode)) return@onChampionSelectChange
 
             replaceDisplay()
+
+
+            //view.find<ChallengesView>().currentGameModeProperty.set()
         }
 
         leagueConnection.onClientStateChange {
@@ -121,10 +124,7 @@ open class MainViewController : Controller() {
 
             if (it == LolGameflowGameflowPhase.ENDOFGAME) {
                 leagueConnection.updateChallengesInfo()
-
-                if (view.find<ChallengesView>().primaryStage.isShowing) {
-                    setChallengesView()
-                }
+                setChallengesView()
             }
 
             if (STATES_TO_REFRESH_DISPLAY.contains(it)) {

@@ -245,14 +245,14 @@ class LeagueConnection {
                 Pair(entry.key, entry.value.sortedWith(
                     compareBy<ChallengeInfo> { it.isComplete }
                         .thenByDescending { it.currentLevel }
-                        .thenByDescending {
-                            it.getRewardTitle()
-                            it.hasRewardTitle
-                        }
+                        .thenByDescending { it.hasRewardTitle }
+                        .thenBy { !it.rewardObtained }
                         .thenByDescending { it.currentThreshold?.div(it.nextThreshold!!) }
                 ))
             }
             .toMap()
+
+        sections.values.forEach { value -> value.forEach { it.init() } }
 
         challengeInfo = sections
         challengeInfoSummary = clientApi!!.executeGet("/lol-challenges/v1/summary-player-data/local-player", ChallengeSummary::class.java).responseObject

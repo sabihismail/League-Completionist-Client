@@ -15,6 +15,7 @@ import league.models.ChallengeFilter
 import league.models.ChallengeUiRefreshData
 import league.models.enums.ChallengeCategory
 import league.models.enums.ChallengeLevel
+import league.models.enums.GameModeChallenge
 import league.models.enums.ImageCacheType
 import league.models.json.ChallengeInfo
 import league.models.json.ChallengeSummary
@@ -38,6 +39,8 @@ class ChallengesView : View("LoL Challenges") {
     private val showOnlyTitleChallengesProperty = SimpleBooleanProperty(false)
     private val currentSearchTextProperty = SimpleStringProperty("")
 
+    val currentGameModeProperty = SimpleObjectProperty(GameModeChallenge.CLASSIC)
+
     private lateinit var grid: DataGrid<ChallengeCategory>
 
     fun setChallenges(summary: ChallengeSummary = challengesSummaryProperty.value,
@@ -52,6 +55,10 @@ class ChallengesView : View("LoL Challenges") {
                 ChallengeFilter(hideCompletedChallengesProperty.get()) { challengeInfo -> !challengeInfo.isComplete },
 
                 ChallengeFilter(showOnlyTitleChallengesProperty.get()) { challengeInfo -> challengeInfo.hasRewardTitle },
+
+                ChallengeFilter(true) { challengeInfo ->
+                    if (currentGameModeProperty.value == GameModeChallenge.ALL) true else challengeInfo.gameModeSet.contains(currentGameModeProperty.value)
+                },
 
                 ChallengeFilter(currentSearchTextProperty.value.isNotEmpty()) { challengeInfo ->
                     challengeInfo.description!!.lowercase().contains(currentSearchTextProperty.value.lowercase())
@@ -87,19 +94,20 @@ class ChallengesView : View("LoL Challenges") {
             hideEarnPointChallengesProperty,
             hideCompletedChallengesProperty,
             showOnlyTitleChallengesProperty,
+            currentGameModeProperty,
             currentSearchTextProperty,
         ).forEach { it.onChange { setChallenges() } }
     }
 
-    private fun getWorldPercentage(percentage: Double): StringProperty {
-        return ("%.2f".format(percentage) + "% of World").toProperty()
+    private fun getWorldPercentage(percentage: Double): String {
+        return "Top " + "%.2f".format(percentage) + "% World"
     }
 
-    private fun getChallengeString(level: ChallengeLevel, key: String, current: Long): StringProperty {
+    private fun getChallengeString(level: ChallengeLevel, key: String, current: Long, s: String = " - "): String {
         val maxPoints = LeagueCommunityDragonAPI.getChallenge(key, ChallengeLevel.values()[level.ordinal + 1])
-        val currentPercentage = "%.2f".format(current.toDouble().div(maxPoints)) + "%"
+        val currentPercentage = "%.2f".format(current.toDouble().div(maxPoints) * 100) + "%"
 
-        return "$level - $currentPercentage ($current/$maxPoints)".toProperty()
+        return "$level$s$currentPercentage ($current/$maxPoints)"
     }
 
     override val root = vbox {
@@ -109,7 +117,9 @@ class ChallengesView : View("LoL Challenges") {
         hbox {
             spacing = 0.0
 
-            label(challengesSummaryProperty.select { getChallengeString(it.overallChallengeLevel!!, TOTAL_CHALLENGE_POINTS_KEY, it.totalChallengeScore!!) }) {
+            label(challengesSummaryProperty.select {
+                getChallengeString(it.overallChallengeLevel!!, TOTAL_CHALLENGE_POINTS_KEY, it.totalChallengeScore!!).toProperty()
+            }) {
                 textFill = Color.WHITE
                 font = Font.font(Font.getDefault().family, FontWeight.BOLD, HEADER_FONT_SIZE + 2.0)
                 paddingHorizontal = 16.0
@@ -121,7 +131,7 @@ class ChallengesView : View("LoL Challenges") {
                 }
             }
 
-            label(challengesSummaryProperty.select { getWorldPercentage(it.positionPercentile!!) }) {
+            label(challengesSummaryProperty.select { getWorldPercentage(it.positionPercentile!!).toProperty() }) {
                 textFill = Color.WHITE
                 alignment = Pos.TOP_RIGHT
                 font = Font.font(Font.getDefault().family, FontWeight.BOLD, HEADER_FONT_SIZE + 2.0)
@@ -157,12 +167,13 @@ class ChallengesView : View("LoL Challenges") {
                                 if (category == null)
                                     "".toProperty()
                                 else
-                                    (getChallengeString(category.level!!, category.category!!.name, category.current!!.toLong()).value + " --- " +
-                                            getWorldPercentage(category.positionPercentile!!).value).toProperty()
+                                    (it.name + " (" + getChallengeString(category.level!!, category.category!!.name, category.current!!.toLong(), s=") - ") + " --- " +
+                                            getWorldPercentage(category.positionPercentile!!)).toProperty()
                             }
                         ) {
                             textFill = Color.WHITE
                             font = Font.font(HEADER_FONT_SIZE)
+                            paddingHorizontal = 8.0
 
                             fitToParentWidth()
                             style {
@@ -212,10 +223,7 @@ class ChallengesView : View("LoL Challenges") {
                                             alignment = Pos.BOTTOM_CENTER
 
                                             if (it.hasRewardTitle) {
-                                                var s = "Title: ${it.rewardTitle}"
-                                                s += if (it.rewardLevel <= it.currentLevel!!) " ✓" else " (${it.rewardLevel.toString()[0]})"
-
-                                                label(s) {
+                                                label("Title: ${it.rewardTitle}" + if (it.rewardObtained) " ✓" else " (${it.rewardLevel.toString()[0]})") {
                                                     textFill = Color.WHITE
                                                     textAlignment = TextAlignment.CENTER
                                                     isWrapText = true
@@ -240,13 +248,18 @@ class ChallengesView : View("LoL Challenges") {
                                                 }
                                             }
 
-                                            // val txt = it.thresholds!!.toList().sortedBy { it.first }.map { it.second.value }.joinToString(", ")
                                             label("${it.currentThreshold!!.roundToInt()}/${it.nextThreshold!!.roundToInt()}") {
                                                 textFill = Color.WHITE
                                                 textAlignment = TextAlignment.CENTER
                                                 isWrapText = true
                                                 paddingHorizontal = 8
                                                 font = Font.font(9.0)
+
+                                                tooltip(it.thresholds!!.toList().sortedBy { it.first }.map { it.second.value!!.toInt() }.joinToString(", ")) {
+                                                    style {
+                                                        font = Font.font(9.0)
+                                                    }
+                                                }
 
                                                 style {
                                                     backgroundColor += Color.BLACK
@@ -276,6 +289,7 @@ class ChallengesView : View("LoL Challenges") {
                 checkbox("Hide Grind/Time Missions", hideEarnPointChallengesProperty)
                 checkbox("Hide Completed Missions", hideCompletedChallengesProperty)
                 checkbox("Show Title Missions", showOnlyTitleChallengesProperty)
+                combobox(currentGameModeProperty, GameModeChallenge.values().toList())
             }
         }
     }
@@ -295,19 +309,7 @@ class ChallengesView : View("LoL Challenges") {
         private var OUTER_GRID_PANE_HEIGHT = (INNER_CELL_HEIGHT + SPACING_BETWEEN_ROW * 2) * ROW_COUNT + DEFAULT_SPACING * 2 + SCROLLBAR_HEIGHT
 
         private val CRINGE_MISSIONS = setOf(
-            "Earn points from challenges",
-            "Mastery Points",
-            "Obtain ",
-            "Collect ",
-            "Increase your summoner level",
-            "Finish any season",
-            "Reach ",
-            "Achieve milestone",
-            "Rekindle an Eternals ",
-            "Earn Mastery ",
-            "Win games ",
-            "Get ",
-            "Takedown ",
+            "Earn points from challenges in the ",
         )
     }
 }

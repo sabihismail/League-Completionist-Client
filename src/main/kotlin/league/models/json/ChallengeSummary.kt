@@ -22,6 +22,8 @@ class ChallengeSummary {
     }
 
     override fun toString(): String {
-        return "ChallengeSummary(apexLadderUpdateTime=$apexLadderUpdateTime, categoryProgress=$categoryProgress, overallChallengeLevel=$overallChallengeLevel, pointsUntilNextRank=$pointsUntilNextRank, positionPercentile=$positionPercentile, title=$title, topChallenges=$topChallenges, totalChallengeScore=$totalChallengeScore)"
+        return "ChallengeSummary(apexLadderUpdateTime=$apexLadderUpdateTime, categoryProgress=$categoryProgress, overallChallengeLevel=$overallChallengeLevel, " +
+                "pointsUntilNextRank=$pointsUntilNextRank, positionPercentile=$positionPercentile, title=$title, topChallenges=$topChallenges, " +
+                "totalChallengeScore=$totalChallengeScore)"
     }
 }
