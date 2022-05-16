@@ -135,6 +135,7 @@ class LeagueConnection {
         var info = championInfo.map { champion -> champion.value }
             .sortedWith(
                 compareByDescending<ChampionInfo> { it.level }
+                    .thenByDescending { it.currentMasteryPoints }
                     .thenByDescending { it.ownershipStatus }
                     .thenByDescending { it.tokens }
                     .thenByDescending { it.eternal != null }
@@ -186,6 +187,8 @@ class LeagueConnection {
         val masteryPairing = champions.filter { it.id != -1 }
             .map {
                 var championPoints = 0
+                var currentMasteryPoints = 0
+                var nextLevelMasteryPoints = 0
                 var championLevel = 0
                 var tokens = 0
 
@@ -208,6 +211,8 @@ class LeagueConnection {
 
                         championPoints = championMastery.championPoints
                         championLevel = championMastery.championLevel
+                        currentMasteryPoints = championMastery.championPointsSinceLastLevel
+                        nextLevelMasteryPoints = championMastery.championPointsUntilNextLevel
                         tokens = championMastery.tokensEarned
                     }
                 }
@@ -219,7 +224,8 @@ class LeagueConnection {
                         .first { set -> set.name == "Series 1" && set.stonesOwned > 0 }
                 }
 
-                ChampionInfo(it.id, it.name, championOwnershipStatus, championPoints, championLevel, tokens, eternal=eternal)
+                ChampionInfo(it.id, it.name, championOwnershipStatus, championPoints, currentMasteryPoints, nextLevelMasteryPoints, championLevel, tokens,
+                    eternal=eternal)
             }
 
         championInfo = masteryPairing.associateBy({ it.id }, { it })

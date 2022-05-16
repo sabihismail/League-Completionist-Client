@@ -4,6 +4,7 @@ import javafx.beans.property.SimpleListProperty
 import javafx.beans.property.SimpleStringProperty
 import javafx.geometry.Pos
 import javafx.scene.paint.Color
+import javafx.scene.text.Font
 import league.api.LeagueCommunityDragonApi
 import league.models.ChampionInfo
 import league.models.enums.ImageCacheType
@@ -44,9 +45,14 @@ class NormalGridView: View() {
                             left = stackpane {
                                 alignment = Pos.TOP_LEFT
 
-                                label("Lvl ${it.level}") {
+                                val txt = if (it.level in 1..4)
+                                    " (${"%.2f".format((it.currentMasteryPoints.toDouble()/(it.nextLevelMasteryPoints + it.currentMasteryPoints)) * 100)}%)"
+                                else
+                                    ""
+                                label("Lvl ${it.level}" + txt) {
                                     textFill = Color.WHITE
                                     paddingHorizontal = 8
+                                    font = Font.font(11.6)
 
                                     style {
                                         backgroundColor += Color.BLACK
@@ -67,6 +73,7 @@ class NormalGridView: View() {
                                     isVisible = listOf(5, 6).contains(it.level)
                                     textFill = Color.WHITE
                                     paddingHorizontal = 8
+                                    font = Font.font(11.6)
 
                                     style {
                                         backgroundColor += Color.BLACK

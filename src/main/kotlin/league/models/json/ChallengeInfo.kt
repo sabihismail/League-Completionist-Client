@@ -43,6 +43,8 @@ class ChallengeInfo {
     var category: ChallengeCategory? = null
     var currentLevel: ChallengeLevel? = null
 
+    val thresholdSummary get() = thresholds!!.toList().sortedBy { it.first }.joinToString(", ") { it.second.value!!.toInt().toString() }
+
     val isComplete get() = currentLevel == thresholds!!.keys.maxOf { x -> x }
     var rewardTitle = ""
     var rewardLevel = ChallengeLevel.NONE

@@ -107,7 +107,17 @@ open class MainViewController : Controller() {
 
             replaceDisplay()
 
-            runLater { view.find<ChallengesView>().currentGameModeProperty.set(if (leagueConnection.gameMode == GameMode.ARAM) GameMode.ARAM else GameMode.CLASSIC) }
+            runLater {
+                view.find<ChallengesView>().currentGameModeProperty.set(
+                    if (leagueConnection.gameMode.isClassic) {
+                        GameMode.CLASSIC
+                    } else if (leagueConnection.gameMode == GameMode.ARAM) {
+                        GameMode.ARAM
+                    } else {
+                        throw IllegalArgumentException("onChampionSelectChange - Invalid Gamemode - " + leagueConnection.gameMode)
+                    }
+                )
+            }
         }
 
         leagueConnection.onClientStateChange {

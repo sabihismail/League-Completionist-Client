@@ -248,14 +248,14 @@ class ChallengesView : View("LoL Challenges") {
                                                 }
                                             }
 
-                                            label("${it.currentThreshold!!.roundToInt()}/${it.nextThreshold!!.roundToInt()}") {
+                                            label("${it.currentThreshold!!.roundToInt()}/${it.nextThreshold!!.roundToInt()} (+${it.pointsAwarded})") {
                                                 textFill = Color.WHITE
                                                 textAlignment = TextAlignment.CENTER
                                                 isWrapText = true
                                                 paddingHorizontal = 8
                                                 font = Font.font(9.0)
 
-                                                tooltip(it.thresholds!!.toList().sortedBy { it.first }.map { it.second.value!!.toInt() }.joinToString(", ")) {
+                                                tooltip(it.thresholdSummary) {
                                                     style {
                                                         font = Font.font(9.0)
                                                     }

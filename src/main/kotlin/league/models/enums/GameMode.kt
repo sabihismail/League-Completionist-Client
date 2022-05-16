@@ -42,47 +42,15 @@ enum class GameMode {
         private val CLASSIC_MODES = setOf(CLASSIC, BLIND_PICK, DRAFT_PICK, RANKED_SOLO, RANKED_FLEX, CLASH, BOT)
 
         fun fromGameMode(str: String, queueId: Int): GameMode {
-            var tmp = GameMode.values().firstOrNull { it.name == str } ?: UNKNOWN
-            /*
-            var tmp = when (str) {
-                "CLASSIC" -> CLASSIC
-                "RANKED_SOLO_5x5" -> RANKED_SOLO
-                "RANKED_FLEX_SR" -> RANKED_FLEX
-                "CLASH" -> CLASH
-                "ARAM" -> ARAM
-                "HEXAKILL" -> HEXAKILL
-                "ONEFORALL" -> ONE_FOR_ALL
-                "URF" -> URF
-                "TUTORIAL" -> TUTORIAL
-                "BOT" -> BOT
-                "PRACTICETOOL" -> PRACTICE_TOOL
-                else -> UNKNOWN
-            }*/
+            val tmp = GameMode.values().firstOrNull { it.name == str } ?: UNKNOWN
+            if (tmp != CLASSIC) return tmp
 
-            if (tmp == CLASSIC) {
-                val gameType = LeagueCommunityDragonApi.getQueueMapping(queueId)
-                tmp = GameMode.values().firstOrNull {
-                    val serializedName = it.getSerializedName
+            val gameType = LeagueCommunityDragonApi.getQueueMapping(queueId)
+            return GameMode.values().firstOrNull {
+                val serializedName = it.getSerializedName
 
-                    serializedName.value == gameType.description || serializedName.alternate.contains(gameType.description)
-                } ?: UNKNOWN
-
-                /*
-                tmp = when (gameType.description) {
-                    "Blind Pick" -> BLIND_PICK
-                    "Draft Pick" -> DRAFT_PICK
-                    "Ranked Solo/Duo" -> RANKED_SOLO
-                    "Ranked Flex" -> RANKED_FLEX
-                    "Clash" -> CLASH
-                    "Beginner" -> BOT
-                    "Intermediate" -> BOT
-                    "Co-op vs. AI" -> BOT
-                    else -> UNKNOWN
-                }
-                 */
-            }
-
-            return tmp
+                serializedName.value == gameType.description || serializedName.alternate.contains(gameType.description)
+            } ?: UNKNOWN
         }
     }
 }
