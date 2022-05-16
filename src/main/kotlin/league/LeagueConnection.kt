@@ -4,7 +4,7 @@ import com.stirante.lolclient.*
 import com.stirante.lolclient.libs.org.apache.http.HttpException
 import com.stirante.lolclient.libs.org.apache.http.conn.HttpHostConnectException
 import generated.*
-import league.api.LeagueCommunityDragonAPI
+import league.api.LeagueCommunityDragonApi
 import league.models.*
 import league.models.enums.*
 import league.models.enums.Role
@@ -142,7 +142,7 @@ class LeagueConnection {
             )
 
         if (role != Role.ANY) {
-            val championsByRole = LeagueCommunityDragonAPI.getChampionsByRole(role)
+            val championsByRole = LeagueCommunityDragonApi.getChampionsByRole(role)
 
             info = info.filter { championsByRole.contains(it.id) }
         }
@@ -364,7 +364,8 @@ class LeagueConnection {
         Logging.log(gameFlowPhase, LogType.DEBUG)
 
         gameMode = when (gameFlowPhase) {
-            LolGameflowGameflowPhase.CHAMPSELECT -> {
+            LolGameflowGameflowPhase.CHAMPSELECT,
+            LolGameflowGameflowPhase.INPROGRESS -> {
                 val gameFlow = clientApi!!.executeGet("/lol-gameflow/v1/session", LolGameflowGameflowSession::class.java).responseObject ?: return
                 Logging.log(gameFlow, LogType.DEBUG)
 
@@ -373,6 +374,11 @@ class LeagueConnection {
             else -> {
                 GameMode.NONE
             }
+        }
+
+        if (clientState == LolGameflowGameflowPhase.ENDOFGAME) {
+            updateChampionMasteryInfo()
+            updateChallengesInfo()
         }
 
         clientState = gameFlowPhase

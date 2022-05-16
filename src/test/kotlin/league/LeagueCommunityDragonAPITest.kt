@@ -1,6 +1,6 @@
 package league
 
-import league.api.LeagueCommunityDragonAPI
+import league.api.LeagueCommunityDragonApi
 import league.models.enums.ChallengeLevel
 import league.models.enums.ImageCacheType
 import league.models.enums.Role
@@ -11,35 +11,35 @@ import kotlin.test.Test
 internal class LeagueCommunityDragonAPITest {
     @Test
     fun checkLeagueQueueMappingAPI() {
-        assert(LeagueCommunityDragonAPI.QUEUE_MAPPING.size == 0)
-        assert(LeagueCommunityDragonAPI.getQueueMapping(0).name == "Custom")
-        assert(LeagueCommunityDragonAPI.QUEUE_MAPPING.size > 0)
+        assert(LeagueCommunityDragonApi.QUEUE_MAPPING.size == 0)
+        assert(LeagueCommunityDragonApi.getQueueMapping(0).name == "Custom")
+        assert(LeagueCommunityDragonApi.QUEUE_MAPPING.size > 0)
     }
 
     @Test
     fun checkLeagueRoleMappingAPI() {
-        assert(LeagueCommunityDragonAPI.ROLE_MAPPING.size == 0)
-        assert(LeagueCommunityDragonAPI.getChampionsByRole(Role.TOP).isNotEmpty())
-        assert(LeagueCommunityDragonAPI.ROLE_MAPPING.size == 5)
+        assert(LeagueCommunityDragonApi.ROLE_MAPPING.size == 0)
+        assert(LeagueCommunityDragonApi.getChampionsByRole(Role.TOP).isNotEmpty())
+        assert(LeagueCommunityDragonApi.ROLE_MAPPING.size == 5)
     }
 
     @Test
     fun checkLeagueChallengeMappingAPI() {
-        assert(LeagueCommunityDragonAPI.CHALLENGE_MAPPING.size == 0)
-        assert(LeagueCommunityDragonAPI.getChallenge("CRYSTAL", ChallengeLevel.BRONZE) > 0)
-        assert(LeagueCommunityDragonAPI.QUEUE_MAPPING.size > 0)
+        assert(LeagueCommunityDragonApi.CHALLENGE_MAPPING.size == 0)
+        assert(LeagueCommunityDragonApi.getChallenge("CRYSTAL", ChallengeLevel.BRONZE) > 0)
+        assert(LeagueCommunityDragonApi.QUEUE_MAPPING.size > 0)
     }
 
     @Test
     fun getChampionImagePath() {
         val imageID = 412 // thresh
 
-        val image = LeagueCommunityDragonAPI.getImagePath(ImageCacheType.CHAMPION, imageID)
+        val image = LeagueCommunityDragonApi.getImagePath(ImageCacheType.CHAMPION, imageID)
 
         assert(Files.exists(image!!))
         assert(image.fileSize() > 0)
 
-        val image2 = LeagueCommunityDragonAPI.getImagePath(ImageCacheType.CHAMPION, imageID)
+        val image2 = LeagueCommunityDragonApi.getImagePath(ImageCacheType.CHAMPION, imageID)
 
         assert(Files.exists(image2!!))
         assert(image2.fileSize() > 0)
@@ -50,12 +50,12 @@ internal class LeagueCommunityDragonAPITest {
         val imageId = 120001 // Co-Op vs AI challenge Id
         val rankId = "bronze"
 
-        val image = LeagueCommunityDragonAPI.getImagePath(ImageCacheType.CHALLENGE, imageId, rankId)
+        val image = LeagueCommunityDragonApi.getImagePath(ImageCacheType.CHALLENGE, imageId, rankId)
 
         assert(Files.exists(image!!))
         assert(image.fileSize() > 0)
 
-        val image2 = LeagueCommunityDragonAPI.getImagePath(ImageCacheType.CHALLENGE, imageId, rankId)
+        val image2 = LeagueCommunityDragonApi.getImagePath(ImageCacheType.CHALLENGE, imageId, rankId)
 
         assert(Files.exists(image2!!))
         assert(image2.fileSize() > 0)

@@ -3,7 +3,7 @@ package league.models.json
 import league.models.enums.ChallengeCategory
 import league.models.enums.ChallengeLevel
 import league.models.enums.ChallengeThresholdRewardCategory
-import league.models.enums.GameModeChallenge
+import league.models.enums.GameMode
 
 
 @kotlinx.serialization.Serializable
@@ -48,7 +48,7 @@ class ChallengeInfo {
     var rewardLevel = ChallengeLevel.NONE
     val rewardObtained get() = rewardLevel <= currentLevel!!
     var hasRewardTitle = false
-    var gameModeSet = setOf<GameModeChallenge>()
+    var gameModeSet = setOf<GameMode>()
 
     fun init() {
         initGameMode()
@@ -56,7 +56,7 @@ class ChallengeInfo {
     }
 
     private fun initGameMode() {
-        gameModeSet = gameModes!!.map { GameModeChallenge.valueOf(it) }.toSet()
+        gameModeSet = gameModes!!.map { GameMode.valueOf(it) }.toSet()
     }
 
     private fun initRewardTitle() {

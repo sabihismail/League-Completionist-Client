@@ -104,10 +104,9 @@ class MainView: View("LoL Mastery Box Client") {
                         enableWhen { summonerProperty.select { (it.status == SummonerStatus.LOGGED_IN_AUTHORIZED).toProperty() } }
                         action {
                             controller.leagueConnection.updateChallengesInfo()
+                            controller.updateChallengesView()
 
-                            val fragment = find<ChallengesView>()
-                            controller.setChallengesView()
-                            fragment.openWindow()
+                            find<ChallengesView>().openWindow()
                         }
                     }
                 }

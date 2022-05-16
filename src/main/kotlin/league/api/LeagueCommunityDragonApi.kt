@@ -27,15 +27,29 @@ import kotlin.io.path.exists
 import kotlin.io.path.notExists
 
 
-object LeagueCommunityDragonAPI {
-    private const val CHAMPION_ROLE_ENDPOINT = "https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-champion-statistics/global/default/rcp-fe-lol-champion-statistics.js"
-    private const val QUEUE_TYPE_ENDPOINT = "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/queues.json"
-    private const val CHALLENGES_ENDPOINT = "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/challenges.json"
+object LeagueCommunityDragonApi {
+    private val CHAMPION_ROLE_ENDPOINT by lazy {
+        "https://raw.communitydragon.org/${LeagueDataDragonApi.VERSION}/plugins/rcp-fe-lol-champion-statistics/global/default/rcp-fe-lol-champion-statistics.js"
+    }
+    private val QUEUE_TYPE_ENDPOINT by lazy {
+        "https://raw.communitydragon.org/${LeagueDataDragonApi.VERSION}/plugins/rcp-be-lol-game-data/global/default/v1/queues.json"
+    }
+    private val CHALLENGES_ENDPOINT by lazy {
+        "https://raw.communitydragon.org/${LeagueDataDragonApi.VERSION}/plugins/rcp-be-lol-game-data/global/default/v1/challenges.json"
+    }
+    private val CHAMPION_PORTRAIT_ENDPOINT by lazy {
+        "https://raw.communitydragon.org/${LeagueDataDragonApi.VERSION}/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/%s.png"
+    }
+    private val CHALLENGE_IMAGE_ENDPOINT by lazy {
+        "https://raw.communitydragon.org/${LeagueDataDragonApi.VERSION}/game/assets/challenges/config/%s/tokens/%s.png"
+    }
 
-    private val CACHE_MAPPING = mapOf(
-        ImageCacheType.CHAMPION to ImageCacheInfo("champion", "https://cdn.communitydragon.org/latest/champion/%s/square"),
-        ImageCacheType.CHALLENGE to ImageCacheInfo("challenge", "https://raw.communitydragon.org/latest/game/assets/challenges/config/%s/tokens/%s.png")
-    )
+    private val CACHE_MAPPING by lazy {
+        mapOf(
+            ImageCacheType.CHAMPION to ImageCacheInfo("champion", CHAMPION_PORTRAIT_ENDPOINT),
+            ImageCacheType.CHALLENGE to ImageCacheInfo("challenge", CHALLENGE_IMAGE_ENDPOINT)
+        )
+    }
 
     var ROLE_MAPPING = hashMapOf<Role, HashMap<Int, Float>>()
     var QUEUE_MAPPING = hashMapOf<Int, ApiQueueInfo>()

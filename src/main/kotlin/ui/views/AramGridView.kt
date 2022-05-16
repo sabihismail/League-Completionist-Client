@@ -3,7 +3,7 @@ package ui.views
 import javafx.beans.property.SimpleListProperty
 import javafx.geometry.Pos
 import javafx.scene.paint.Color
-import league.api.LeagueCommunityDragonAPI
+import league.api.LeagueCommunityDragonApi
 import league.models.ChampionInfo
 import league.models.enums.ImageCacheType
 import tornadofx.*
@@ -35,7 +35,7 @@ class AramGridView: View() {
                     stackpane {
                         alignment = Pos.TOP_LEFT
 
-                        imageview(LeagueCommunityDragonAPI.getImage(ImageCacheType.CHAMPION, it.id)) { effect = LeagueCommunityDragonAPI.getChampionImageEffect(it) }
+                        imageview(LeagueCommunityDragonApi.getImage(ImageCacheType.CHAMPION, it.id)) { effect = LeagueCommunityDragonApi.getChampionImageEffect(it) }
 
                         label("Lvl ${it.level}") {
                             textFill = Color.WHITE
@@ -64,8 +64,8 @@ class AramGridView: View() {
                         stackpane {
                             alignment = Pos.BOTTOM_CENTER
 
-                            imageview(LeagueCommunityDragonAPI.getImage(ImageCacheType.CHAMPION, it.id)) {
-                                effect = LeagueCommunityDragonAPI.getChampionImageEffect(it)
+                            imageview(LeagueCommunityDragonApi.getImage(ImageCacheType.CHAMPION, it.id)) {
+                                effect = LeagueCommunityDragonApi.getChampionImageEffect(it)
                             }
 
                             label("You") {

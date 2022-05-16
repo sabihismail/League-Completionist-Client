@@ -4,7 +4,7 @@ import javafx.beans.property.SimpleListProperty
 import javafx.beans.property.SimpleStringProperty
 import javafx.geometry.Pos
 import javafx.scene.paint.Color
-import league.api.LeagueCommunityDragonAPI
+import league.api.LeagueCommunityDragonApi
 import league.models.ChampionInfo
 import league.models.enums.ImageCacheType
 import league.models.enums.Role
@@ -38,7 +38,7 @@ class NormalGridView: View() {
                     stackpane {
                         alignment = Pos.TOP_CENTER
 
-                        imageview(LeagueCommunityDragonAPI.getImage(ImageCacheType.CHAMPION, it.id)) { effect = LeagueCommunityDragonAPI.getChampionImageEffect(it) }
+                        imageview(LeagueCommunityDragonApi.getImage(ImageCacheType.CHAMPION, it.id)) { effect = LeagueCommunityDragonApi.getChampionImageEffect(it) }
 
                         borderpane {
                             left = stackpane {

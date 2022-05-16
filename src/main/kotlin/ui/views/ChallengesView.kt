@@ -10,12 +10,12 @@ import javafx.scene.paint.Color
 import javafx.scene.text.Font
 import javafx.scene.text.FontWeight
 import javafx.scene.text.TextAlignment
-import league.api.LeagueCommunityDragonAPI
+import league.api.LeagueCommunityDragonApi
 import league.models.ChallengeFilter
 import league.models.ChallengeUiRefreshData
 import league.models.enums.ChallengeCategory
 import league.models.enums.ChallengeLevel
-import league.models.enums.GameModeChallenge
+import league.models.enums.GameMode
 import league.models.enums.ImageCacheType
 import league.models.json.ChallengeInfo
 import league.models.json.ChallengeSummary
@@ -39,7 +39,7 @@ class ChallengesView : View("LoL Challenges") {
     private val showOnlyTitleChallengesProperty = SimpleBooleanProperty(false)
     private val currentSearchTextProperty = SimpleStringProperty("")
 
-    val currentGameModeProperty = SimpleObjectProperty(GameModeChallenge.CLASSIC)
+    val currentGameModeProperty = SimpleObjectProperty(GameMode.CLASSIC)
 
     private lateinit var grid: DataGrid<ChallengeCategory>
 
@@ -57,7 +57,7 @@ class ChallengesView : View("LoL Challenges") {
                 ChallengeFilter(showOnlyTitleChallengesProperty.get()) { challengeInfo -> challengeInfo.hasRewardTitle },
 
                 ChallengeFilter(true) { challengeInfo ->
-                    if (currentGameModeProperty.value == GameModeChallenge.ALL) true else challengeInfo.gameModeSet.contains(currentGameModeProperty.value)
+                    if (currentGameModeProperty.value == GameMode.ALL) true else challengeInfo.gameModeSet.contains(currentGameModeProperty.value)
                 },
 
                 ChallengeFilter(currentSearchTextProperty.value.isNotEmpty()) { challengeInfo ->
@@ -104,7 +104,7 @@ class ChallengesView : View("LoL Challenges") {
     }
 
     private fun getChallengeString(level: ChallengeLevel, key: String, current: Long, s: String = " - "): String {
-        val maxPoints = LeagueCommunityDragonAPI.getChallenge(key, ChallengeLevel.values()[level.ordinal + 1])
+        val maxPoints = LeagueCommunityDragonApi.getChallenge(key, ChallengeLevel.values()[level.ordinal + 1])
         val currentPercentage = "%.2f".format(current.toDouble().div(maxPoints) * 100) + "%"
 
         return "$level$s$currentPercentage ($current/$maxPoints)"
@@ -165,7 +165,7 @@ class ChallengesView : View("LoL Challenges") {
                             challengesSummaryProperty.select { summary ->
                                 val category = summary.categoryProgress!!.firstOrNull { category -> category.category == it }
                                 if (category == null)
-                                    "".toProperty()
+                                    it.name.toProperty()
                                 else
                                     (it.name + " (" + getChallengeString(category.level!!, category.category!!.name, category.current!!.toLong(), s=") - ") + " --- " +
                                             getWorldPercentage(category.positionPercentile!!)).toProperty()
@@ -201,8 +201,8 @@ class ChallengesView : View("LoL Challenges") {
                                         else
                                             it.currentLevel!!.name.lowercase()
 
-                                        image = LeagueCommunityDragonAPI.getImage(ImageCacheType.CHALLENGE, it.id!!, currentLevel).apply {
-                                            effect = LeagueCommunityDragonAPI.getChallengeImageEffect(it)
+                                        image = LeagueCommunityDragonApi.getImage(ImageCacheType.CHALLENGE, it.id!!, currentLevel).apply {
+                                            effect = LeagueCommunityDragonApi.getChallengeImageEffect(it)
                                         }
                                     }
 
@@ -289,7 +289,7 @@ class ChallengesView : View("LoL Challenges") {
                 checkbox("Hide Grind/Time Missions", hideEarnPointChallengesProperty)
                 checkbox("Hide Completed Missions", hideCompletedChallengesProperty)
                 checkbox("Show Title Missions", showOnlyTitleChallengesProperty)
-                combobox(currentGameModeProperty, GameModeChallenge.values().toList())
+                combobox(currentGameModeProperty, listOf(GameMode.ALL, GameMode.ARAM, GameMode.CLASSIC))
             }
         }
     }

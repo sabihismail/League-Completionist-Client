@@ -4,7 +4,7 @@ import db.DatabaseImpl
 import generated.LolGameflowGameflowPhase
 import javafx.collections.FXCollections
 import league.LeagueConnection
-import league.api.LeagueCommunityDragonAPI
+import league.api.LeagueCommunityDragonApi
 import league.models.enums.*
 import tornadofx.Controller
 import tornadofx.runLater
@@ -45,7 +45,7 @@ open class MainViewController : Controller() {
 
         leagueConnection.onLoggedIn {
             leagueConnection.updateChallengesInfo()
-            setChallengesView()
+            updateChallengesView()
 
             val elements = leagueConnection.challengeInfo.values
                 .flatMap { challengeInfos ->
@@ -56,7 +56,7 @@ open class MainViewController : Controller() {
                 .toList()
 
             val maxCount = elements.count()
-            val fileWalk = Files.walk(LeagueCommunityDragonAPI.getPath(ImageCacheType.CHALLENGE)).count()
+            val fileWalk = Files.walk(LeagueCommunityDragonApi.getPath(ImageCacheType.CHALLENGE)).count()
             if (fileWalk < maxCount) {
                 thread {
                     Logging.log("Challenges - Starting Cache Download...", LogType.INFO)
@@ -64,7 +64,7 @@ open class MainViewController : Controller() {
                     val num = AtomicInteger(0)
                     elements.parallelStream()
                         .forEach {
-                            LeagueCommunityDragonAPI.getImagePath(ImageCacheType.CHALLENGE, it.first.toString().lowercase(), it.second)
+                            LeagueCommunityDragonApi.getImagePath(ImageCacheType.CHALLENGE, it.first.toString().lowercase(), it.second)
 
                             num.incrementAndGet()
                         }
@@ -107,24 +107,17 @@ open class MainViewController : Controller() {
 
             replaceDisplay()
 
-
-            //view.find<ChallengesView>().currentGameModeProperty.set()
+            runLater { view.find<ChallengesView>().currentGameModeProperty.set(if (leagueConnection.gameMode == GameMode.ARAM) GameMode.ARAM else GameMode.CLASSIC) }
         }
 
         leagueConnection.onClientStateChange {
-            if (it == LolGameflowGameflowPhase.ENDOFGAME) {
-                leagueConnection.updateChampionMasteryInfo()
-
-                updateChampionList()
-            }
-
             if (it == LolGameflowGameflowPhase.CHAMPSELECT) {
                 manualRoleSelect = false
             }
 
             if (it == LolGameflowGameflowPhase.ENDOFGAME) {
-                leagueConnection.updateChallengesInfo()
-                setChallengesView()
+                updateChampionList()
+                updateChallengesView()
             }
 
             if (STATES_TO_REFRESH_DISPLAY.contains(it)) {
@@ -135,8 +128,11 @@ open class MainViewController : Controller() {
                 replaceDisplay()
             }
 
-            runLater { view.masteryAccountView.run() }
-            runLater { view.clientStateProperty.set(it) }
+            runLater {
+                view.masteryAccountView.run()
+                view.clientStateProperty.set(it)
+                view.gameModeProperty.set(leagueConnection.gameMode)
+            }
         }
     }
 
@@ -185,9 +181,11 @@ open class MainViewController : Controller() {
         }
     }
 
-    fun setChallengesView() {
-        view.find<ChallengesView>().setChallenges(leagueConnection.challengeInfoSummary, leagueConnection.challengeInfo,
-            leagueConnection.challengeInfo.keys.sortedBy { it })
+    fun updateChallengesView() {
+        runLater {
+            view.find<ChallengesView>().setChallenges(leagueConnection.challengeInfoSummary, leagueConnection.challengeInfo,
+                leagueConnection.challengeInfo.keys.sortedBy { it })
+        }
     }
 
     companion object {
