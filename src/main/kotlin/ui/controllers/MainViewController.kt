@@ -114,10 +114,14 @@ open class MainViewController : Controller() {
                     } else if (leagueConnection.gameMode == GameMode.ARAM) {
                         GameMode.ARAM
                     } else {
-                        throw IllegalArgumentException("onChampionSelectChange - Invalid Gamemode - " + leagueConnection.gameMode)
+                        throw IllegalArgumentException("onChampionSelectChange - Invalid GameMode - " + leagueConnection.gameMode)
                     }
                 )
             }
+        }
+
+        leagueConnection.onChallengesChange {
+            updateChallengesView()
         }
 
         leagueConnection.onClientStateChange {
@@ -127,7 +131,6 @@ open class MainViewController : Controller() {
 
             if (it == LolGameflowGameflowPhase.ENDOFGAME) {
                 updateChampionList()
-                updateChallengesView()
             }
 
             if (STATES_TO_REFRESH_DISPLAY.contains(it)) {

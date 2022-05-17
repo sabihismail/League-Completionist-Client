@@ -1,12 +1,13 @@
 package league.models.json
 
+import kotlinx.serialization.Serializable
 import league.models.enums.ChallengeCategory
 import league.models.enums.ChallengeLevel
 import league.models.enums.ChallengeThresholdRewardCategory
 import league.models.enums.GameMode
 
 
-@kotlinx.serialization.Serializable
+@Serializable
 @Suppress("unused")
 class ChallengeInfo {
     var id: Long? = null
@@ -27,7 +28,7 @@ class ChallengeInfo {
     var isCapstone: Boolean? = null
     var isReverseDirection: Boolean? = null
     var name: String? = null
-    var nextLevel: String? = null
+    var nextLevel: ChallengeLevel? = null
     var nextLevelIconPath: String? = null
     var nextThreshold: Double? = null
     var percentile: Double? = null
@@ -51,6 +52,11 @@ class ChallengeInfo {
     val rewardObtained get() = rewardLevel <= currentLevel!!
     var hasRewardTitle = false
     var gameModeSet = setOf<GameMode>()
+
+    val currentValueProper get() = (currentValue!! - currentThreshold!!).toInt()
+    val nextLevelValueProper get() = (nextThreshold!! - currentThreshold!!).toInt()
+    val percentage get() = currentValueProper.toDouble() / nextLevelValueProper
+    val nextLevelPoints get() = thresholds!![nextLevel]!!.rewards!!.firstOrNull { it.category == ChallengeThresholdRewardCategory.CHALLENGE_POINTS }!!.quantity!!.toInt()
 
     fun init() {
         initGameMode()

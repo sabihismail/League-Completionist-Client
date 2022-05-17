@@ -1,8 +1,9 @@
 package league.models.json
 
 import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
-@kotlinx.serialization.Serializable
+@Serializable
 data class RoleMapping(@SerialName("TOP") val top: HashMap<Int, Float>,
                        @SerialName("JUNGLE") val jungle: HashMap<Int, Float>,
                        @SerialName("MIDDLE") val middle: HashMap<Int, Float>,

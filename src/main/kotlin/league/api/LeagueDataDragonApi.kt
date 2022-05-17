@@ -1,8 +1,6 @@
-@file:Suppress("SameParameterValue")
-
 package league.api
 
-import league.models.json.ApiLeagueVersion
+import league.models.json.ApiLeagueVersionResponse
 import util.StringUtil
 import java.net.URL
 
@@ -11,15 +9,16 @@ object LeagueDataDragonApi {
 
     val VERSION by lazy {
         val jsonStr = sendRequest(VERSION_ENDPOINT)
-        val json = StringUtil.extractJSONFromString<ApiLeagueVersion>(jsonStr)
+        val json = StringUtil.extractJSONFromString<ApiLeagueVersionResponse>(jsonStr)
 
         if (json.v != null) {
             return@lazy if (json.v!!.count { it == '.' } == 2) json.v!!.substringBeforeLast(".") else json.v!!
         }
 
-        ApiLeagueVersion.DEFAULT
+        ApiLeagueVersionResponse.DEFAULT
     }
 
+    @Suppress("SameParameterValue")
     private fun sendRequest(url: String): String {
         val connection = URL(url).openConnection()
         connection.setRequestProperty("User-Agent", "LoL-Mastery-Box-Client")

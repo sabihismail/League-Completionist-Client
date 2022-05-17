@@ -1,6 +1,8 @@
 package league.models.json
 
-@kotlinx.serialization.Serializable
+import kotlinx.serialization.Serializable
+
+@Serializable
 @Suppress("unused")
 class ChallengeThreshold {
     var rewards: List<ChallengeThresholdReward>? = null

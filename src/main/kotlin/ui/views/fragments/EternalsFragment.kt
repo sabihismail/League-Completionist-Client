@@ -4,6 +4,7 @@ import generated.LolStatstonesStatstoneSet
 import javafx.geometry.Pos
 import javafx.scene.paint.Color
 import javafx.scene.text.Font
+import league.api.LeagueCommunityDragonApi
 import tornadofx.*
 import util.constants.GenericConstants.ETERNALS_DESCRIPTION_REGEX
 
@@ -20,11 +21,11 @@ class EternalsFragment : Fragment() {
                 else
                     ""
 
-                label(regexVal + "LVL ${it.formattedMilestoneLevel} - ${it.formattedValue}/${it.nextMilestone}") {
+                label(regexVal + "Lvl ${it.formattedMilestoneLevel} - ${it.formattedValue}/${it.nextMilestone}") {
                     font = Font.font(9.0)
                     textFill = Color.WHITE
                     paddingHorizontal = 8
-                    tooltip = tooltip(it.description) {
+                    tooltip = tooltip("${it.description} (${LeagueCommunityDragonApi.getEternal(it.statstoneId)}") {
                         style {
                             font = Font.font(9.0)
                         }

@@ -25,7 +25,6 @@ import ui.mock.AramMockController
 import ui.mock.NormalMockController
 import util.constants.ViewConstants.DEFAULT_SPACING
 import util.constants.ViewConstants.SCROLLBAR_HEIGHT
-import kotlin.math.roundToInt
 
 
 class ChallengesView : View("LoL Challenges") {
@@ -87,8 +86,8 @@ class ChallengesView : View("LoL Challenges") {
     )
 
     init {
-        ROW_COUNT = controller.leagueConnection.challengeInfo.keys.size
-        OUTER_GRID_PANE_HEIGHT = (INNER_CELL_HEIGHT + SPACING_BETWEEN_ROW * 2) * ROW_COUNT + DEFAULT_SPACING * 2
+        //ROW_COUNT = controller.leagueConnection.challengeInfo.keys.size
+        //OUTER_GRID_PANE_HEIGHT = (INNER_CELL_HEIGHT + SPACING_BETWEEN_ROW * 2) * ROW_COUNT + DEFAULT_SPACING * 2
 
         setOf(
             hideEarnPointChallengesProperty,
@@ -248,7 +247,7 @@ class ChallengesView : View("LoL Challenges") {
                                                 }
                                             }
 
-                                            label("${it.currentThreshold!!.roundToInt()}/${it.nextThreshold!!.roundToInt()} (+${it.pointsAwarded})") {
+                                            label("${it.currentValueProper}/${it.nextLevelValueProper} (+${it.nextLevelPoints})") {
                                                 textFill = Color.WHITE
                                                 textAlignment = TextAlignment.CENTER
                                                 isWrapText = true

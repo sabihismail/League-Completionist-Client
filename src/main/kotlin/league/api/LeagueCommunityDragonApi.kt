@@ -8,10 +8,7 @@ import league.models.enums.ChallengeLevel
 import league.models.enums.ChampionOwnershipStatus
 import league.models.enums.ImageCacheType
 import league.models.enums.Role
-import league.models.json.ApiChallengeInfo
-import league.models.json.ApiQueueInfo
-import league.models.json.ChallengeInfo
-import league.models.json.RoleMapping
+import league.models.json.*
 import util.LogType
 import util.Logging
 import util.StringUtil
@@ -40,6 +37,9 @@ object LeagueCommunityDragonApi {
     private val CHAMPION_PORTRAIT_ENDPOINT by lazy {
         "https://raw.communitydragon.org/${LeagueDataDragonApi.VERSION}/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/%s.png"
     }
+    private val ETERNALS_ENDPOINT by lazy {
+        "https://raw.communitydragon.org/${LeagueDataDragonApi.VERSION}/plugins/rcp-be-lol-game-data/global/default/v1/statstones.json"
+    }
     private val CHALLENGE_IMAGE_ENDPOINT by lazy {
         "https://raw.communitydragon.org/${LeagueDataDragonApi.VERSION}/game/assets/challenges/config/%s/tokens/%s.png"
     }
@@ -52,10 +52,11 @@ object LeagueCommunityDragonApi {
     }
 
     var ROLE_MAPPING = hashMapOf<Role, HashMap<Int, Float>>()
-    var QUEUE_MAPPING = hashMapOf<Int, ApiQueueInfo>()
+    var QUEUE_MAPPING = hashMapOf<Int, ApiQueueInfoResponse>()
     var CHALLENGE_MAPPING = hashMapOf<String, Long>()
+    var ETERNALS_MAPPING = hashMapOf<String, List<Int>>()
 
-    fun getQueueMapping(id: Int): ApiQueueInfo {
+    fun getQueueMapping(id: Int): ApiQueueInfoResponse {
         if (QUEUE_MAPPING.isEmpty()) {
             populateQueueMapping()
         }
@@ -79,6 +80,14 @@ object LeagueCommunityDragonApi {
         }
 
         return CHALLENGE_MAPPING[id + challengeLevel.name]!!
+    }
+
+    fun getEternal(contentId: String): List<Int> {
+        if (ETERNALS_MAPPING.isEmpty()) {
+            populateEternalsMapping()
+        }
+
+        return ETERNALS_MAPPING[contentId]!!
     }
 
     fun getImage(t: ImageCacheType, vararg params: Any): Image {
@@ -158,7 +167,7 @@ object LeagueCommunityDragonApi {
         QUEUE_MAPPING.clear()
 
         val jsonStr = sendRequest(QUEUE_TYPE_ENDPOINT)
-        val json = StringUtil.extractJSONMapFromString<ApiQueueInfo>(jsonStr)
+        val json = StringUtil.extractJSONMapFromString<ApiQueueInfoResponse>(jsonStr)
 
         QUEUE_MAPPING = HashMap(json.mapKeys { it.key.toInt() })
     }
@@ -180,10 +189,19 @@ object LeagueCommunityDragonApi {
         CHALLENGE_MAPPING.clear()
 
         val jsonStr = sendRequest(CHALLENGES_ENDPOINT)
-        val json = StringUtil.extractJSONFromString<ApiChallengeInfo>(jsonStr)
+        val json = StringUtil.extractJSONFromString<ApiChallengeResponse>(jsonStr)
 
         CHALLENGE_MAPPING = HashMap(json.challenges.values.flatMap { c -> c.thresholds!!.map { (k, v) -> (c.name!! + k.name) to v.value!!.toLong() } }
             .toMap())
+    }
+
+    private fun populateEternalsMapping() {
+        ETERNALS_MAPPING.clear()
+
+        val jsonStr = sendRequest(ETERNALS_ENDPOINT)
+        val json = StringUtil.extractJSONFromString<ApiEternalsResponse>(jsonStr)
+
+        ETERNALS_MAPPING = HashMap(json.statstoneData.flatMap { data -> data.statstones.map { it.contentId to it.milestones } }.toMap())
     }
 
     private fun sendRequest(url: String): String {

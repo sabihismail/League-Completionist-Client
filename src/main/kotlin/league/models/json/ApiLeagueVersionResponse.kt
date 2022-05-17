@@ -1,7 +1,9 @@
 package league.models.json
 
-@kotlinx.serialization.Serializable
-class ApiLeagueVersion {
+import kotlinx.serialization.Serializable
+
+@Serializable
+class ApiLeagueVersionResponse {
     var v: String? = "latest"
 
     companion object {

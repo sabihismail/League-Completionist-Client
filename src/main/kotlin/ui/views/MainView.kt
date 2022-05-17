@@ -106,7 +106,7 @@ class MainView: View("LoL Mastery Box Client") {
                             controller.leagueConnection.updateChallengesInfo()
                             controller.updateChallengesView()
 
-                            find<ChallengesView>().openWindow()
+                            find<ChallengesView>().openWindow(owner = null)
                         }
                     }
                 }

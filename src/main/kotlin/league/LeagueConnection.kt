@@ -1,6 +1,7 @@
 package league
 
 import com.stirante.lolclient.*
+import com.stirante.lolclient.libs.com.google.gson.GsonBuilder
 import com.stirante.lolclient.libs.org.apache.http.HttpException
 import com.stirante.lolclient.libs.org.apache.http.conn.HttpHostConnectException
 import generated.*
@@ -24,6 +25,7 @@ class LeagueConnection {
     var clientApi: ClientApi? = null
     var socket: ClientWebSocket? = null
 
+    var gameId = -1L
     var gameMode = GameMode.NONE
     var role = Role.ANY
 
@@ -31,7 +33,7 @@ class LeagueConnection {
     var masteryChestInfo = MasteryChestInfo()
     var championSelectInfo = ChampionSelectInfo()
     var championInfo = mapOf<Int, ChampionInfo>()
-    var challengeInfo = mapOf<ChallengeCategory, List<ChallengeInfo>>()
+    var challengeInfo = mapOf<ChallengeCategory, MutableList<ChallengeInfo>>()
     var challengeInfoSummary = ChallengeSummary()
     var eternalsValidQueues = setOf<Int>()
 
@@ -43,9 +45,32 @@ class LeagueConnection {
     private val onMasteryChestChangeList = ArrayList<(MasteryChestInfo) -> Unit>()
     private val onChampionSelectChangeList = ArrayList<(ChampionSelectInfo) -> Unit>()
     private val onClientStateChangeList = ArrayList<(LolGameflowGameflowPhase) -> Unit>()
+    private val onChallengesChangedList = ArrayList<() -> Unit>()
     private val onLoggedInList = ArrayList<() -> Unit>()
 
     private var isConnected = false
+
+    private val eventListenerMapping = mapOf(
+        "/lol-champ-select/v1/session.*".toRegex() to { data: Any ->
+            handleChampionSelectChange(data as LolChampSelectChampSelectSession)
+        },
+        "/lol-gameflow/v1/gameflow-phase.*".toRegex() to { data ->
+            handleClientStateChange(data as LolGameflowGameflowPhase)
+        },
+        "/lol-login/v1/session.*".toRegex() to { data ->
+            handleSignOnStateChange(data as LolLoginLoginSession)
+        },
+        "/lol-collections/v1/inventories/chest-eligibility.*".toRegex() to { data ->
+            handleMasteryChestChange(data as LolCollectionsCollectionsChestEligibility)
+        },
+        "/lol-challenges/v1/my-updated-challenges/.*".toRegex() to { data ->
+            handleChallengesChange((data as Array<*>).map {
+                val gson = GsonBuilder().create()
+                val obj = gson.toJson(it)
+                gson.fromJson(obj, ChallengeInfo::class.java)
+            })
+        }
+    )
 
     fun start() {
         thread {
@@ -135,9 +160,9 @@ class LeagueConnection {
         var info = championInfo.map { champion -> champion.value }
             .sortedWith(
                 compareByDescending<ChampionInfo> { it.level }
+                    .thenByDescending { it.tokens }
                     .thenByDescending { it.currentMasteryPoints }
                     .thenByDescending { it.ownershipStatus }
-                    .thenByDescending { it.tokens }
                     .thenByDescending { it.eternal != null }
                     .thenByDescending { it.name }
             )
@@ -253,8 +278,9 @@ class LeagueConnection {
                         .thenByDescending { it.currentLevel }
                         .thenByDescending { it.hasRewardTitle }
                         .thenBy { !it.rewardObtained }
-                        .thenByDescending { it.currentThreshold?.div(it.nextThreshold!!) }
-                ))
+                        .thenByDescending { it.nextLevelPoints }
+                        .thenByDescending { it.percentage }
+                ).toMutableList())
             }
             .toMap()
 
@@ -278,6 +304,10 @@ class LeagueConnection {
 
     fun onClientStateChange(callable: (LolGameflowGameflowPhase) -> Unit) {
         onClientStateChangeList.add(callable)
+    }
+
+    fun onChallengesChange(callable: () -> Unit) {
+        onChallengesChangedList.add(callable)
     }
 
     fun onLoggedIn(callable: () -> Unit) {
@@ -306,19 +336,13 @@ class LeagueConnection {
                     override fun onEvent(event: ClientWebSocket.Event?) {
                         if (event == null || event.uri == null || event.data == null) return
 
-                        when (event.uri) {
-                            "/lol-champ-select/v1/session" -> handleChampionSelectChange(event.data as LolChampSelectChampSelectSession)
-                            "/lol-gameflow/v1/gameflow-phase" -> handleClientStateChange(event.data as LolGameflowGameflowPhase)
-                            "/lol-login/v1/session" -> handleSignOnStateChange(event.data as LolLoginLoginSession)
-                            "/lol-collections/v1/inventories/chest-eligibility" -> handleMasteryChestChange(event.data as LolCollectionsCollectionsChestEligibility)
-                            else -> {
-                                if (event.uri.contains("chest")) {
-                                    Logging.log(event.data, LogType.DEBUG, event.uri + " - " + event.eventType)
-                                }
-
-                                Logging.log(event.data, LogType.VERBOSE, "ClientAPI WebSocket: " + event.uri + " - " + event.eventType)
-                            }
+                        val mappedRegex = eventListenerMapping.keys.firstOrNull { event.uri.matches(it) }
+                        if (mappedRegex == null) {
+                            Logging.log(event.data, LogType.VERBOSE, "ClientAPI WebSocket: " + event.uri + " - " + event.eventType)
+                            return
                         }
+
+                        eventListenerMapping[mappedRegex]?.invoke(event.data)
                     }
 
                     override fun onClose(code: Int, reason: String?) {
@@ -339,6 +363,16 @@ class LeagueConnection {
         }
 
         clientApi?.addClientConnectionListener(clientApiListener)
+    }
+
+    private fun handleChallengesChange(challengeInfoList: List<ChallengeInfo>) {
+        challengeInfoList.forEach {
+            val index = challengeInfo[it.category]!!.indexOfFirst { old -> old.id == it.id }
+            challengeInfo[it.category]!![index] = it
+        }
+
+        challengeInfoSummary = clientApi!!.executeGet("/lol-challenges/v1/summary-player-data/local-player", ChallengeSummary::class.java).responseObject
+        challengesChanged()
     }
 
     private fun handleMasteryChestChange(chestEligibility: LolCollectionsCollectionsChestEligibility) {
@@ -375,6 +409,7 @@ class LeagueConnection {
                 val gameFlow = clientApi!!.executeGet("/lol-gameflow/v1/session", LolGameflowGameflowSession::class.java).responseObject ?: return
                 Logging.log(gameFlow, LogType.DEBUG)
 
+                gameId = gameFlow.gameData.gameId
                 GameMode.fromGameMode(gameFlow.gameData.queue.gameMode, gameFlow.gameData.queue.id)
             }
             else -> {
@@ -384,7 +419,6 @@ class LeagueConnection {
 
         if (clientState == LolGameflowGameflowPhase.ENDOFGAME) {
             updateChampionMasteryInfo()
-            updateChallengesInfo()
         }
 
         clientState = gameFlowPhase
@@ -488,6 +522,10 @@ class LeagueConnection {
 
     private fun clientStateChanged() {
         onClientStateChangeList.forEach { it(clientState) }
+    }
+
+    private fun challengesChanged() {
+        onChallengesChangedList.forEach { it() }
     }
 
     private fun loggedIn() {
