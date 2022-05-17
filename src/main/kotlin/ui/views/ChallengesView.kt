@@ -29,31 +29,39 @@ import util.constants.ViewConstants.SCROLLBAR_HEIGHT
 
 class ChallengesView : View("LoL Challenges") {
     private val challengesSummaryProperty = SimpleObjectProperty<ChallengeSummary>()
+    private val allCategoriesProperty = SimpleListProperty<ChallengeCategory>()
     private val categoriesProperty = SimpleListProperty<ChallengeCategory>()
     private val allChallengesProperty = SimpleMapProperty<ChallengeCategory, List<ChallengeInfo>>()
     private val filteredChallengesProperty = SimpleMapProperty<ChallengeCategory, List<ChallengeInfo>>()
 
     private val hideEarnPointChallengesProperty = SimpleBooleanProperty(true)
+    private val hidePremadeChallengesProperty = SimpleBooleanProperty(true)
     private val hideCompletedChallengesProperty = SimpleBooleanProperty(true)
-    private val showOnlyTitleChallengesProperty = SimpleBooleanProperty(false)
+    private val hideNonTitleChallengesProperty = SimpleBooleanProperty(false)
+    private val hideLegacyAndCollectionProperty = SimpleBooleanProperty(true)
     private val currentSearchTextProperty = SimpleStringProperty("")
 
     val currentGameModeProperty = SimpleObjectProperty(GameMode.CLASSIC)
 
+    private lateinit var verticalRow: ScrollPane
     private lateinit var grid: DataGrid<ChallengeCategory>
 
     fun setChallenges(summary: ChallengeSummary = challengesSummaryProperty.value,
                       challengeInfo: Map<ChallengeCategory, List<ChallengeInfo>> = allChallengesProperty.value,
-                      categories: List<ChallengeCategory> = categoriesProperty.value) {
+                      allCategories: List<ChallengeCategory> = allCategoriesProperty.value) {
         runAsync {
             val filters = listOf(
                 ChallengeFilter(hideEarnPointChallengesProperty.get()) { challengeInfo ->
                     !CRINGE_MISSIONS.any { x -> challengeInfo.description!!.contains(x) }
                 },
 
+                ChallengeFilter(hidePremadeChallengesProperty.get()) { challengeInfo ->
+                    !challengeInfo.description!!.lowercase().contains("premade")
+                },
+
                 ChallengeFilter(hideCompletedChallengesProperty.get()) { challengeInfo -> !challengeInfo.isComplete },
 
-                ChallengeFilter(showOnlyTitleChallengesProperty.get()) { challengeInfo -> challengeInfo.hasRewardTitle },
+                ChallengeFilter(hideNonTitleChallengesProperty.get()) { challengeInfo -> challengeInfo.hasRewardTitle },
 
                 ChallengeFilter(true) { challengeInfo ->
                     if (currentGameModeProperty.value == GameMode.ALL) true else challengeInfo.gameModeSet.contains(currentGameModeProperty.value)
@@ -66,15 +74,29 @@ class ChallengesView : View("LoL Challenges") {
 
             val sortedMap = challengeInfo.toList().associate { (k, v) -> k to v.filter { challengeInfo -> filters.filter { it.isSet }.all { it.action(challengeInfo) } } }
 
-            ChallengeUiRefreshData(summary, FXCollections.observableMap(challengeInfo), FXCollections.observableMap(sortedMap), FXCollections.observableList(categories))
+            val set = setOf(ChallengeCategory.COLLECTION, ChallengeCategory.LEGACY)
+            val categories = if (hideLegacyAndCollectionProperty.value) allCategories.filter { !set.contains(it) } else allCategories
+
+            ChallengeUiRefreshData(summary, FXCollections.observableMap(challengeInfo), FXCollections.observableMap(sortedMap),
+                FXCollections.observableList(allCategories), FXCollections.observableList(categories))
         } ui {
             challengesSummaryProperty.value = it.challengesSummary
+            allCategoriesProperty.value = it.allCategories
             categoriesProperty.value = it.categories
             allChallengesProperty.value = it.allChallenges
             filteredChallengesProperty.value = it.filteredChallenges
 
+            ROW_COUNT = categoriesProperty.size
+
+            verticalRow.minHeight = getOuterGridPaneHeight()
+            verticalRow.maxHeight = getOuterGridPaneHeight()
+
+            grid.minHeight = getOuterGridPaneHeight()
             grid.cellWidth = (CHALLENGE_IMAGE_WIDTH + DEFAULT_SPACING * 2) *
                     (categoriesProperty.maxOfOrNull { key -> filteredChallengesProperty[key]!!.size } ?: 1)
+
+            currentWindow!!.sizeToScene()
+            currentWindow!!.centerOnScreen()
         }
     }
 
@@ -86,13 +108,11 @@ class ChallengesView : View("LoL Challenges") {
     )
 
     init {
-        //ROW_COUNT = controller.leagueConnection.challengeInfo.keys.size
-        //OUTER_GRID_PANE_HEIGHT = (INNER_CELL_HEIGHT + SPACING_BETWEEN_ROW * 2) * ROW_COUNT + DEFAULT_SPACING * 2
-
         setOf(
             hideEarnPointChallengesProperty,
             hideCompletedChallengesProperty,
-            showOnlyTitleChallengesProperty,
+            hideNonTitleChallengesProperty,
+            hideLegacyAndCollectionProperty,
             currentGameModeProperty,
             currentSearchTextProperty,
         ).forEach { it.onChange { setChallenges() } }
@@ -111,7 +131,8 @@ class ChallengesView : View("LoL Challenges") {
 
     override val root = vbox {
         alignment = Pos.CENTER
-        minWidth = 820.0
+        minWidth = 1080.0
+        maxWidth = 1080.0
 
         hbox {
             spacing = 0.0
@@ -143,16 +164,16 @@ class ChallengesView : View("LoL Challenges") {
             }
         }
 
-        scrollpane(fitToWidth = true) {
+        verticalRow = scrollpane(fitToWidth = true) {
             vbarPolicy = ScrollPane.ScrollBarPolicy.NEVER
-            minHeight = OUTER_GRID_PANE_HEIGHT
-            maxHeight = OUTER_GRID_PANE_HEIGHT
+            minHeight = getOuterGridPaneHeight()
+            maxHeight = getOuterGridPaneHeight()
 
             grid = datagrid(categoriesProperty) {
                 maxCellsInRow = 1
                 verticalCellSpacing = SPACING_BETWEEN_ROW
                 cellHeight = INNER_CELL_HEIGHT
-                minHeight = OUTER_GRID_PANE_HEIGHT
+                minHeight = getOuterGridPaneHeight()
 
                 cellFormat {
                     graphic = vbox {
@@ -247,7 +268,7 @@ class ChallengesView : View("LoL Challenges") {
                                                 }
                                             }
 
-                                            label("${it.currentValueProper}/${it.nextLevelValueProper} (+${it.nextLevelPoints})") {
+                                            label("${it.currentValue!!.toInt()}/${it.nextThreshold!!.toInt()} (+${it.nextLevelPoints})") {
                                                 textFill = Color.WHITE
                                                 textAlignment = TextAlignment.CENTER
                                                 isWrapText = true
@@ -285,9 +306,11 @@ class ChallengesView : View("LoL Challenges") {
                 paddingHorizontal = 10.0
                 spacing = 10.0
 
-                checkbox("Hide Grind/Time Missions", hideEarnPointChallengesProperty)
-                checkbox("Hide Completed Missions", hideCompletedChallengesProperty)
-                checkbox("Show Title Missions", showOnlyTitleChallengesProperty)
+                checkbox("Hide Grind/Time", hideEarnPointChallengesProperty)
+                checkbox("Hide Premade", hidePremadeChallengesProperty)
+                checkbox("Hide Completed", hideCompletedChallengesProperty)
+                checkbox("Hide Non-Title", hideNonTitleChallengesProperty)
+                checkbox("Hide Legacy/Collection", hideLegacyAndCollectionProperty)
                 combobox(currentGameModeProperty, listOf(GameMode.ALL, GameMode.ARAM, GameMode.CLASSIC))
             }
         }
@@ -305,7 +328,9 @@ class ChallengesView : View("LoL Challenges") {
 
         private var ROW_COUNT = 6
         // cell + row_spacing for 6 rows + vert spacing
-        private var OUTER_GRID_PANE_HEIGHT = (INNER_CELL_HEIGHT + SPACING_BETWEEN_ROW * 2) * ROW_COUNT + DEFAULT_SPACING * 2 + SCROLLBAR_HEIGHT
+        private var getOuterGridPaneHeight = {
+            (INNER_CELL_HEIGHT + SPACING_BETWEEN_ROW * 2) * ROW_COUNT + DEFAULT_SPACING * 2 + SCROLLBAR_HEIGHT
+        }
 
         private val CRINGE_MISSIONS = setOf(
             "Earn points from challenges in the ",

@@ -25,7 +25,7 @@ class EternalsFragment : Fragment() {
                     font = Font.font(9.0)
                     textFill = Color.WHITE
                     paddingHorizontal = 8
-                    tooltip = tooltip("${it.description} (${LeagueCommunityDragonApi.getEternal(it.statstoneId)}") {
+                    tooltip = tooltip("${it.description} (${LeagueCommunityDragonApi.getEternal(it.statstoneId).joinToString(", ")})") {
                         style {
                             font = Font.font(9.0)
                         }

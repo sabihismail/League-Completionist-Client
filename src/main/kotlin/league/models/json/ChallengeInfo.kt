@@ -53,10 +53,12 @@ class ChallengeInfo {
     var hasRewardTitle = false
     var gameModeSet = setOf<GameMode>()
 
-    val currentValueProper get() = (currentValue!! - currentThreshold!!).toInt()
-    val nextLevelValueProper get() = (nextThreshold!! - currentThreshold!!).toInt()
-    val percentage get() = currentValueProper.toDouble() / nextLevelValueProper
-    val nextLevelPoints get() = thresholds!![nextLevel]!!.rewards!!.firstOrNull { it.category == ChallengeThresholdRewardCategory.CHALLENGE_POINTS }!!.quantity!!.toInt()
+    val percentage get() = currentValue!!.toDouble() / nextThreshold!!
+    val nextLevelPoints get() = try {
+        thresholds!![nextLevel]!!.rewards!!.firstOrNull { it.category == ChallengeThresholdRewardCategory.CHALLENGE_POINTS }!!.quantity!!.toInt()
+    } catch (_: Exception) {
+        -1
+    }
 
     fun init() {
         initGameMode()

@@ -10,9 +10,11 @@ data class ChallengeUiRefreshData(
     val challengesSummary: ChallengeSummary,
     val allChallenges: ObservableMap<ChallengeCategory, List<ChallengeInfo>>,
     val filteredChallenges: ObservableMap<ChallengeCategory, List<ChallengeInfo>>,
+    val allCategories: ObservableList<ChallengeCategory>,
     val categories: ObservableList<ChallengeCategory>
 ) {
     override fun toString(): String {
-        return "ChallengeUiRefreshData(summary=$challengesSummary, allChallengeInfo=$allChallenges, sortedChallengeInfo=$filteredChallenges, categories=$categories)"
+        return "ChallengeUiRefreshData(challengesSummary=$challengesSummary, allChallenges=$allChallenges, filteredChallenges=$filteredChallenges, " +
+                "allCategories=$allCategories, categories=$categories)"
     }
 }
