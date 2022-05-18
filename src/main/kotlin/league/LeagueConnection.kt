@@ -504,7 +504,6 @@ class LeagueConnection {
 
     private fun getEternalsQueueIds() {
         val queues = clientApi!!.executeGet("/lol-statstones/v1/statstones-enabled-queue-ids", Array<Int>::class.java).responseObject
-
         eternalsValidQueues = queues.toSet()
     }
 

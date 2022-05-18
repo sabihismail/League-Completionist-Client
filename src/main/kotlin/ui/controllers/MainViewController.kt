@@ -26,6 +26,7 @@ open class MainViewController : Controller() {
 
     private var activeView = ActiveView.NORMAL
     private var manualRoleSelect = false
+    private var manualGameModeSelect = false
 
     val leagueConnection = LeagueConnection()
 
@@ -41,6 +42,10 @@ open class MainViewController : Controller() {
 
             val newSortedChampionInfo = leagueConnection.getChampionMasteryInfo()
             normalView.championListProperty.set(FXCollections.observableList(newSortedChampionInfo))
+        }
+
+        normalView.find<ChallengesView>().currentGameModeProperty.addListener { _, _, _ ->
+            manualGameModeSelect = true
         }
 
         leagueConnection.onLoggedIn {
@@ -107,16 +112,18 @@ open class MainViewController : Controller() {
 
             replaceDisplay()
 
-            runLater {
-                view.find<ChallengesView>().currentGameModeProperty.set(
-                    if (leagueConnection.gameMode.isClassic) {
-                        GameMode.CLASSIC
-                    } else if (leagueConnection.gameMode == GameMode.ARAM) {
-                        GameMode.ARAM
-                    } else {
-                        throw IllegalArgumentException("onChampionSelectChange - Invalid GameMode - " + leagueConnection.gameMode)
-                    }
-                )
+            if (!manualGameModeSelect) {
+                runLater {
+                    view.find<ChallengesView>().currentGameModeProperty.set(
+                        if (leagueConnection.gameMode.isClassic) {
+                            GameMode.CLASSIC
+                        } else if (leagueConnection.gameMode == GameMode.ARAM) {
+                            GameMode.ARAM
+                        } else {
+                            throw IllegalArgumentException("onChampionSelectChange - Invalid GameMode - " + leagueConnection.gameMode)
+                        }
+                    )
+                }
             }
         }
 
@@ -127,6 +134,7 @@ open class MainViewController : Controller() {
         leagueConnection.onClientStateChange {
             if (it == LolGameflowGameflowPhase.CHAMPSELECT) {
                 manualRoleSelect = false
+                manualGameModeSelect = false
             }
 
             if (it == LolGameflowGameflowPhase.ENDOFGAME) {

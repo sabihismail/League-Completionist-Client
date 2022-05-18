@@ -32,7 +32,7 @@ enum class GameMode {
     @SerializedName("PRACTICETOOL")
     PRACTICE_TOOL,
     NONE,
-    ALL,
+    ANY,
     UNKNOWN;
 
     val isClassic get() = CLASSIC_MODES.contains(this)

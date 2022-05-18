@@ -31,6 +31,13 @@ internal class LeagueCommunityDragonAPITest {
     }
 
     @Test
+    fun checkLeagueEternalsMappingAPI() {
+        assert(LeagueCommunityDragonApi.ETERNALS_MAPPING.size == 0)
+        assert(LeagueCommunityDragonApi.getEternal("bd5ea729-424c-410f-8cf8-864575a08430").isNotEmpty())
+        assert(LeagueCommunityDragonApi.ETERNALS_MAPPING.size > 0)
+    }
+
+    @Test
     fun getChampionImagePath() {
         val imageID = 412 // thresh
 

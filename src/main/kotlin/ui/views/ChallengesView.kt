@@ -1,7 +1,5 @@
 package ui.views
 
-import DEBUG_FAKE_UI_DATA_ARAM
-import DEBUG_FAKE_UI_DATA_NORMAL
 import javafx.beans.property.*
 import javafx.collections.FXCollections
 import javafx.geometry.Pos
@@ -20,9 +18,6 @@ import league.models.enums.ImageCacheType
 import league.models.json.ChallengeInfo
 import league.models.json.ChallengeSummary
 import tornadofx.*
-import ui.controllers.MainViewController
-import ui.mock.AramMockController
-import ui.mock.NormalMockController
 import util.constants.ViewConstants.DEFAULT_SPACING
 import util.constants.ViewConstants.SCROLLBAR_HEIGHT
 
@@ -38,10 +33,11 @@ class ChallengesView : View("LoL Challenges") {
     private val hidePremadeChallengesProperty = SimpleBooleanProperty(true)
     private val hideCompletedChallengesProperty = SimpleBooleanProperty(true)
     private val hideNonTitleChallengesProperty = SimpleBooleanProperty(false)
-    private val hideLegacyAndCollectionProperty = SimpleBooleanProperty(true)
+    private val hideCollectionProperty = SimpleBooleanProperty(false)
+    private val hideLegacyProperty = SimpleBooleanProperty(true)
     private val currentSearchTextProperty = SimpleStringProperty("")
 
-    val currentGameModeProperty = SimpleObjectProperty(GameMode.CLASSIC)
+    val currentGameModeProperty = SimpleObjectProperty(GameMode.ANY)
 
     private lateinit var verticalRow: ScrollPane
     private lateinit var grid: DataGrid<ChallengeCategory>
@@ -64,7 +60,7 @@ class ChallengesView : View("LoL Challenges") {
                 ChallengeFilter(hideNonTitleChallengesProperty.get()) { challengeInfo -> challengeInfo.hasRewardTitle },
 
                 ChallengeFilter(true) { challengeInfo ->
-                    if (currentGameModeProperty.value == GameMode.ALL) true else challengeInfo.gameModeSet.contains(currentGameModeProperty.value)
+                    if (currentGameModeProperty.value == GameMode.ANY) true else challengeInfo.gameModeSet.contains(currentGameModeProperty.value)
                 },
 
                 ChallengeFilter(currentSearchTextProperty.value.isNotEmpty()) { challengeInfo ->
@@ -74,8 +70,8 @@ class ChallengesView : View("LoL Challenges") {
 
             val sortedMap = challengeInfo.toList().associate { (k, v) -> k to v.filter { challengeInfo -> filters.filter { it.isSet }.all { it.action(challengeInfo) } } }
 
-            val set = setOf(ChallengeCategory.COLLECTION, ChallengeCategory.LEGACY)
-            val categories = if (hideLegacyAndCollectionProperty.value) allCategories.filter { !set.contains(it) } else allCategories
+            var categories = if (hideCollectionProperty.value) allCategories.filter { it != ChallengeCategory.COLLECTION } else allCategories
+            categories = if (hideLegacyProperty.value) categories.filter { it != ChallengeCategory.LEGACY } else categories
 
             ChallengeUiRefreshData(summary, FXCollections.observableMap(challengeInfo), FXCollections.observableMap(sortedMap),
                 FXCollections.observableList(allCategories), FXCollections.observableList(categories))
@@ -100,19 +96,13 @@ class ChallengesView : View("LoL Challenges") {
         }
     }
 
-    @Suppress("unused")
-    private val controller = find(
-        if (DEBUG_FAKE_UI_DATA_ARAM) AramMockController::class
-        else if (DEBUG_FAKE_UI_DATA_NORMAL) NormalMockController::class
-        else MainViewController::class
-    )
-
     init {
         setOf(
             hideEarnPointChallengesProperty,
             hideCompletedChallengesProperty,
             hideNonTitleChallengesProperty,
-            hideLegacyAndCollectionProperty,
+            hideCollectionProperty,
+            hideLegacyProperty,
             currentGameModeProperty,
             currentSearchTextProperty,
         ).forEach { it.onChange { setChallenges() } }
@@ -310,8 +300,9 @@ class ChallengesView : View("LoL Challenges") {
                 checkbox("Hide Premade", hidePremadeChallengesProperty)
                 checkbox("Hide Completed", hideCompletedChallengesProperty)
                 checkbox("Hide Non-Title", hideNonTitleChallengesProperty)
-                checkbox("Hide Legacy/Collection", hideLegacyAndCollectionProperty)
-                combobox(currentGameModeProperty, listOf(GameMode.ALL, GameMode.ARAM, GameMode.CLASSIC))
+                checkbox("Hide Collection", hideCollectionProperty)
+                checkbox("Hide Legacy", hideLegacyProperty)
+                combobox(currentGameModeProperty, listOf(GameMode.ANY, GameMode.ARAM, GameMode.CLASSIC))
             }
         }
     }
