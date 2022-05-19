@@ -61,7 +61,7 @@ open class MainViewController : Controller() {
                 .toList()
 
             val maxCount = elements.count()
-            val fileWalk = Files.walk(LeagueCommunityDragonApi.getPath(ImageCacheType.CHALLENGE)).count()
+            val fileWalk = Files.walk(LeagueCommunityDragonApi.getPath(CacheType.CHALLENGE)).count()
             if (fileWalk < maxCount) {
                 thread {
                     Logging.log("Challenges - Starting Cache Download...", LogType.INFO)
@@ -69,7 +69,7 @@ open class MainViewController : Controller() {
                     val num = AtomicInteger(0)
                     elements.parallelStream()
                         .forEach {
-                            LeagueCommunityDragonApi.getImagePath(ImageCacheType.CHALLENGE, it.first.toString().lowercase(), it.second)
+                            LeagueCommunityDragonApi.getImagePath(CacheType.CHALLENGE, it.first.toString().lowercase(), it.second)
 
                             num.incrementAndGet()
                         }

@@ -1,5 +1,6 @@
 package ui.views.fragments
 
+import generated.LolStatstonesStatstone
 import generated.LolStatstonesStatstoneSet
 import javafx.geometry.Pos
 import javafx.scene.paint.Color
@@ -10,6 +11,13 @@ import util.constants.GenericConstants.ETERNALS_DESCRIPTION_REGEX
 
 class EternalsFragment : Fragment() {
     val eternal: LolStatstonesStatstoneSet by param()
+
+    private fun getEternalsThreshold(currentEternal: LolStatstonesStatstone): String {
+        return LeagueCommunityDragonApi.getEternal(currentEternal.statstoneId)
+            .dropLast(1)
+            .filter { it > currentEternal.playerRecord.value }
+            .joinToString(", ")
+    }
 
     override val root = stackpane {
         alignment = Pos.BOTTOM_LEFT
@@ -25,7 +33,7 @@ class EternalsFragment : Fragment() {
                     font = Font.font(9.0)
                     textFill = Color.WHITE
                     paddingHorizontal = 8
-                    tooltip = tooltip("${it.description} (${LeagueCommunityDragonApi.getEternal(it.statstoneId).joinToString(", ")})") {
+                    tooltip = tooltip("${it.description} (${getEternalsThreshold(it)})") {
                         style {
                             font = Font.font(9.0)
                         }

@@ -205,8 +205,8 @@ class LeagueConnection {
         Logging.log(championMasteryList, LogType.VERBOSE)
 
         val eternalSummary = clientApi!!.executeGet("/lol-statstones/v2/player-summary-self", Array<LolStatstonesChampionStatstoneSummary>::class.java)
-            .responseObject
-            .associate { it.championId to (it.sets.first { set -> set.name == "Series 1" }.stonesOwned > 0) }
+                .responseObject
+                .associate { it.championId to (it.sets.first { set -> set.name == "Series 1" }.stonesOwned > 0) }
         Logging.log(eternalSummary, LogType.VERBOSE)
 
         val masteryPairing = champions.filter { it.id != -1 }
@@ -368,6 +368,8 @@ class LeagueConnection {
     private fun handleChallengesChange(challengeInfoList: List<ChallengeInfo>) {
         challengeInfoList.forEach {
             val index = challengeInfo[it.category]!!.indexOfFirst { old -> old.id == it.id }
+            it.init()
+
             challengeInfo[it.category]!![index] = it
         }
 

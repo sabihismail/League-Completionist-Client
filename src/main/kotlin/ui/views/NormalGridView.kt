@@ -7,7 +7,7 @@ import javafx.scene.paint.Color
 import javafx.scene.text.Font
 import league.api.LeagueCommunityDragonApi
 import league.models.ChampionInfo
-import league.models.enums.ImageCacheType
+import league.models.enums.CacheType
 import league.models.enums.Role
 import tornadofx.*
 import ui.views.fragments.EternalsFragment
@@ -39,7 +39,7 @@ class NormalGridView: View() {
                     stackpane {
                         alignment = Pos.TOP_CENTER
 
-                        imageview(LeagueCommunityDragonApi.getImage(ImageCacheType.CHAMPION, it.id)) { effect = LeagueCommunityDragonApi.getChampionImageEffect(it) }
+                        imageview(LeagueCommunityDragonApi.getImage(CacheType.CHAMPION, it.id)) { effect = LeagueCommunityDragonApi.getChampionImageEffect(it) }
 
                         borderpane {
                             left = stackpane {

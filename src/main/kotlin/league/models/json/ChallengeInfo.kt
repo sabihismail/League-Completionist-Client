@@ -11,6 +11,8 @@ import league.models.enums.GameMode
 @Suppress("unused")
 class ChallengeInfo {
     var id: Long? = null
+    var name: String? = null
+    var description: String? = null
     var capstoneGroupId: Long? = null
     var capstoneGroupName: String? = null
     var capstoneId: Long? = null
@@ -19,7 +21,6 @@ class ChallengeInfo {
     var currentLevelAchievedTime: Long? = null
     var currentThreshold: Double? = null
     var currentValue: Double? = null
-    var description: String? = null
     var descriptionShort: String? = null
     var gameModes: List<String>? = null
     var hasLeaderboard: Boolean? = null
@@ -27,7 +28,6 @@ class ChallengeInfo {
     var isApex: Boolean? = null
     var isCapstone: Boolean? = null
     var isReverseDirection: Boolean? = null
-    var name: String? = null
     var nextLevel: ChallengeLevel? = null
     var nextLevelIconPath: String? = null
     var nextThreshold: Double? = null
@@ -88,10 +88,10 @@ class ChallengeInfo {
     }
 
     override fun toString(): String {
-        return "ChallengeInfo(id=$id, capstoneGroupId=$capstoneGroupId, capstoneGroupName=$capstoneGroupName, capstoneId=$capstoneId, " +
-                "currentLevelAchievedTime=$currentLevelAchievedTime, currentThreshold=$currentThreshold, currentValue=$currentValue, description=$description, " +
+        return "ChallengeInfo(id=$id, name=$name, description=$description, capstoneGroupId=$capstoneGroupId, capstoneGroupName=$capstoneGroupName, " +
+                "capstoneId=$capstoneId, currentLevelAchievedTime=$currentLevelAchievedTime, currentThreshold=$currentThreshold, currentValue=$currentValue, " +
                 "descriptionShort=$descriptionShort, gameModes=$gameModes, hasLeaderboard=$hasLeaderboard, iconPath=$iconPath, " +
-                "isApex=$isApex, isCapstone=$isCapstone, isReverseDirection=$isReverseDirection, name=$name, nextLevel=$nextLevel, " +
+                "isApex=$isApex, isCapstone=$isCapstone, isReverseDirection=$isReverseDirection, nextLevel=$nextLevel, " +
                 "nextLevelIconPath=$nextLevelIconPath, nextThreshold=$nextThreshold, percentile=$percentile, pointsAwarded=$pointsAwarded, position=$position, " +
                 "previousLevel=$previousLevel, previousValue=$previousValue, source=$source, valueMapping=$valueMapping, thresholds=$thresholds, category=$category, " +
                 "currentLevel=$currentLevel, rewardTitle='$rewardTitle', rewardLevel=$rewardLevel, hasRewardTitle=$hasRewardTitle)"

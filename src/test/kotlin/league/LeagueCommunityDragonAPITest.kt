@@ -2,7 +2,7 @@ package league
 
 import league.api.LeagueCommunityDragonApi
 import league.models.enums.ChallengeLevel
-import league.models.enums.ImageCacheType
+import league.models.enums.CacheType
 import league.models.enums.Role
 import java.nio.file.Files
 import kotlin.io.path.fileSize
@@ -18,9 +18,9 @@ internal class LeagueCommunityDragonAPITest {
 
     @Test
     fun checkLeagueRoleMappingAPI() {
-        assert(LeagueCommunityDragonApi.ROLE_MAPPING.size == 0)
+        assert(LeagueCommunityDragonApi.CHAMPION_ROLE_MAPPING.size == 0)
         assert(LeagueCommunityDragonApi.getChampionsByRole(Role.TOP).isNotEmpty())
-        assert(LeagueCommunityDragonApi.ROLE_MAPPING.size == 5)
+        assert(LeagueCommunityDragonApi.CHAMPION_ROLE_MAPPING.size == 5)
     }
 
     @Test
@@ -41,12 +41,12 @@ internal class LeagueCommunityDragonAPITest {
     fun getChampionImagePath() {
         val imageID = 412 // thresh
 
-        val image = LeagueCommunityDragonApi.getImagePath(ImageCacheType.CHAMPION, imageID)
+        val image = LeagueCommunityDragonApi.getImagePath(CacheType.CHAMPION, imageID)
 
         assert(Files.exists(image!!))
         assert(image.fileSize() > 0)
 
-        val image2 = LeagueCommunityDragonApi.getImagePath(ImageCacheType.CHAMPION, imageID)
+        val image2 = LeagueCommunityDragonApi.getImagePath(CacheType.CHAMPION, imageID)
 
         assert(Files.exists(image2!!))
         assert(image2.fileSize() > 0)
@@ -57,12 +57,12 @@ internal class LeagueCommunityDragonAPITest {
         val imageId = 120001 // Co-Op vs AI challenge Id
         val rankId = "bronze"
 
-        val image = LeagueCommunityDragonApi.getImagePath(ImageCacheType.CHALLENGE, imageId, rankId)
+        val image = LeagueCommunityDragonApi.getImagePath(CacheType.CHALLENGE, imageId, rankId)
 
         assert(Files.exists(image!!))
         assert(image.fileSize() > 0)
 
-        val image2 = LeagueCommunityDragonApi.getImagePath(ImageCacheType.CHALLENGE, imageId, rankId)
+        val image2 = LeagueCommunityDragonApi.getImagePath(CacheType.CHALLENGE, imageId, rankId)
 
         assert(Files.exists(image2!!))
         assert(image2.fileSize() > 0)

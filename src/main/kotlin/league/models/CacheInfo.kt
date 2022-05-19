@@ -1,6 +1,6 @@
 package league.models
 
-data class ImageCacheInfo(val folder: String, val endpoint: String) {
+data class CacheInfo(val folder: String, var endpoint: String? = null) {
     override fun toString(): String {
         return "ImageCacheInfo(folder='$folder', endpoint='$endpoint')"
     }

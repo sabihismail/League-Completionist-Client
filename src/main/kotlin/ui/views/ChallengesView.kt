@@ -11,10 +11,10 @@ import javafx.scene.text.TextAlignment
 import league.api.LeagueCommunityDragonApi
 import league.models.ChallengeFilter
 import league.models.ChallengeUiRefreshData
+import league.models.enums.CacheType
 import league.models.enums.ChallengeCategory
 import league.models.enums.ChallengeLevel
 import league.models.enums.GameMode
-import league.models.enums.ImageCacheType
 import league.models.json.ChallengeInfo
 import league.models.json.ChallengeSummary
 import tornadofx.*
@@ -33,6 +33,7 @@ class ChallengesView : View("LoL Challenges") {
     private val hidePremadeChallengesProperty = SimpleBooleanProperty(true)
     private val hideCompletedChallengesProperty = SimpleBooleanProperty(true)
     private val hideNonTitleChallengesProperty = SimpleBooleanProperty(false)
+    private val hideWinChallengesProperty = SimpleBooleanProperty(true)
     private val hideCollectionProperty = SimpleBooleanProperty(false)
     private val hideLegacyProperty = SimpleBooleanProperty(true)
     private val currentSearchTextProperty = SimpleStringProperty("")
@@ -59,8 +60,16 @@ class ChallengesView : View("LoL Challenges") {
 
                 ChallengeFilter(hideNonTitleChallengesProperty.get()) { challengeInfo -> challengeInfo.hasRewardTitle },
 
+                ChallengeFilter(hideWinChallengesProperty.get()) { challengeInfo -> !challengeInfo.description!!.lowercase().contains("win") },
+
                 ChallengeFilter(true) { challengeInfo ->
-                    if (currentGameModeProperty.value == GameMode.ANY) true else challengeInfo.gameModeSet.contains(currentGameModeProperty.value)
+                    if (challengeInfo.category == ChallengeCategory.COLLECTION) return@ChallengeFilter true
+
+                    when(currentGameModeProperty.value) {
+                        GameMode.ANY -> true
+                        GameMode.ARAM -> challengeInfo.gameModeSet.contains(GameMode.ARAM) || challengeInfo.description!!.contains("ARAM")
+                        else -> challengeInfo.gameModeSet.contains(currentGameModeProperty.value) && !challengeInfo.description!!.contains("ARAM")
+                    }
                 },
 
                 ChallengeFilter(currentSearchTextProperty.value.isNotEmpty()) { challengeInfo ->
@@ -101,11 +110,17 @@ class ChallengesView : View("LoL Challenges") {
             hideEarnPointChallengesProperty,
             hideCompletedChallengesProperty,
             hideNonTitleChallengesProperty,
+            hideWinChallengesProperty,
             hideCollectionProperty,
             hideLegacyProperty,
             currentGameModeProperty,
             currentSearchTextProperty,
-        ).forEach { it.onChange { setChallenges() } }
+        ).forEach {
+            it.onChange {
+                if (challengesSummaryProperty.value == null || allChallengesProperty.value == null || allCategoriesProperty.value == null) return@onChange
+                setChallenges()
+            }
+        }
     }
 
     private fun getWorldPercentage(percentage: Double): String {
@@ -211,7 +226,7 @@ class ChallengesView : View("LoL Challenges") {
                                         else
                                             it.currentLevel!!.name.lowercase()
 
-                                        image = LeagueCommunityDragonApi.getImage(ImageCacheType.CHALLENGE, it.id!!, currentLevel).apply {
+                                        image = LeagueCommunityDragonApi.getImage(CacheType.CHALLENGE, it.id!!, currentLevel).apply {
                                             effect = LeagueCommunityDragonApi.getChallengeImageEffect(it)
                                         }
                                     }
@@ -300,6 +315,7 @@ class ChallengesView : View("LoL Challenges") {
                 checkbox("Hide Premade", hidePremadeChallengesProperty)
                 checkbox("Hide Completed", hideCompletedChallengesProperty)
                 checkbox("Hide Non-Title", hideNonTitleChallengesProperty)
+                checkbox("Hide Win", hideWinChallengesProperty)
                 checkbox("Hide Collection", hideCollectionProperty)
                 checkbox("Hide Legacy", hideLegacyProperty)
                 combobox(currentGameModeProperty, listOf(GameMode.ANY, GameMode.ARAM, GameMode.CLASSIC))
