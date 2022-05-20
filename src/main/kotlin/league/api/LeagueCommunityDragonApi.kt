@@ -60,28 +60,6 @@ object LeagueCommunityDragonApi {
     var CHALLENGE_MAPPING = hashMapOf<String, Long>()
     var ETERNALS_MAPPING = hashMapOf<String, List<Int>>()
 
-    private fun <T1, T2> addJsonCache(data: KMutableProperty0<HashMap<T1, T2>>) {
-        val json = gson.toJson(data.get())
-
-        val path = getPath(CacheType.JSON).resolve(data.name + ".json")
-        path.deleteIfExists()
-        path.createFile()
-        path.writeText(json)
-    }
-
-    private inline fun <reified T> checkIfJsonCached(data: KMutableProperty0<T>, runnable: () -> Unit) {
-        val path = getPath(CacheType.JSON).resolve(data.name + ".json")
-        if (!path.exists()) {
-            runnable()
-            return
-        }
-
-        val jsonStr = path.readText()
-        val json: T = gson.fromJson(jsonStr, object: TypeToken<T>(){}.type)
-
-        data.set(json)
-    }
-
     fun getChampionsByRole(role: Role): List<Int> {
         checkIfJsonCached(::CHAMPION_ROLE_MAPPING, ::populateRoleMapping)
 
@@ -234,5 +212,27 @@ object LeagueCommunityDragonApi {
         connection.setRequestProperty("User-Agent", "LoL-Mastery-Box-Client")
 
         return connection.getInputStream().bufferedReader().use { it.readText() }
+    }
+
+    private fun <T1, T2> addJsonCache(data: KMutableProperty0<HashMap<T1, T2>>) {
+        val json = gson.toJson(data.get())
+
+        val path = getPath(CacheType.JSON).resolve(data.name + ".json")
+        path.deleteIfExists()
+        path.createFile()
+        path.writeText(json)
+    }
+
+    private inline fun <reified T> checkIfJsonCached(data: KMutableProperty0<T>, runnable: () -> Unit) {
+        val path = getPath(CacheType.JSON).resolve(data.name + ".json")
+        if (!path.exists()) {
+            runnable()
+            return
+        }
+
+        val jsonStr = path.readText()
+        val json: T = gson.fromJson(jsonStr, object: TypeToken<T>(){}.type)
+
+        data.set(json)
     }
 }

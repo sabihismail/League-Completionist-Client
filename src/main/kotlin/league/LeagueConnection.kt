@@ -34,6 +34,7 @@ class LeagueConnection {
     var championSelectInfo = ChampionSelectInfo()
     var championInfo = mapOf<Int, ChampionInfo>()
     var challengeInfo = mapOf<ChallengeCategory, MutableList<ChallengeInfo>>()
+    var challengesUpdatedInfo = mutableListOf<ChallengeInfo>()
     var challengeInfoSummary = ChallengeSummary()
     var eternalsValidQueues = setOf<Int>()
 
@@ -69,7 +70,7 @@ class LeagueConnection {
                 val obj = gson.toJson(it)
                 gson.fromJson(obj, ChallengeInfo::class.java)
             })
-        }
+        },
     )
 
     fun start() {
@@ -193,6 +194,29 @@ class LeagueConnection {
             }
             else -> return
         }
+    }
+
+    private fun runLootCleanup() {
+        if (summonerInfo.displayName != "zeeNR6") return
+        return
+
+        val loot = clientApi!!.executeGet("/lol-loot/v1/player-loot", Array<LolLootPlayerLoot>::class.java).responseObject ?: return
+        Logging.log(loot, LogType.VERBOSE)
+
+        val tokens = loot.filter { it.type == "CHAMPION_TOKEN" }
+        val map = mapOf(2 to 5, 3 to 6)
+        val mastery6s = tokens.filter { it.count == 2 && championInfo[it.storeItemId]!!.level == 5 }
+            .forEach {
+
+            }
+
+        val shards = loot.filter { it.type == "CHAMPION_RENTAL" }
+        val unneededShards = shards.filter { championInfo[it.storeItemId]!!.level == 7 }
+            .forEach {
+
+            }
+
+
     }
 
     fun updateChampionMasteryInfo() {
@@ -330,6 +354,7 @@ class LeagueConnection {
                 }
 
                 updateChampionMasteryInfo()
+                runLootCleanup()
 
                 socket = clientApi?.openWebSocket()
                 socket?.setSocketListener(object : ClientWebSocket.SocketListener {
@@ -373,6 +398,7 @@ class LeagueConnection {
             challengeInfo[it.category]!![index] = it
         }
 
+        challengesUpdatedInfo = challengeInfoList.toMutableList()
         challengeInfoSummary = clientApi!!.executeGet("/lol-challenges/v1/summary-player-data/local-player", ChallengeSummary::class.java).responseObject
         challengesChanged()
     }
@@ -421,6 +447,7 @@ class LeagueConnection {
 
         if (clientState == LolGameflowGameflowPhase.ENDOFGAME) {
             updateChampionMasteryInfo()
+            runLootCleanup()
         }
 
         clientState = gameFlowPhase
@@ -457,8 +484,6 @@ class LeagueConnection {
 
         championSelectInfo = ChampionSelectInfo(teamChampions, benchedChampions, assignedRole)
         championSelectChanged()
-
-        role = championSelectInfo.assignedRole
     }
 
     private fun handleClientConnection(): Boolean {

@@ -82,7 +82,7 @@ class NormalGridView: View() {
                             }
 
                             if (it.eternal != null) {
-                                bottom = find<EternalsFragment>(mapOf(EternalsFragment::eternal to it.eternal)).root
+                                bottom = find<EternalsFragment>(mapOf(EternalsFragment::eternal to it.eternal, EternalsFragment::fontSizeIn to 9.0)).root
                             }
                         }
                     }

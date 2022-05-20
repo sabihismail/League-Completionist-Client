@@ -109,6 +109,16 @@ class MainView: View("LoL Mastery Box Client") {
                             find<ChallengesView>().openWindow(owner = null)
                         }
                     }
+
+                    button("View Last Game's Challenges").apply {
+                        enableWhen { summonerProperty.select { (it.status == SummonerStatus.LOGGED_IN_AUTHORIZED).toProperty() } }
+                        action {
+                            controller.leagueConnection.updateChallengesInfo()
+                            controller.updateChallengesUpdatedView()
+
+                            find<ChallengesUpdatedView>().openWindow(owner = null)
+                        }
+                    }
                 }
             }
         }

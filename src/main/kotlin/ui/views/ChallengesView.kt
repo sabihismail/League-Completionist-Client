@@ -7,17 +7,17 @@ import javafx.scene.control.ScrollPane
 import javafx.scene.paint.Color
 import javafx.scene.text.Font
 import javafx.scene.text.FontWeight
-import javafx.scene.text.TextAlignment
 import league.api.LeagueCommunityDragonApi
 import league.models.ChallengeFilter
 import league.models.ChallengeUiRefreshData
-import league.models.enums.CacheType
 import league.models.enums.ChallengeCategory
 import league.models.enums.ChallengeLevel
 import league.models.enums.GameMode
 import league.models.json.ChallengeInfo
 import league.models.json.ChallengeSummary
 import tornadofx.*
+import ui.views.fragments.ChallengeFragment
+import util.constants.ViewConstants.CHALLENGE_IMAGE_WIDTH
 import util.constants.ViewConstants.DEFAULT_SPACING
 import util.constants.ViewConstants.SCROLLBAR_HEIGHT
 
@@ -34,6 +34,7 @@ class ChallengesView : View("LoL Challenges") {
     private val hideCompletedChallengesProperty = SimpleBooleanProperty(true)
     private val hideNonTitleChallengesProperty = SimpleBooleanProperty(false)
     private val hideWinChallengesProperty = SimpleBooleanProperty(true)
+    private val hideMultiTierChallengesProperty = SimpleBooleanProperty(false)
     private val hideCollectionProperty = SimpleBooleanProperty(false)
     private val hideLegacyProperty = SimpleBooleanProperty(true)
     private val currentSearchTextProperty = SimpleStringProperty("")
@@ -61,6 +62,8 @@ class ChallengesView : View("LoL Challenges") {
                 ChallengeFilter(hideNonTitleChallengesProperty.get()) { challengeInfo -> challengeInfo.hasRewardTitle },
 
                 ChallengeFilter(hideWinChallengesProperty.get()) { challengeInfo -> !challengeInfo.description!!.lowercase().contains("win") },
+
+                ChallengeFilter(hideMultiTierChallengesProperty.get()) { challengeInfo -> challengeInfo.thresholds!!.count() == 1 },
 
                 ChallengeFilter(true) { challengeInfo ->
                     if (challengeInfo.category == ChallengeCategory.COLLECTION) return@ChallengeFilter true
@@ -97,8 +100,7 @@ class ChallengesView : View("LoL Challenges") {
             verticalRow.maxHeight = getOuterGridPaneHeight()
 
             grid.minHeight = getOuterGridPaneHeight()
-            grid.cellWidth = (CHALLENGE_IMAGE_WIDTH + DEFAULT_SPACING * 2) *
-                    (categoriesProperty.maxOfOrNull { key -> filteredChallengesProperty[key]!!.size } ?: 1)
+            grid.cellWidth = (CHALLENGE_IMAGE_WIDTH + DEFAULT_SPACING * 2) * (categoriesProperty.maxOfOrNull { key -> filteredChallengesProperty[key]!!.size } ?: 1)
 
             currentWindow!!.sizeToScene()
             currentWindow!!.centerOnScreen()
@@ -111,6 +113,7 @@ class ChallengesView : View("LoL Challenges") {
             hideCompletedChallengesProperty,
             hideNonTitleChallengesProperty,
             hideWinChallengesProperty,
+            hideMultiTierChallengesProperty,
             hideCollectionProperty,
             hideLegacyProperty,
             currentGameModeProperty,
@@ -213,86 +216,7 @@ class ChallengesView : View("LoL Challenges") {
                             cellHeight = CHALLENGE_IMAGE_WIDTH
 
                             cellFormat {
-                                graphic = stackpane {
-                                    alignment = Pos.TOP_CENTER
-                                    maxHeight = CHALLENGE_IMAGE_WIDTH
-
-                                    imageview {
-                                        fitWidth = CHALLENGE_IMAGE_WIDTH
-                                        fitHeight = CHALLENGE_IMAGE_WIDTH
-
-                                        val currentLevel = if (it.currentLevel == ChallengeLevel.NONE)
-                                            ChallengeLevel.IRON.name.lowercase()
-                                        else
-                                            it.currentLevel!!.name.lowercase()
-
-                                        image = LeagueCommunityDragonApi.getImage(CacheType.CHALLENGE, it.id!!, currentLevel).apply {
-                                            effect = LeagueCommunityDragonApi.getChallengeImageEffect(it)
-                                        }
-                                    }
-
-                                    label(it.description!!) {
-                                        textFill = Color.WHITE
-                                        textAlignment = TextAlignment.CENTER
-                                        isWrapText = true
-                                        paddingHorizontal = 8
-                                        font = Font.font(9.0)
-
-                                        style {
-                                            backgroundColor += Color.BLACK
-                                        }
-                                    }
-
-                                    stackpane {
-                                        vbox {
-                                            alignment = Pos.BOTTOM_CENTER
-
-                                            if (it.hasRewardTitle) {
-                                                label("Title: ${it.rewardTitle}" + if (it.rewardObtained) " ✓" else " (${it.rewardLevel.toString()[0]})") {
-                                                    textFill = Color.WHITE
-                                                    textAlignment = TextAlignment.CENTER
-                                                    isWrapText = true
-                                                    paddingHorizontal = 8
-                                                    font = Font.font(9.0)
-
-                                                    style {
-                                                        backgroundColor += Color.BLACK
-                                                    }
-                                                }
-                                            }
-
-                                            label("${it.currentLevel} (${it.thresholds!!.keys.sorted().indexOf(it.currentLevel) + 1}/${it.thresholds!!.count()})") {
-                                                textFill = Color.WHITE
-                                                textAlignment = TextAlignment.CENTER
-                                                isWrapText = true
-                                                paddingHorizontal = 8
-                                                font = Font.font(9.0)
-
-                                                style {
-                                                    backgroundColor += Color.BLACK
-                                                }
-                                            }
-
-                                            label("${it.currentValue!!.toInt()}/${it.nextThreshold!!.toInt()} (+${it.nextLevelPoints})") {
-                                                textFill = Color.WHITE
-                                                textAlignment = TextAlignment.CENTER
-                                                isWrapText = true
-                                                paddingHorizontal = 8
-                                                font = Font.font(9.0)
-
-                                                tooltip(it.thresholdSummary) {
-                                                    style {
-                                                        font = Font.font(9.0)
-                                                    }
-                                                }
-
-                                                style {
-                                                    backgroundColor += Color.BLACK
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
+                                graphic = find<ChallengeFragment>(mapOf(ChallengeFragment::challenge to it)).root
                             }
                         }
                     }
@@ -316,6 +240,7 @@ class ChallengesView : View("LoL Challenges") {
                 checkbox("Hide Completed", hideCompletedChallengesProperty)
                 checkbox("Hide Non-Title", hideNonTitleChallengesProperty)
                 checkbox("Hide Win", hideWinChallengesProperty)
+                checkbox("Hide Multi-tier", hideMultiTierChallengesProperty)
                 checkbox("Hide Collection", hideCollectionProperty)
                 checkbox("Hide Legacy", hideLegacyProperty)
                 combobox(currentGameModeProperty, listOf(GameMode.ANY, GameMode.ARAM, GameMode.CLASSIC))
@@ -328,7 +253,6 @@ class ChallengesView : View("LoL Challenges") {
 
         private const val HEADER_FONT_SIZE = 14.0
         private const val SPACING_BETWEEN_ROW = 4.0
-        private const val CHALLENGE_IMAGE_WIDTH = 112.0
 
         // image_height + 2 * verticalCellSpacing + font size of label
         private const val INNER_CELL_HEIGHT = CHALLENGE_IMAGE_WIDTH + (DEFAULT_SPACING * 2) + HEADER_FONT_SIZE

@@ -8,10 +8,7 @@ import league.api.LeagueCommunityDragonApi
 import league.models.enums.*
 import tornadofx.Controller
 import tornadofx.runLater
-import ui.views.AramGridView
-import ui.views.ChallengesView
-import ui.views.MainView
-import ui.views.NormalGridView
+import ui.views.*
 import util.LogType
 import util.Logging
 import java.nio.file.Files
@@ -129,12 +126,15 @@ open class MainViewController : Controller() {
 
         leagueConnection.onChallengesChange {
             updateChallengesView()
+            updateChallengesUpdatedView()
         }
 
         leagueConnection.onClientStateChange {
             if (it == LolGameflowGameflowPhase.CHAMPSELECT) {
                 manualRoleSelect = false
                 manualGameModeSelect = false
+
+                leagueConnection.role = leagueConnection.championSelectInfo.assignedRole
             }
 
             if (it == LolGameflowGameflowPhase.ENDOFGAME) {
@@ -206,6 +206,12 @@ open class MainViewController : Controller() {
         runLater {
             view.find<ChallengesView>().setChallenges(leagueConnection.challengeInfoSummary, leagueConnection.challengeInfo,
                 leagueConnection.challengeInfo.keys.sortedBy { it })
+        }
+    }
+
+    fun updateChallengesUpdatedView() {
+        runLater {
+            view.find<ChallengesUpdatedView>().challengesProperty.set(FXCollections.observableList(leagueConnection.challengesUpdatedInfo))
         }
     }
 

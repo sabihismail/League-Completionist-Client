@@ -11,6 +11,7 @@ import util.constants.GenericConstants.ETERNALS_DESCRIPTION_REGEX
 
 class EternalsFragment : Fragment() {
     val eternal: LolStatstonesStatstoneSet by param()
+    val fontSizeIn: Double by param()
 
     private fun getEternalsThreshold(currentEternal: LolStatstonesStatstone): String {
         return LeagueCommunityDragonApi.getEternal(currentEternal.statstoneId)
@@ -30,12 +31,12 @@ class EternalsFragment : Fragment() {
                     ""
 
                 label(regexVal + "Lvl ${it.formattedMilestoneLevel} - ${it.formattedValue}/${it.nextMilestone}") {
-                    font = Font.font(9.0)
+                    font = Font.font(fontSizeIn)
                     textFill = Color.WHITE
                     paddingHorizontal = 8
                     tooltip = tooltip("${it.description} (${getEternalsThreshold(it)})") {
                         style {
-                            font = Font.font(9.0)
+                            font = Font.font(fontSizeIn)
                         }
                     }
 

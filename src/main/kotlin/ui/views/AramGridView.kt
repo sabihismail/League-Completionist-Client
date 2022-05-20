@@ -95,7 +95,7 @@ class AramGridView: View() {
                         if (it.eternal != null) {
                             alignment = Pos.BOTTOM_LEFT
 
-                            bottom = find<EternalsFragment>(mapOf(EternalsFragment::eternal to it.eternal)).root
+                            bottom = find<EternalsFragment>(mapOf(EternalsFragment::eternal to it.eternal, EternalsFragment::fontSizeIn to 12.0)).root
                         }
                     }
                 }
