@@ -3,10 +3,10 @@ package ui.views.fragments
 import generated.LolStatstonesStatstone
 import generated.LolStatstonesStatstoneSet
 import javafx.geometry.Pos
-import javafx.scene.paint.Color
 import javafx.scene.text.Font
 import league.api.LeagueCommunityDragonApi
 import tornadofx.*
+import ui.views.fragments.util.blackLabel
 import util.constants.GenericConstants.ETERNALS_DESCRIPTION_REGEX
 
 class EternalsFragment : Fragment() {
@@ -30,18 +30,11 @@ class EternalsFragment : Fragment() {
                 else
                     ""
 
-                label(regexVal + "Lvl ${it.formattedMilestoneLevel} - ${it.formattedValue}/${it.nextMilestone}") {
-                    font = Font.font(fontSizeIn)
-                    textFill = Color.WHITE
-                    paddingHorizontal = 8
-                    tooltip = tooltip("${it.description} (${getEternalsThreshold(it)})") {
+                blackLabel(regexVal + "Lvl ${it.formattedMilestoneLevel} - ${it.formattedValue}/${it.nextMilestone}", fontSize = fontSizeIn) {
+                    tooltip("${it.description} (${getEternalsThreshold(it)})") {
                         style {
                             font = Font.font(fontSizeIn)
                         }
-                    }
-
-                    style {
-                        backgroundColor += Color.BLACK
                     }
                 }
             }

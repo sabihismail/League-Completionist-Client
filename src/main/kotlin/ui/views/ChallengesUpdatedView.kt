@@ -4,15 +4,11 @@ import javafx.beans.property.SimpleListProperty
 import javafx.geometry.Pos
 import javafx.scene.control.ScrollPane
 import league.models.json.ChallengeInfo
-import tornadofx.View
-import tornadofx.datagrid
-import tornadofx.scrollpane
-import tornadofx.vbox
-import ui.views.fragments.ChallengeFragment
+import tornadofx.*
 import util.constants.ViewConstants.CHALLENGE_IMAGE_WIDTH
 
 class ChallengesUpdatedView : View("LoL Updated Challenges") {
-    val challengesProperty = SimpleListProperty<ChallengeInfo>()
+    val challengesProperty = SimpleListProperty<Pair<ChallengeInfo, ChallengeInfo>>()
 
     override val root = vbox {
         scrollpane(fitToWidth = true) {
@@ -23,7 +19,9 @@ class ChallengesUpdatedView : View("LoL Updated Challenges") {
                 cellWidth = CHALLENGE_IMAGE_WIDTH
                 cellHeight = CHALLENGE_IMAGE_WIDTH
                 cellFormat {
-                    graphic = find<ChallengeFragment>(mapOf(ChallengeFragment::challenge to it)).root
+                    graphic = vbox {
+                        label(it.first.description!!)
+                    }
                 }
             }
         }

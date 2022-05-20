@@ -1,14 +1,12 @@
 package ui.views.fragments
 
 import javafx.geometry.Pos
-import javafx.scene.paint.Color
 import javafx.scene.text.Font
-import javafx.scene.text.TextAlignment
 import league.api.LeagueCommunityDragonApi
 import league.models.enums.CacheType
-import league.models.enums.ChallengeLevel
 import league.models.json.ChallengeInfo
 import tornadofx.*
+import ui.views.fragments.util.blackLabel
 import util.constants.ViewConstants.CHALLENGE_IMAGE_WIDTH
 
 class ChallengeFragment : Fragment() {
@@ -22,73 +20,28 @@ class ChallengeFragment : Fragment() {
             fitWidth = CHALLENGE_IMAGE_WIDTH
             fitHeight = CHALLENGE_IMAGE_WIDTH
 
-            val currentLevel = if (challenge.currentLevel == ChallengeLevel.NONE)
-                ChallengeLevel.IRON.name.lowercase()
-            else
-                challenge.currentLevel!!.name.lowercase()
-
-            image = LeagueCommunityDragonApi.getImage(CacheType.CHALLENGE, challenge.id!!, currentLevel).apply {
+            image = LeagueCommunityDragonApi.getImage(CacheType.CHALLENGE, challenge.id!!, challenge.currentLevelImage).apply {
                 effect = LeagueCommunityDragonApi.getChallengeImageEffect(challenge)
             }
         }
 
-        label(challenge.description!!) {
-            textFill = Color.WHITE
-            textAlignment = TextAlignment.CENTER
-            isWrapText = true
-            paddingHorizontal = 8
-            font = Font.font(9.0)
-
-            style {
-                backgroundColor += Color.BLACK
-            }
-        }
+        blackLabel(challenge.description!!)
 
         stackpane {
             vbox {
                 alignment = Pos.BOTTOM_CENTER
 
                 if (challenge.hasRewardTitle) {
-                    label("Title: ${challenge.rewardTitle}" + if (challenge.rewardObtained) " ✓" else " (${challenge.rewardLevel.toString()[0]})") {
-                        textFill = Color.WHITE
-                        textAlignment = TextAlignment.CENTER
-                        isWrapText = true
-                        paddingHorizontal = 8
-                        font = Font.font(9.0)
-
-                        style {
-                            backgroundColor += Color.BLACK
-                        }
-                    }
+                    blackLabel("Title: ${challenge.rewardTitle}" + if (challenge.rewardObtained) " ✓" else " (${challenge.rewardLevel.toString()[0]})")
                 }
 
-                label("${challenge.currentLevel} (${challenge.thresholds!!.keys.sorted().indexOf(challenge.currentLevel) + 1}/${challenge.thresholds!!.count()})") {
-                    textFill = Color.WHITE
-                    textAlignment = TextAlignment.CENTER
-                    isWrapText = true
-                    paddingHorizontal = 8
-                    font = Font.font(9.0)
+                blackLabel("${challenge.currentLevel} (${challenge.thresholds!!.keys.sorted().indexOf(challenge.currentLevel) + 1}/${challenge.thresholds!!.count()})")
 
-                    style {
-                        backgroundColor += Color.BLACK
-                    }
-                }
-
-                label("${challenge.currentValue!!.toInt()}/${challenge.nextThreshold!!.toInt()} (+${challenge.nextLevelPoints})") {
-                    textFill = Color.WHITE
-                    textAlignment = TextAlignment.CENTER
-                    isWrapText = true
-                    paddingHorizontal = 8
-                    font = Font.font(9.0)
-
+                blackLabel("${challenge.currentValue!!.toInt()}/${challenge.nextThreshold!!.toInt()} (+${challenge.nextLevelPoints})") {
                     tooltip(challenge.thresholdSummary) {
                         style {
                             font = Font.font(9.0)
                         }
-                    }
-
-                    style {
-                        backgroundColor += Color.BLACK
                     }
                 }
             }

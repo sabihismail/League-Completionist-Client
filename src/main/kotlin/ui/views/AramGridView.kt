@@ -2,13 +2,15 @@ package ui.views
 
 import javafx.beans.property.SimpleListProperty
 import javafx.geometry.Pos
-import javafx.scene.paint.Color
+import javafx.scene.text.TextAlignment
 import league.api.LeagueCommunityDragonApi
 import league.models.ChampionInfo
 import league.models.enums.CacheType
 import tornadofx.*
 import ui.views.fragments.EternalsFragment
-import util.constants.ViewConstants
+import ui.views.fragments.util.blackLabel
+import util.constants.ViewConstants.IMAGE_SPACING_WIDTH
+import util.constants.ViewConstants.IMAGE_WIDTH
 
 
 class AramGridView: View() {
@@ -28,8 +30,8 @@ class AramGridView: View() {
 
                 maxRows = 2
                 maxCellsInRow = 5
-                cellWidth = ViewConstants.IMAGE_WIDTH
-                cellHeight = ViewConstants.IMAGE_WIDTH
+                cellWidth = IMAGE_WIDTH
+                cellHeight = IMAGE_WIDTH
 
                 cellCache {
                     stackpane {
@@ -37,14 +39,7 @@ class AramGridView: View() {
 
                         imageview(LeagueCommunityDragonApi.getImage(CacheType.CHAMPION, it.id)) { effect = LeagueCommunityDragonApi.getChampionImageEffect(it) }
 
-                        label("Lvl ${it.level}") {
-                            textFill = Color.WHITE
-                            paddingHorizontal = 8
-
-                            style {
-                                backgroundColor += Color.BLACK
-                            }
-                        }
+                        blackLabel("Lvl ${it.level}", textAlignment = TextAlignment.LEFT)
                     }
                 }
             }
@@ -55,9 +50,9 @@ class AramGridView: View() {
 
                 maxRows = 1
                 maxCellsInRow = 5
-                cellWidth = ViewConstants.IMAGE_WIDTH
-                cellHeight = ViewConstants.IMAGE_WIDTH
-                horizontalCellSpacing = ViewConstants.IMAGE_SPACING_WIDTH
+                cellWidth = IMAGE_WIDTH
+                cellHeight = IMAGE_WIDTH
+                horizontalCellSpacing = IMAGE_SPACING_WIDTH
 
                 cellCache {
                     stackpane {
@@ -68,28 +63,15 @@ class AramGridView: View() {
                                 effect = LeagueCommunityDragonApi.getChampionImageEffect(it)
                             }
 
-                            label("You") {
+                            blackLabel("You", textAlignment = TextAlignment.LEFT) {
                                 isVisible = it.isSummonerSelectedChamp
-                                textFill = Color.WHITE
-                                paddingHorizontal = 8
-
-                                style {
-                                    backgroundColor += Color.BLACK
-                                }
                             }
                         }
 
                         stackpane {
                             alignment = Pos.TOP_LEFT
 
-                            label("Lvl ${it.level}") {
-                                textFill = Color.WHITE
-                                paddingHorizontal = 8
-
-                                style {
-                                    backgroundColor += Color.BLACK
-                                }
-                            }
+                            blackLabel("Lvl ${it.level}", textAlignment = TextAlignment.LEFT)
                         }
 
                         if (it.eternal != null) {

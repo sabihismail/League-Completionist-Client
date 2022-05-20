@@ -34,7 +34,7 @@ class LeagueConnection {
     var championSelectInfo = ChampionSelectInfo()
     var championInfo = mapOf<Int, ChampionInfo>()
     var challengeInfo = mapOf<ChallengeCategory, MutableList<ChallengeInfo>>()
-    var challengesUpdatedInfo = mutableListOf<ChallengeInfo>()
+    var challengesUpdatedInfo = mutableListOf<Pair<ChallengeInfo, ChallengeInfo>>()
     var challengeInfoSummary = ChallengeSummary()
     var eternalsValidQueues = setOf<Int>()
 
@@ -391,14 +391,17 @@ class LeagueConnection {
     }
 
     private fun handleChallengesChange(challengeInfoList: List<ChallengeInfo>) {
+        challengesUpdatedInfo.clear()
+
         challengeInfoList.forEach {
             val index = challengeInfo[it.category]!!.indexOfFirst { old -> old.id == it.id }
             it.init()
 
+            challengesUpdatedInfo.add(Pair(challengeInfo[it.category]!![index], it))
+
             challengeInfo[it.category]!![index] = it
         }
 
-        challengesUpdatedInfo = challengeInfoList.toMutableList()
         challengeInfoSummary = clientApi!!.executeGet("/lol-challenges/v1/summary-player-data/local-player", ChallengeSummary::class.java).responseObject
         challengesChanged()
     }

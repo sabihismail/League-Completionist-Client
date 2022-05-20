@@ -51,6 +51,11 @@ class ChallengeInfo {
         ""
     }
 
+    val currentLevelImage get() = if (currentLevel == ChallengeLevel.NONE)
+        ChallengeLevel.IRON.name.lowercase()
+    else
+        currentLevel!!.name.lowercase()
+
     val isComplete get() = currentLevel == thresholds!!.keys.maxOf { x -> x }
     var rewardTitle = ""
     var rewardLevel = ChallengeLevel.NONE
