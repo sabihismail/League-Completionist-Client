@@ -24,7 +24,7 @@ class MasteryAccountView: View() {
     fun run() {
         root.children.clear()
 
-        val lst = DatabaseImpl.getMasteryChestEntryCount()
+        val lst = DatabaseImpl.getMasteryChestInfo()
         lst.forEachIndexed { i, entry ->
             val label = label(getMasteryString(entry)) {
                 paddingHorizontal = 8.0

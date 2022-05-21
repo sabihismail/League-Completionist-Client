@@ -2,6 +2,7 @@ package league
 
 import com.stirante.lolclient.*
 import com.stirante.lolclient.libs.com.google.gson.GsonBuilder
+import com.stirante.lolclient.libs.com.google.gson.internal.LinkedTreeMap
 import com.stirante.lolclient.libs.org.apache.http.HttpException
 import com.stirante.lolclient.libs.org.apache.http.conn.HttpHostConnectException
 import generated.*
@@ -197,34 +198,37 @@ class LeagueConnection {
     }
 
     private fun runLootCleanup() {
-        if (summonerInfo.displayName != "zeeNR6") return
-        return
+        //if (summonerInfo.summonerId != 124238791L) return
 
         val loot = clientApi!!.executeGet("/lol-loot/v1/player-loot", Array<LolLootPlayerLoot>::class.java).responseObject ?: return
         Logging.log(loot, LogType.VERBOSE)
 
         val tokens = loot.filter { it.type == "CHAMPION_TOKEN" }
         val map = mapOf(2 to 5, 3 to 6)
-        val mastery6s = tokens.filter { it.count == 2 && championInfo[it.storeItemId]!!.level == 5 }
-            .forEach {
-
-            }
+        map.forEach { (k, v) ->
+            val mastery = tokens.filter { it.count == k && championInfo[it.refId.toInt()]!!.level == v }
+                .forEach {
+                    val recipes = clientApi!!.executeGet("/lol-loot/v1/recipes/initial-item/${it.lootId}", LolLootPlayerLoot::class.java).responseObject ?: return
+                    Logging.log(recipes, LogType.VERBOSE)
+                }
+        }
 
         val shards = loot.filter { it.type == "CHAMPION_RENTAL" }
         val unneededShards = shards.filter { championInfo[it.storeItemId]!!.level == 7 }
             .forEach {
-
+                val recipes = clientApi!!.executeGet("/lol-loot/v1/recipes/initial-item/${it.lootId}", LolLootPlayerLoot::class.java).responseObject ?: return
+                Logging.log(recipes, LogType.VERBOSE)
             }
 
 
     }
 
     fun updateChampionMasteryInfo() {
-        val champions = clientApi!!.executeGet("/lol-champions/v1/inventories/${summonerInfo.summonerID}/champions",
+        val champions = clientApi!!.executeGet("/lol-champions/v1/inventories/${summonerInfo.summonerId}/champions",
             Array<LolChampionsCollectionsChampion>::class.java).responseObject ?: return
         Logging.log(champions, LogType.VERBOSE)
 
-        val championMasteryList = clientApi!!.executeGet("/lol-collections/v1/inventories/${summonerInfo.summonerID}/champion-mastery",
+        val championMasteryList = clientApi!!.executeGet("/lol-collections/v1/inventories/${summonerInfo.summonerId}/champion-mastery",
             Array<LolCollectionsCollectionsChampionMastery>::class.java).responseObject ?: return
         Logging.log(championMasteryList, LogType.VERBOSE)
 
@@ -441,6 +445,18 @@ class LeagueConnection {
                 Logging.log(gameFlow, LogType.DEBUG)
 
                 gameId = gameFlow.gameData.gameId
+                if (championSelectInfo.teamChampions.isEmpty()) {
+                    val players = gameFlow.gameData.teamOne + gameFlow.gameData.teamTwo
+                    val me = players.map { it as LinkedTreeMap<*, *> }.first { it["summonerName"] as String == summonerInfo.displayName }
+                    val champion = gameFlow.gameData.playerChampionSelections.map { it as LinkedTreeMap<*, *> }
+                        .filter { it["summonerInternalName"] == me["summonerInternalName"] }
+                        .map { ChampionInfo((it["championId"] as Double).toInt(), "", ChampionOwnershipStatus.BOX_NOT_ATTAINED, 1, 1,
+                            1, isSummonerSelectedChamp = true) }
+                        .first()
+
+                    championSelectInfo = ChampionSelectInfo(listOf(champion), listOf(), Role.ANY)
+                }
+
                 GameMode.fromGameMode(gameFlow.gameData.queue.gameMode, gameFlow.gameData.queue.id)
             }
             else -> {
@@ -467,7 +483,7 @@ class LeagueConnection {
             updateChampionMasteryInfo()
         }
 
-        val selectedChamp = champSelectSession.myTeam.find { it.summonerId == summonerInfo.summonerID }!!
+        val selectedChamp = champSelectSession.myTeam.find { it.summonerId == summonerInfo.summonerId }!!
 
         val benchedChampions = champSelectSession.benchChampionIds.map { championInfo[it]!! }
         val teamChampions = champSelectSession.myTeam.sortedBy { it.cellId }

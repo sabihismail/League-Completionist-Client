@@ -30,7 +30,7 @@ class EternalsFragment : Fragment() {
                 else
                     ""
 
-                blackLabel(regexVal + "Lvl ${it.formattedMilestoneLevel} - ${it.formattedValue}/${it.nextMilestone}", fontSize = fontSizeIn) {
+                blackLabel(regexVal + "Lvl ${it.formattedMilestoneLevel} - ${it.formattedValue}/${it.nextMilestone}", fontSize = fontSizeIn, isWrapText = false) {
                     tooltip("${it.description} (${getEternalsThreshold(it)})") {
                         style {
                             font = Font.font(fontSizeIn)

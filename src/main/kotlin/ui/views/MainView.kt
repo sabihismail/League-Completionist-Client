@@ -119,6 +119,15 @@ class MainView: View("LoL Mastery Box Client") {
                             find<ChallengesUpdatedView>().openWindow(owner = null)
                         }
                     }
+
+                    /*
+                    button("Settings").apply {
+                        action {
+                            find<SettingsView>(mapOf(SettingsView::accountList to FXCollections.observableList(DatabaseImpl.getHextechAccounts())))
+                                .openWindow(owner = null)
+                        }
+                    }
+                    */
                 }
             }
         }

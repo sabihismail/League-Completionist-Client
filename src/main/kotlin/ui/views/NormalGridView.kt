@@ -1,6 +1,7 @@
 package ui.views
 
 import javafx.beans.property.SimpleListProperty
+import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
 import javafx.geometry.Pos
 import javafx.scene.paint.Color
@@ -11,11 +12,12 @@ import league.models.enums.CacheType
 import league.models.enums.Role
 import tornadofx.*
 import ui.views.fragments.EternalsFragment
-import util.constants.ViewConstants
+import util.constants.ViewConstants.IMAGE_WIDTH
 
 
 class NormalGridView: View() {
     val championListProperty = SimpleListProperty<ChampionInfo>()
+    val summonerSelectedProperty = SimpleObjectProperty<ChampionInfo>()
     val currentRole = SimpleStringProperty(Role.ANY.name)
 
     override val root = borderpane {
@@ -32,8 +34,8 @@ class NormalGridView: View() {
 
                 maxRows = 32
                 maxCellsInRow = 5
-                cellWidth = ViewConstants.IMAGE_WIDTH
-                cellHeight = ViewConstants.IMAGE_WIDTH
+                cellWidth = IMAGE_WIDTH
+                cellHeight = IMAGE_WIDTH
 
                 cellCache {
                     stackpane {
@@ -90,12 +92,20 @@ class NormalGridView: View() {
             }
         }
 
-        bottom = vbox {
-            alignment = Pos.BOTTOM_RIGHT
-            paddingBottom = 24.0
-            paddingRight = 24.0
+        bottom = borderpane {
+            left = vbox {
+                if (summonerSelectedProperty.isBound) {
+                    find<EternalsFragment>(mapOf(EternalsFragment::eternal to summonerSelectedProperty.value, EternalsFragment::fontSizeIn to 9.0)).root
+                }
+            }
 
-            combobox<String>(currentRole, Role.values().map { it.name })
+            right = vbox {
+                alignment = Pos.BOTTOM_RIGHT
+                paddingBottom = 24.0
+                paddingRight = 24.0
+
+                combobox<String>(currentRole, Role.values().map { it.name })
+            }
         }
     }
 }

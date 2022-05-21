@@ -1,5 +1,6 @@
 package db
 
+import db.models.HextechTable
 import db.models.MasteryChestTable
 import league.models.MasteryChestInfo
 import league.models.SummonerInfo
@@ -19,7 +20,10 @@ object DatabaseImpl {
         TransactionManager.manager.defaultIsolationLevel = Connection.TRANSACTION_SERIALIZABLE
 
         transaction {
-            SchemaUtils.createMissingTablesAndColumns(MasteryChestTable)
+            SchemaUtils.createMissingTablesAndColumns(
+                MasteryChestTable,
+                HextechTable,
+            )
         }
     }
 
@@ -33,7 +37,7 @@ object DatabaseImpl {
         }
 
         transaction {
-            val uniqueAccountId = summonerInfo.accountID.xor(summonerInfo.summonerID)
+            val uniqueAccountId = getUniqueId(summonerInfo)
 
             val query: (SqlExpressionBuilder.() -> Op<Boolean>) = { MasteryChestTable.accountId eq uniqueAccountId }
             if (MasteryChestTable.select(query).count() >= 1) {
@@ -51,7 +55,7 @@ object DatabaseImpl {
         }
     }
 
-    fun getMasteryChestEntryCount(): MutableList<ResultRow> {
+    fun getMasteryChestInfo(): MutableList<ResultRow> {
         val lst = mutableListOf<ResultRow>()
         transaction {
             val now = LocalDateTime.now()
@@ -65,5 +69,9 @@ object DatabaseImpl {
         }
 
         return lst
+    }
+
+    private fun getUniqueId(summonerInfo: SummonerInfo): Long {
+        return summonerInfo.accountID.xor(summonerInfo.summonerId)
     }
 }

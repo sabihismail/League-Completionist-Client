@@ -104,6 +104,7 @@ open class MainViewController : Controller() {
 
         leagueConnection.onChampionSelectChange {
             runLater { view.gameModeProperty.set(leagueConnection.gameMode) }
+            updateCurrentChampion()
 
             if (!ACCEPTABLE_GAME_MODES.contains(leagueConnection.gameMode)) return@onChampionSelectChange
 
@@ -137,6 +138,10 @@ open class MainViewController : Controller() {
                 leagueConnection.role = leagueConnection.championSelectInfo.assignedRole
             }
 
+            if (it == LolGameflowGameflowPhase.INPROGRESS) {
+                updateCurrentChampion()
+            }
+
             if (it == LolGameflowGameflowPhase.ENDOFGAME) {
                 updateChampionList()
             }
@@ -153,6 +158,16 @@ open class MainViewController : Controller() {
                 view.masteryAccountView.run()
                 view.clientStateProperty.set(it)
                 view.gameModeProperty.set(leagueConnection.gameMode)
+            }
+        }
+    }
+
+    private fun updateCurrentChampion() {
+        if (leagueConnection.championSelectInfo.teamChampions.any { championInfo -> championInfo?.isSummonerSelectedChamp == true }) {
+            runLater {
+                view.find<NormalGridView>().summonerSelectedProperty.set(leagueConnection.championSelectInfo.teamChampions.firstOrNull { championInfo ->
+                    championInfo!!.isSummonerSelectedChamp
+                })
             }
         }
     }
