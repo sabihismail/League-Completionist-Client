@@ -199,21 +199,31 @@ class LeagueConnection {
 
     private fun runLootCleanup() {
         //if (summonerInfo.summonerId != 124238791L) return
-
+        return
         val loot = clientApi!!.executeGet("/lol-loot/v1/player-loot", Array<LolLootPlayerLoot>::class.java).responseObject ?: return
         Logging.log(loot, LogType.VERBOSE)
+
+        val shards = loot.filter { it.type == "CHAMPION_RENTAL" }
 
         val tokens = loot.filter { it.type == "CHAMPION_TOKEN" }
         val map = mapOf(2 to 5, 3 to 6)
         map.forEach { (k, v) ->
             val mastery = tokens.filter { it.count == k && championInfo[it.refId.toInt()]!!.level == v }
                 .forEach {
-                    val recipes = clientApi!!.executeGet("/lol-loot/v1/recipes/initial-item/${it.lootId}", LolLootPlayerLoot::class.java).responseObject ?: return
+                    val recipes = clientApi!!.executeGet("/lol-loot/v1/recipes/initial-item/${it.lootId}", Array<LolLootRecipeWithMilestones>::class.java)
+                        .responseObject ?: return
+
+                    if (shards.any { shard -> shard.storeItemId == it.refId.toInt() && shard.count >= 1 }) {
+                        val recipeShard = recipes.first { recipe -> recipe.recipeName.contains("shard") }
+                        return
+                    }
+
+                    val recipeEssence = recipes.first { recipe -> recipe.recipeName.contains("essence") }
+
                     Logging.log(recipes, LogType.VERBOSE)
                 }
         }
 
-        val shards = loot.filter { it.type == "CHAMPION_RENTAL" }
         val unneededShards = shards.filter { championInfo[it.storeItemId]!!.level == 7 }
             .forEach {
                 val recipes = clientApi!!.executeGet("/lol-loot/v1/recipes/initial-item/${it.lootId}", LolLootPlayerLoot::class.java).responseObject ?: return
@@ -439,12 +449,16 @@ class LeagueConnection {
         Logging.log(gameFlowPhase, LogType.DEBUG)
 
         gameMode = when (gameFlowPhase) {
-            LolGameflowGameflowPhase.CHAMPSELECT,
+            LolGameflowGameflowPhase.CHAMPSELECT -> {
+                val gameFlow = clientApi!!.executeGet("/lol-gameflow/v1/session", LolGameflowGameflowSession::class.java).responseObject ?: return
+                Logging.log(gameFlow, LogType.DEBUG)
+
+                GameMode.fromGameMode(gameFlow.gameData.queue.gameMode, gameFlow.gameData.queue.id)
+            }
             LolGameflowGameflowPhase.INPROGRESS -> {
                 val gameFlow = clientApi!!.executeGet("/lol-gameflow/v1/session", LolGameflowGameflowSession::class.java).responseObject ?: return
                 Logging.log(gameFlow, LogType.DEBUG)
 
-                gameId = gameFlow.gameData.gameId
                 if (championSelectInfo.teamChampions.isEmpty()) {
                     val players = gameFlow.gameData.teamOne + gameFlow.gameData.teamTwo
                     val me = players.map { it as LinkedTreeMap<*, *> }.first { it["summonerName"] as String == summonerInfo.displayName }
@@ -457,6 +471,7 @@ class LeagueConnection {
                     championSelectInfo = ChampionSelectInfo(listOf(champion), listOf(), Role.ANY)
                 }
 
+                gameId = gameFlow.gameData.gameId
                 GameMode.fromGameMode(gameFlow.gameData.queue.gameMode, gameFlow.gameData.queue.id)
             }
             else -> {
