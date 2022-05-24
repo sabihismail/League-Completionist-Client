@@ -190,7 +190,6 @@ class LeagueConnection {
         when (clientState) {
             LolGameflowGameflowPhase.CHAMPSELECT -> {
                 val championSelectSession = clientApi!!.executeGet("/lol-champ-select/v1/session", LolChampSelectChampSelectSession::class.java).responseObject
-
                 handleChampionSelectChange(championSelectSession)
             }
             else -> return
@@ -198,8 +197,8 @@ class LeagueConnection {
     }
 
     private fun runLootCleanup() {
-        //if (summonerInfo.summonerId != 124238791L) return
-        return
+        if(summonerInfo.uniqueId == 2549404233031175L) return
+
         val loot = clientApi!!.executeGet("/lol-loot/v1/player-loot", Array<LolLootPlayerLoot>::class.java).responseObject ?: return
         Logging.log(loot, LogType.VERBOSE)
 
@@ -226,7 +225,8 @@ class LeagueConnection {
 
         val unneededShards = shards.filter { championInfo[it.storeItemId]!!.level == 7 }
             .forEach {
-                val recipes = clientApi!!.executeGet("/lol-loot/v1/recipes/initial-item/${it.lootId}", LolLootPlayerLoot::class.java).responseObject ?: return
+                val recipes = clientApi!!.executeGet("/lol-loot/v1/recipes/initial-item/${it.lootId}", Array<LolLootRecipeWithMilestones>::class.java)
+                    .responseObject ?: return
                 Logging.log(recipes, LogType.VERBOSE)
             }
 
@@ -534,6 +534,7 @@ class LeagueConnection {
             if (!clientApi!!.isAuthorized) {
                 Logging.log("Login - " + SummonerStatus.LOGGED_IN_UNAUTHORIZED, LogType.INFO, ignorableDuplicate = true)
 
+                getClientVersion()
                 summonerInfo = SummonerInfo(SummonerStatus.LOGGED_IN_UNAUTHORIZED)
                 summonerChanged()
 
@@ -550,6 +551,7 @@ class LeagueConnection {
 
         Logging.log("Login - " + SummonerStatus.LOGGED_IN_AUTHORIZED, LogType.INFO, ignorableDuplicate = true)
 
+        getClientVersion()
         val summoner = clientApi!!.executeGet("/lol-summoner/v1/current-summoner", LolSummonerSummoner::class.java).responseObject
         Logging.log(summoner, LogType.DEBUG)
 
@@ -561,6 +563,11 @@ class LeagueConnection {
         getEternalsQueueIds()
 
         return true
+    }
+
+    private fun getClientVersion() {
+        val versionInfo = clientApi!!.executeGet("/system/v1/builds", BuildInfo::class.java).responseObject
+        VERSION = versionInfo.version.split(".").subList(0, 2).joinToString(".")
     }
 
     private fun getEternalsQueueIds() {
@@ -590,5 +597,9 @@ class LeagueConnection {
 
     private fun loggedIn() {
         onLoggedInList.forEach { it() }
+    }
+
+    companion object {
+        lateinit var VERSION: String
     }
 }

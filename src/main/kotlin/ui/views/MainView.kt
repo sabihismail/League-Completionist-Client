@@ -14,6 +14,7 @@ import tornadofx.*
 import ui.controllers.MainViewController
 import ui.mock.AramMockController
 import ui.mock.NormalMockController
+import ui.views.fragments.EternalsFragment
 import util.constants.ViewConstants
 import util.constants.ViewConstants.DEFAULT_SPACING
 
@@ -21,6 +22,7 @@ import util.constants.ViewConstants.DEFAULT_SPACING
 class MainView: View("LoL Mastery Box Client") {
     val defaultGridView = find(DefaultGridView::class)
     val masteryAccountView = find(MasteryAccountView::class)
+    val currentEternalView = find(EternalsFragment::class)
 
     val summonerProperty = SimpleObjectProperty(SummonerInfo())
     val chestProperty = SimpleObjectProperty(MasteryChestInfo())
@@ -80,6 +82,7 @@ class MainView: View("LoL Mastery Box Client") {
                         }
                         label("Not Owned/Free to Play")
                     }
+                    currentEternalView.root
                 }
 
                 separator {
@@ -88,7 +91,7 @@ class MainView: View("LoL Mastery Box Client") {
 
                 scrollpane(fitToHeight = true) {
                     style = "-fx-background-color:transparent;"
-                    minHeight = Font.getDefault().size + DEFAULT_SPACING * 2 + DEFAULT_SPACING * 2 // default_font_size + hbox_padding + label_padding
+                    minHeight = Font.getDefault().size + DEFAULT_SPACING * 2 + DEFAULT_SPACING * 2
 
                     borderpane {
                         center = masteryAccountView.root

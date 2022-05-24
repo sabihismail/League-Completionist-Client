@@ -1,7 +1,6 @@
 package ui.views
 
 import javafx.beans.property.SimpleListProperty
-import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
 import javafx.geometry.Pos
 import javafx.scene.paint.Color
@@ -17,7 +16,6 @@ import util.constants.ViewConstants.IMAGE_WIDTH
 
 class NormalGridView: View() {
     val championListProperty = SimpleListProperty<ChampionInfo>()
-    val summonerSelectedProperty = SimpleObjectProperty<ChampionInfo>()
     val currentRole = SimpleStringProperty(Role.ANY.name)
 
     override val root = borderpane {
@@ -84,7 +82,7 @@ class NormalGridView: View() {
                             }
 
                             if (it.eternal != null) {
-                                bottom = find<EternalsFragment>(mapOf(EternalsFragment::eternal to it.eternal, EternalsFragment::fontSizeIn to 9.0)).root
+                                bottom = find<EternalsFragment>(mapOf(EternalsFragment::eternal to it.eternal.toProperty(), EternalsFragment::fontSizeIn to 9.0)).root
                             }
                         }
                     }
@@ -93,12 +91,6 @@ class NormalGridView: View() {
         }
 
         bottom = borderpane {
-            left = vbox {
-                if (summonerSelectedProperty.isBound) {
-                    find<EternalsFragment>(mapOf(EternalsFragment::eternal to summonerSelectedProperty.value, EternalsFragment::fontSizeIn to 9.0)).root
-                }
-            }
-
             right = vbox {
                 alignment = Pos.BOTTOM_RIGHT
                 paddingBottom = 24.0

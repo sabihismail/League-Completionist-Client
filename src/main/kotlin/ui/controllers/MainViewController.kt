@@ -8,6 +8,7 @@ import league.api.LeagueCommunityDragonApi
 import league.models.enums.*
 import tornadofx.Controller
 import tornadofx.runLater
+import tornadofx.toProperty
 import ui.views.*
 import util.LogType
 import util.Logging
@@ -103,8 +104,9 @@ open class MainViewController : Controller() {
         }
 
         leagueConnection.onChampionSelectChange {
-            runLater { view.gameModeProperty.set(leagueConnection.gameMode) }
-            updateCurrentChampion()
+            if (leagueConnection.summonerInfo.uniqueId != 2549404233031175L) {
+                runLater { view.gameModeProperty.set(leagueConnection.gameMode) }
+            }
 
             if (!ACCEPTABLE_GAME_MODES.contains(leagueConnection.gameMode)) return@onChampionSelectChange
 
@@ -157,7 +159,9 @@ open class MainViewController : Controller() {
             runLater {
                 view.masteryAccountView.run()
                 view.clientStateProperty.set(it)
-                view.gameModeProperty.set(leagueConnection.gameMode)
+                if (leagueConnection.summonerInfo.uniqueId != 2549404233031175L) {
+                    view.gameModeProperty.set(leagueConnection.gameMode)
+                }
             }
         }
     }
@@ -165,9 +169,8 @@ open class MainViewController : Controller() {
     private fun updateCurrentChampion() {
         if (leagueConnection.championSelectInfo.teamChampions.any { championInfo -> championInfo?.isSummonerSelectedChamp == true }) {
             runLater {
-                view.find<NormalGridView>().summonerSelectedProperty.set(leagueConnection.championSelectInfo.teamChampions.firstOrNull { championInfo ->
-                    championInfo!!.isSummonerSelectedChamp
-                })
+                val champion = leagueConnection.championSelectInfo.teamChampions.firstOrNull { championInfo -> championInfo!!.isSummonerSelectedChamp }
+                view.currentEternalView.set(champion!!.eternal.toProperty())
             }
         }
     }

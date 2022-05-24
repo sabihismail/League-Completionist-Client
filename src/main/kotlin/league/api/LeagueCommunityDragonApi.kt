@@ -4,6 +4,7 @@ import com.stirante.lolclient.libs.com.google.gson.GsonBuilder
 import com.stirante.lolclient.libs.com.google.gson.reflect.TypeToken
 import javafx.scene.effect.*
 import javafx.scene.image.Image
+import league.LeagueConnection
 import league.models.CacheInfo
 import league.models.ChampionInfo
 import league.models.enums.CacheType
@@ -28,30 +29,34 @@ import kotlin.reflect.KMutableProperty0
 object LeagueCommunityDragonApi {
     private val gson = GsonBuilder().create()
 
+    private val VERSION by lazy {
+        LeagueConnection.VERSION
+    }
+
     private val CHAMPION_ROLE_ENDPOINT by lazy {
-        "https://raw.communitydragon.org/${LeagueDataDragonApi.VERSION}/plugins/rcp-fe-lol-champion-statistics/global/default/rcp-fe-lol-champion-statistics.js"
+        "https://raw.communitydragon.org/$VERSION/plugins/rcp-fe-lol-champion-statistics/global/default/rcp-fe-lol-champion-statistics.js"
     }
     private val QUEUE_TYPE_ENDPOINT by lazy {
-        "https://raw.communitydragon.org/${LeagueDataDragonApi.VERSION}/plugins/rcp-be-lol-game-data/global/default/v1/queues.json"
+        "https://raw.communitydragon.org/$VERSION/plugins/rcp-be-lol-game-data/global/default/v1/queues.json"
     }
     private val CHALLENGES_ENDPOINT by lazy {
-        "https://raw.communitydragon.org/${LeagueDataDragonApi.VERSION}/plugins/rcp-be-lol-game-data/global/default/v1/challenges.json"
+        "https://raw.communitydragon.org/$VERSION/plugins/rcp-be-lol-game-data/global/default/v1/challenges.json"
     }
     private val CHAMPION_PORTRAIT_ENDPOINT by lazy {
-        "https://raw.communitydragon.org/${LeagueDataDragonApi.VERSION}/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/%s.png"
+        "https://raw.communitydragon.org/$VERSION/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/%s.png"
     }
     private val ETERNALS_ENDPOINT by lazy {
-        "https://raw.communitydragon.org/${LeagueDataDragonApi.VERSION}/plugins/rcp-be-lol-game-data/global/default/v1/statstones.json"
+        "https://raw.communitydragon.org/$VERSION/plugins/rcp-be-lol-game-data/global/default/v1/statstones.json"
     }
     private val CHALLENGE_IMAGE_ENDPOINT by lazy {
-        "https://raw.communitydragon.org/${LeagueDataDragonApi.VERSION}/game/assets/challenges/config/%s/tokens/%s.png"
+        "https://raw.communitydragon.org/$VERSION/game/assets/challenges/config/%s/tokens/%s.png"
     }
 
     private val CACHE_MAPPING by lazy {
         mapOf(
             CacheType.CHAMPION to CacheInfo("champion", CHAMPION_PORTRAIT_ENDPOINT),
             CacheType.CHALLENGE to CacheInfo("challenge", CHALLENGE_IMAGE_ENDPOINT),
-            CacheType.JSON to CacheInfo("json/${LeagueDataDragonApi.VERSION}")
+            CacheType.JSON to CacheInfo("json/$VERSION")
         )
     }
 

@@ -37,7 +37,7 @@ object DatabaseImpl {
         }
 
         transaction {
-            val uniqueAccountId = getUniqueId(summonerInfo)
+            val uniqueAccountId = summonerInfo.uniqueId
 
             val query: (SqlExpressionBuilder.() -> Op<Boolean>) = { MasteryChestTable.accountId eq uniqueAccountId }
             if (MasteryChestTable.select(query).count() >= 1) {
@@ -69,9 +69,5 @@ object DatabaseImpl {
         }
 
         return lst
-    }
-
-    private fun getUniqueId(summonerInfo: SummonerInfo): Long {
-        return summonerInfo.accountID.xor(summonerInfo.summonerId)
     }
 }

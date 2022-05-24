@@ -39,7 +39,11 @@ class AramGridView: View() {
 
                         imageview(LeagueCommunityDragonApi.getImage(CacheType.CHAMPION, it.id)) { effect = LeagueCommunityDragonApi.getChampionImageEffect(it) }
 
-                        blackLabel("Lvl ${it.level}", textAlignment = TextAlignment.LEFT)
+                        blackLabel("Lvl ${it.level}", textAlignment = TextAlignment.LEFT, fontSize = 11.0)
+
+                        if (it.eternal != null) {
+                            find<EternalsFragment>(mapOf(EternalsFragment::eternal to it.eternal.toProperty(), EternalsFragment::fontSizeIn to 12.0)).root
+                        }
                     }
                 }
             }
@@ -63,7 +67,7 @@ class AramGridView: View() {
                                 effect = LeagueCommunityDragonApi.getChampionImageEffect(it)
                             }
 
-                            blackLabel("You", textAlignment = TextAlignment.LEFT) {
+                            blackLabel("You", textAlignment = TextAlignment.LEFT, fontSize = 11.0) {
                                 isVisible = it.isSummonerSelectedChamp
                             }
                         }
@@ -71,13 +75,11 @@ class AramGridView: View() {
                         stackpane {
                             alignment = Pos.TOP_LEFT
 
-                            blackLabel("Lvl ${it.level}", textAlignment = TextAlignment.LEFT)
-                        }
+                            blackLabel("Lvl ${it.level}", textAlignment = TextAlignment.LEFT, fontSize = 11.0)
 
-                        if (it.eternal != null) {
-                            alignment = Pos.BOTTOM_LEFT
-
-                            bottom = find<EternalsFragment>(mapOf(EternalsFragment::eternal to it.eternal, EternalsFragment::fontSizeIn to 12.0)).root
+                            if (it.eternal != null) {
+                                find<EternalsFragment>(mapOf(EternalsFragment::eternal to it.eternal.toProperty(), EternalsFragment::fontSizeIn to 12.0)).root
+                            }
                         }
                     }
                 }
