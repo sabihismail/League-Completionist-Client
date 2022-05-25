@@ -39,7 +39,7 @@ open class MainViewController : Controller() {
             leagueConnection.role = Role.valueOf(newValue.toString())
 
             val newSortedChampionInfo = leagueConnection.getChampionMasteryInfo()
-            normalView.championListProperty.set(FXCollections.observableList(newSortedChampionInfo))
+            normalView.setChampions(FXCollections.observableList(newSortedChampionInfo))
         }
 
         normalView.find<ChallengesView>().currentGameModeProperty.addListener { _, _, _ ->
@@ -104,9 +104,7 @@ open class MainViewController : Controller() {
         }
 
         leagueConnection.onChampionSelectChange {
-            if (leagueConnection.summonerInfo.uniqueId != 2549404233031175L) {
-                runLater { view.gameModeProperty.set(leagueConnection.gameMode) }
-            }
+            runLater { view.gameModeProperty.set(leagueConnection.gameMode) }
 
             if (!ACCEPTABLE_GAME_MODES.contains(leagueConnection.gameMode)) return@onChampionSelectChange
 
@@ -159,9 +157,7 @@ open class MainViewController : Controller() {
             runLater {
                 view.masteryAccountView.run()
                 view.clientStateProperty.set(it)
-                if (leagueConnection.summonerInfo.uniqueId != 2549404233031175L) {
-                    view.gameModeProperty.set(leagueConnection.gameMode)
-                }
+                view.gameModeProperty.set(leagueConnection.gameMode)
             }
         }
     }
@@ -192,8 +188,10 @@ open class MainViewController : Controller() {
         }
 
         if (ROLE_SPECIFIC_MODES.contains(leagueConnection.gameMode) && !manualRoleSelect) {
-            runLater {
-                normalView.currentRole.set(leagueConnection.championSelectInfo.assignedRole.toString())
+            if (leagueConnection.summonerInfo.uniqueId != 2549404233031175L) {
+                runLater {
+                    normalView.currentRole.set(leagueConnection.championSelectInfo.assignedRole.toString())
+                }
             }
         }
 
@@ -214,7 +212,7 @@ open class MainViewController : Controller() {
                 ActiveView.NORMAL -> {
                     val championList = leagueConnection.getChampionMasteryInfo()
 
-                    normalView.championListProperty.set(FXCollections.observableList(championList))
+                    normalView.setChampions(FXCollections.observableList(championList))
                 }
             }
         }

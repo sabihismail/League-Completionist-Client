@@ -63,7 +63,7 @@ object LeagueCommunityDragonApi {
     var CHAMPION_ROLE_MAPPING = hashMapOf<Role, HashMap<Int, Float>>()
     var QUEUE_MAPPING = hashMapOf<Int, ApiQueueInfoResponse>()
     var CHALLENGE_MAPPING = hashMapOf<String, Long>()
-    var ETERNALS_MAPPING = hashMapOf<String, List<Int>>()
+    var ETERNALS_MAPPING = hashMapOf<String, List<Pair<Int, String>>>()
 
     fun getChampionsByRole(role: Role): List<Int> {
         checkIfJsonCached(::CHAMPION_ROLE_MAPPING, ::populateRoleMapping)
@@ -83,7 +83,7 @@ object LeagueCommunityDragonApi {
         return CHALLENGE_MAPPING[id + challengeLevel.name]!!
     }
 
-    fun getEternal(contentId: String): List<Int> {
+    fun getEternal(contentId: String): List<Pair<Int, String>> {
         checkIfJsonCached(::ETERNALS_MAPPING, ::populateEternalsMapping)
 
         return ETERNALS_MAPPING[contentId]!!
@@ -207,7 +207,7 @@ object LeagueCommunityDragonApi {
         val json = StringUtil.extractJSONFromString<ApiEternalsResponse>(jsonStr)
 
         ETERNALS_MAPPING = HashMap(json.statstoneData.flatMap { data ->
-            data.statstones.map { it.contentId to it.milestones.fold(listOf<Int>()) { acc, e -> acc + (acc.sum() + e) } }
+            data.statstones.map { it.contentId to it.milestones.zip(it.getMilestoneValues()) }
         }.toMap())
         addJsonCache(::ETERNALS_MAPPING)
     }

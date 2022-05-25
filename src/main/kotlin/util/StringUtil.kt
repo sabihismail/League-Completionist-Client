@@ -11,6 +11,23 @@ object StringUtil {
         ignoreUnknownKeys = true
     }
 
+    fun parseSecondsToHMS(value: Int, space: Boolean = false, hours: String = "h", minutes: String = "m", seconds: String = "s"): String {
+        val h = value / 3600
+        val m = value % 3600 / 60
+        val s = value % 60
+
+        val spaceValue = if (space) " " else ""
+        val hoursStr = if (h > 0) "$h$spaceValue$hours" else ""
+        val minuteStr = (if (m in 1..9 && h > 0) "0" else "") + if (m > 0) if (h > 0 && s == 0) m.toString() else "$m$spaceValue$minutes" else ""
+        val secondsStr = if (s == 0 && (h > 0 || m > 0)) "" else (if (s < 10 && (h > 0 || m > 0)) "0" else "") + "$s$spaceValue$seconds"
+
+        return hoursStr + (if (h > 0) " " else "") + minuteStr + (if (m > 0) " " else "") + secondsStr
+    }
+
+    fun getSafeRegex(regex: Regex, text: String, group: Int = 1, default: String = ""): String {
+        return if (regex.matches(text)) regex.find(text)!!.groups[group]!!.value + " " else default
+    }
+
     fun extractJSON(s: String, trim_until_str: String? = null): String {
         var str = s
 
@@ -34,14 +51,14 @@ object StringUtil {
         return str.substring(start, i)
     }
 
-    inline fun <reified T> extractJSONFromString(s: String, trim_until_str: String? = null): T {
-        val jsonStr = extractJSON(s, trim_until_str)
+    inline fun <reified T> extractJSONFromString(s: String, trimUntilStr: String? = null): T {
+        val jsonStr = extractJSON(s, trimUntilStr)
 
         return JSON_FORMAT.decodeFromString(jsonStr)
     }
 
-    inline fun <reified T> extractJSONMapFromString(s: String, trim_until_str: String? = null): HashMap<String, T> {
-        val jsonStr = extractJSON(s, trim_until_str)
+    inline fun <reified T> extractJSONMapFromString(s: String, trimUntilStr: String? = null): HashMap<String, T> {
+        val jsonStr = extractJSON(s, trimUntilStr)
         val json = JSON_FORMAT.parseToJsonElement(jsonStr)
 
         val hashMap = hashMapOf<String, T>()

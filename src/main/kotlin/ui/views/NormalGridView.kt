@@ -1,7 +1,9 @@
 package ui.views
 
+import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleListProperty
 import javafx.beans.property.SimpleStringProperty
+import javafx.collections.FXCollections
 import javafx.geometry.Pos
 import javafx.scene.paint.Color
 import javafx.scene.text.Font
@@ -15,8 +17,25 @@ import util.constants.ViewConstants.IMAGE_WIDTH
 
 
 class NormalGridView: View() {
-    val championListProperty = SimpleListProperty<ChampionInfo>()
+    private val allChampions = SimpleListProperty<ChampionInfo>()
+    private val championListProperty = SimpleListProperty<ChampionInfo>()
+    private val eternalsOnlyProperty = SimpleBooleanProperty(false)
+
     val currentRole = SimpleStringProperty(Role.ANY.name)
+
+    fun setChampions(lst: List<ChampionInfo>) {
+        allChampions.value = FXCollections.observableList(lst)
+
+        handleEternalsOnlyProperty(eternalsOnlyProperty.value)
+    }
+
+    private fun handleEternalsOnlyProperty(value: Boolean) {
+        if (value) {
+            championListProperty.value = FXCollections.observableList(allChampions.value.filter { championInfo -> championInfo.eternal != null })
+        } else {
+            championListProperty.value = FXCollections.observableList(allChampions.value.toList())
+        }
+    }
 
     override val root = borderpane {
         prefHeight = 1000.0
@@ -97,6 +116,9 @@ class NormalGridView: View() {
                 paddingRight = 24.0
 
                 combobox<String>(currentRole, Role.values().map { it.name })
+                checkbox("Eternals Only", eternalsOnlyProperty).apply {
+                    eternalsOnlyProperty.onChange { handleEternalsOnlyProperty(it) }
+                }
             }
         }
     }

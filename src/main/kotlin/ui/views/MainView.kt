@@ -22,7 +22,7 @@ import util.constants.ViewConstants.DEFAULT_SPACING
 class MainView: View("LoL Mastery Box Client") {
     val defaultGridView = find(DefaultGridView::class)
     val masteryAccountView = find(MasteryAccountView::class)
-    val currentEternalView = find(EternalsFragment::class)
+    val currentEternalView = find<EternalsFragment>(mapOf(EternalsFragment::eternal to null, EternalsFragment::fontSizeIn to 12.0))
 
     val summonerProperty = SimpleObjectProperty(SummonerInfo())
     val chestProperty = SimpleObjectProperty(MasteryChestInfo())
