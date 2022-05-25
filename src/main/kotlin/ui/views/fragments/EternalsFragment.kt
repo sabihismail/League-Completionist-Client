@@ -32,8 +32,8 @@ class EternalsFragment : Fragment() {
 
             vbox {
                 newEternal.value.statstones.forEach {
-                    val regexVal = StringUtil.getSafeRegex(ETERNALS_DESCRIPTION_REGEX, it.description)
-                    blackLabel(regexVal + "Lvl ${it.formattedMilestoneLevel} - ${it.formattedValue}/${it.nextMilestone}", fontSize = fontSizeIn, isWrapText = false) {
+                    val regex = StringUtil.getSafeRegex(ETERNALS_DESCRIPTION_REGEX, it.description)
+                    blackLabel(regex + "Lvl ${it.formattedMilestoneLevel} - ${it.formattedValue}/${it.nextMilestone}", fontSize = fontSizeIn, isWrapText = false) {
                         tooltip("${it.description} (${getEternalsThreshold(it)})") {
                             style {
                                 font = Font.font(fontSizeIn)
