@@ -5,6 +5,7 @@ import javafx.geometry.Pos
 import league.models.ChampionInfo
 import tornadofx.*
 import ui.views.fragments.ChampionFragment
+import ui.views.fragments.util.boldLabel
 import util.constants.ViewConstants.IMAGE_SPACING_WIDTH
 import util.constants.ViewConstants.IMAGE_WIDTH
 
@@ -19,7 +20,7 @@ class AramGridView: View() {
         center = vbox {
             alignment = Pos.CENTER
 
-            label("Available Champions:")
+            boldLabel("Available Champions:")
             datagrid(benchedChampionListProperty) {
                 alignment = Pos.CENTER
                 paddingBottom = 16.0
@@ -30,7 +31,7 @@ class AramGridView: View() {
                 cellHeight = IMAGE_WIDTH
 
                 cellCache {
-                    find<ChampionFragment>(mapOf(ChampionFragment::champion to it.toProperty(), ChampionFragment::showTokens to false)).root
+                    find<ChampionFragment>(mapOf(ChampionFragment::champion to it, ChampionFragment::showTokens to false)).root
                     /*
                     stackpane {
                         alignment = Pos.TOP_LEFT
@@ -47,7 +48,7 @@ class AramGridView: View() {
                 }
             }
 
-            label("Your Team:")
+            boldLabel("Your Team:")
             datagrid(teamChampionListProperty) {
                 alignment = Pos.CENTER
 
@@ -58,7 +59,7 @@ class AramGridView: View() {
                 horizontalCellSpacing = IMAGE_SPACING_WIDTH
 
                 cellCache {
-                    find<ChampionFragment>(mapOf(ChampionFragment::champion to it.toProperty(), ChampionFragment::showTokens to false, ChampionFragment::showYou to true))
+                    find<ChampionFragment>(mapOf(ChampionFragment::champion to it, ChampionFragment::showTokens to false, ChampionFragment::showYou to true))
                         .root
                     /*
                     stackpane {

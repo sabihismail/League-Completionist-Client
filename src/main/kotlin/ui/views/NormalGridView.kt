@@ -9,6 +9,7 @@ import league.models.ChampionInfo
 import league.models.enums.Role
 import tornadofx.*
 import ui.views.fragments.ChampionFragment
+import ui.views.fragments.util.boldLabel
 import util.constants.ViewConstants.IMAGE_WIDTH
 
 
@@ -39,7 +40,13 @@ class NormalGridView: View() {
         center = vbox {
             alignment = Pos.CENTER
 
-            label("Available Champions:")
+            stackpane {
+                alignment = Pos.CENTER_LEFT
+                paddingHorizontal = 16.0
+
+                boldLabel("Available Champions:")
+            }
+
             datagrid(championListProperty) {
                 alignment = Pos.CENTER
                 prefHeight = 600.0
@@ -51,7 +58,7 @@ class NormalGridView: View() {
                 cellHeight = IMAGE_WIDTH
 
                 cellCache {
-                    find<ChampionFragment>(mapOf(ChampionFragment::champion to it.toProperty())).root
+                    find<ChampionFragment>(mapOf(ChampionFragment::champion to it)).root
                 }
             }
         }

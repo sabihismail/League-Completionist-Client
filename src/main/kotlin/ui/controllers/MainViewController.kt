@@ -9,6 +9,7 @@ import league.models.enums.*
 import tornadofx.Controller
 import tornadofx.runLater
 import ui.views.*
+import ui.views.fragments.ChampionFragment
 import util.LogType
 import util.Logging
 import java.nio.file.Files
@@ -169,7 +170,7 @@ open class MainViewController : Controller() {
         runAsync {
             leagueConnection.championSelectInfo.teamChampions.firstOrNull { championInfo -> championInfo!!.isSummonerSelectedChamp }!!
         } ui {
-            view.currentChampionView.champion.value = it
+            view.currentChampionView.set(view.find(mapOf(ChampionFragment::champion to it)))
         }
     }
 
@@ -190,7 +191,7 @@ open class MainViewController : Controller() {
         }
 
         if (ROLE_SPECIFIC_MODES.contains(leagueConnection.gameMode) && !manualRoleSelect) {
-            if (leagueConnection.isSmurf) {
+            if (!leagueConnection.isSmurf) {
                 runLater {
                     normalView.currentRole.set(leagueConnection.championSelectInfo.assignedRole.toString())
                 }

@@ -6,6 +6,7 @@ import javafx.scene.control.Label
 import javafx.scene.paint.Color
 import javafx.scene.paint.Paint
 import javafx.scene.text.Font
+import javafx.scene.text.FontWeight
 import javafx.scene.text.TextAlignment
 import tornadofx.attachTo
 import tornadofx.paddingHorizontal
@@ -25,4 +26,9 @@ fun EventTarget.blackLabel(text: String = "", textFill: Color? = Color.WHITE, gr
     it.style {
         backgroundColor += backgroundColorVal
     }
+}
+
+fun EventTarget.boldLabel(text: String = "", op: Label.() -> Unit = {}) = Label(text).attachTo(this, op) {
+    it.text = text
+    it.font = Font.font(Font.getDefault().family, FontWeight.BOLD, Font.getDefault().size)
 }

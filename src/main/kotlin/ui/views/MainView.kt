@@ -7,7 +7,6 @@ import generated.LolGameflowGameflowPhase
 import javafx.beans.property.SimpleObjectProperty
 import javafx.geometry.Pos
 import javafx.scene.text.Font
-import javafx.scene.text.FontWeight
 import league.models.MasteryChestInfo
 import league.models.SummonerInfo
 import league.models.enums.GameMode
@@ -18,6 +17,7 @@ import ui.mock.AramMockController
 import ui.mock.NormalMockController
 import ui.mock.extra.ChallengesUpdatedMockController
 import ui.views.fragments.ChampionFragment
+import ui.views.fragments.util.boldLabel
 import util.constants.ViewConstants.CHAMPION_STATUS_AVAILABLE_CHEST_COLOR
 import util.constants.ViewConstants.CHAMPION_STATUS_NOT_OWNED_COLOR
 import util.constants.ViewConstants.CHAMPION_STATUS_UNAVAILABLE_CHEST_COLOR
@@ -29,7 +29,7 @@ import util.constants.ViewConstants.IMAGE_WIDTH
 class MainView: View("LoL Mastery Box Client") {
     val defaultGridView = find(DefaultGridView::class)
     val masteryAccountView = find(MasteryAccountView::class)
-    val currentChampionView = find(ChampionFragment::class)
+    val currentChampionView = SimpleObjectProperty(find(ChampionFragment::class))
 
     val summonerProperty = SimpleObjectProperty(SummonerInfo())
     val chestProperty = SimpleObjectProperty(MasteryChestInfo())
@@ -61,11 +61,8 @@ class MainView: View("LoL Mastery Box Client") {
                 borderpane {
                     paddingHorizontal = 16.0
 
-                    top = label("You:") {
-                        font = Font.font(Font.getDefault().family, FontWeight.BOLD, Font.getDefault().size)
-                    }
-
-                    left = currentChampionView.root
+                    top = boldLabel("You:")
+                    left = currentChampionView.value.root
                 }
             }
 
