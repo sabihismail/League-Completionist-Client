@@ -29,7 +29,7 @@ import util.constants.ViewConstants.IMAGE_WIDTH
 class MainView: View("LoL Mastery Box Client") {
     val defaultGridView = find(DefaultGridView::class)
     val masteryAccountView = find(MasteryAccountView::class)
-    val currentChampionView = SimpleObjectProperty(find(ChampionFragment::class))
+    val currentChampionView = find(ChampionFragment::class)
 
     val summonerProperty = SimpleObjectProperty(SummonerInfo())
     val chestProperty = SimpleObjectProperty(MasteryChestInfo())
@@ -62,7 +62,7 @@ class MainView: View("LoL Mastery Box Client") {
                     paddingHorizontal = 16.0
 
                     top = boldLabel("You:")
-                    left = currentChampionView.value.root
+                    left = currentChampionView.root
                 }
             }
 

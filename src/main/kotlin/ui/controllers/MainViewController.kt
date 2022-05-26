@@ -170,7 +170,7 @@ open class MainViewController : Controller() {
         runAsync {
             leagueConnection.championSelectInfo.teamChampions.firstOrNull { championInfo -> championInfo!!.isSummonerSelectedChamp }!!
         } ui {
-            view.currentChampionView.set(view.find(mapOf(ChampionFragment::champion to it)))
+            view.currentChampionView.replaceWith(view.find<ChampionFragment>(mapOf(ChampionFragment::champion to it)))
         }
     }
 

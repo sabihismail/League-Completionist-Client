@@ -461,11 +461,9 @@ class LeagueConnection {
                 if (championSelectInfo.teamChampions.isEmpty()) {
                     val players = gameFlow.gameData.teamOne + gameFlow.gameData.teamTwo
                     val me = players.map { it as LinkedTreeMap<*, *> }.first { it["summonerName"] as String == summonerInfo.displayName }
-                    val champion = gameFlow.gameData.playerChampionSelections.map { it as LinkedTreeMap<*, *> }
-                        .filter { it["summonerInternalName"] == me["summonerInternalName"] }
-                        .map { ChampionInfo((it["championId"] as Double).toInt(), "", ChampionOwnershipStatus.BOX_NOT_ATTAINED, 1, 1,
-                            1, isSummonerSelectedChamp = true) }
-                        .first()
+                    val championJson = gameFlow.gameData.playerChampionSelections.map { it as LinkedTreeMap<*, *> }.
+                        first { it["summonerInternalName"] == me["summonerInternalName"] }
+                    val champion = championInfo[(championJson["championId"] as Double).toInt()].apply { this!!.isSummonerSelectedChamp = true }
 
                     championSelectInfo = ChampionSelectInfo(listOf(champion), listOf(), Role.ANY)
                 }

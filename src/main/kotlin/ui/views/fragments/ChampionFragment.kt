@@ -1,8 +1,6 @@
 package ui.views.fragments
 
 import javafx.geometry.Pos
-import javafx.scene.paint.Color
-import javafx.scene.text.Font
 import javafx.scene.text.TextAlignment
 import league.api.LeagueCommunityDragonApi
 import league.models.ChampionInfo
@@ -34,36 +32,19 @@ class ChampionFragment : Fragment() {
             left = stackpane {
                 alignment = Pos.TOP_LEFT
 
-                label("Lvl ${champion.level}${champion.percentageUntilNextLevel}") {
-                    textFill = Color.WHITE
-                    paddingHorizontal = 8
-                    font = Font.font(11.0)
-
-                    style {
-                        backgroundColor += Color.BLACK
-                    }
-                }
+                blackLabel("Lvl ${champion.level}${champion.percentageUntilNextLevel}", fontSize = 11.0)
             }
 
             if (showTokens) {
                 right = stackpane {
                     alignment = Pos.TOP_RIGHT
 
-                    label(
-                        when (champion.level) {
-                            6 -> "${champion.tokens}/3"
-                            5 -> "${champion.tokens}/2"
-                            else -> ""
-                        }
-                    ) {
+                    blackLabel(when (champion.level) {
+                        6 -> "${champion.tokens}/3"
+                        5 -> "${champion.tokens}/2"
+                        else -> ""
+                    }, fontSize = 11.0) {
                         isVisible = listOf(5, 6).contains(champion.level)
-                        textFill = Color.WHITE
-                        paddingHorizontal = 8
-                        font = Font.font(11.0)
-
-                        style {
-                            backgroundColor += Color.BLACK
-                        }
                     }
                 }
             }

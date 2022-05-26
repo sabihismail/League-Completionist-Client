@@ -14,14 +14,14 @@ import tornadofx.style
 
 fun EventTarget.blackLabel(text: String = "", textFill: Color? = Color.WHITE, graphic: Node? = null, textAlignment: TextAlignment = TextAlignment.CENTER,
                            isWrapText: Boolean = true, fontSize: Double = 9.0, backgroundColorVal: Paint = Color.BLACK, paddingHorizontal: Int = 8,
-                           op: Label.() -> Unit = {}) = Label(text).attachTo(this, op) {
+                           fontWeight: FontWeight = FontWeight.BOLD, op: Label.() -> Unit = {}) = Label(text).attachTo(this, op) {
     if (graphic != null) it.graphic = graphic
 
     it.textFill = textFill
     it.textAlignment = textAlignment
     it.isWrapText = isWrapText
     it.paddingHorizontal = paddingHorizontal
-    it.font = Font.font(fontSize)
+    it.font = Font.font(Font.getDefault().family, fontWeight, fontSize)
 
     it.style {
         backgroundColor += backgroundColorVal
