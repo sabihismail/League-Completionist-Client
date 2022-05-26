@@ -14,7 +14,9 @@ import league.models.json.*
 import util.LogType
 import util.Logging
 import util.StringUtil
-import util.constants.ViewConstants
+import util.constants.ViewConstants.CHAMPION_STATUS_AVAILABLE_CHEST_COLOR
+import util.constants.ViewConstants.CHAMPION_STATUS_UNAVAILABLE_CHEST_COLOR
+import util.constants.ViewConstants.IMAGE_WIDTH
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.net.URL
@@ -141,13 +143,13 @@ object LeagueCommunityDragonApi {
         }
 
         val colorInput = ColorInput().apply {
-            width = ViewConstants.IMAGE_WIDTH
-            height = ViewConstants.IMAGE_WIDTH
+            width = IMAGE_WIDTH
+            height = IMAGE_WIDTH
 
             paint = if (championInfo.ownershipStatus == ChampionOwnershipStatus.BOX_ATTAINED)
-                ViewConstants.CHAMPION_STATUS_UNAVAILABLE_CHEST_COLOR
+                CHAMPION_STATUS_UNAVAILABLE_CHEST_COLOR
             else
-                ViewConstants.CHAMPION_STATUS_AVAILABLE_CHEST_COLOR
+                CHAMPION_STATUS_AVAILABLE_CHEST_COLOR
         }
 
         val blend = Blend().apply {

@@ -230,8 +230,6 @@ class LeagueConnection {
                     .responseObject ?: return
                 Logging.log(recipes, LogType.VERBOSE)
             }
-
-
     }
 
     fun updateChampionMasteryInfo() {

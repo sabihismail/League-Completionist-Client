@@ -60,7 +60,7 @@ class ChampionFragment : Fragment() {
                         isVisible = listOf(5, 6).contains(champion.value.level)
                         textFill = Color.WHITE
                         paddingHorizontal = 8
-                        font = Font.font(11.6)
+                        font = Font.font(11.0)
 
                         style {
                             backgroundColor += Color.BLACK

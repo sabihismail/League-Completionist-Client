@@ -18,10 +18,12 @@ import ui.mock.AramMockController
 import ui.mock.NormalMockController
 import ui.mock.extra.ChallengesUpdatedMockController
 import ui.views.fragments.ChampionFragment
-import util.constants.ViewConstants
-import util.constants.ViewConstants.APP_HEIGHT
-import util.constants.ViewConstants.APP_WIDTH
+import util.constants.ViewConstants.CHAMPION_STATUS_AVAILABLE_CHEST_COLOR
+import util.constants.ViewConstants.CHAMPION_STATUS_NOT_OWNED_COLOR
+import util.constants.ViewConstants.CHAMPION_STATUS_UNAVAILABLE_CHEST_COLOR
 import util.constants.ViewConstants.DEFAULT_SPACING
+import util.constants.ViewConstants.IMAGE_SPACING_WIDTH
+import util.constants.ViewConstants.IMAGE_WIDTH
 
 
 class MainView: View("LoL Mastery Box Client") {
@@ -62,6 +64,7 @@ class MainView: View("LoL Mastery Box Client") {
                     top = label("You:") {
                         font = Font.font(Font.getDefault().family, FontWeight.BOLD, Font.getDefault().size)
                     }
+
                     left = currentChampionView.root
                 }
             }
@@ -75,7 +78,7 @@ class MainView: View("LoL Mastery Box Client") {
                         alignment = Pos.CENTER_LEFT
 
                         rectangle(0, 0, 20, 20) {
-                            fill = ViewConstants.CHAMPION_STATUS_AVAILABLE_CHEST_COLOR
+                            fill = CHAMPION_STATUS_AVAILABLE_CHEST_COLOR
                         }
                         label("Available")
                     }
@@ -84,7 +87,7 @@ class MainView: View("LoL Mastery Box Client") {
                         alignment = Pos.CENTER_LEFT
 
                         rectangle(0, 0, 20, 20) {
-                            fill = ViewConstants.CHAMPION_STATUS_UNAVAILABLE_CHEST_COLOR
+                            fill = CHAMPION_STATUS_UNAVAILABLE_CHEST_COLOR
                         }
                         label("Already Obtained")
                     }
@@ -93,7 +96,7 @@ class MainView: View("LoL Mastery Box Client") {
                         alignment = Pos.CENTER_LEFT
 
                         rectangle(0, 0, 20, 20) {
-                            fill = ViewConstants.CHAMPION_STATUS_NOT_OWNED_COLOR
+                            fill = CHAMPION_STATUS_NOT_OWNED_COLOR
                         }
                         label("Not Owned/Free to Play")
                     }
@@ -148,5 +151,10 @@ class MainView: View("LoL Mastery Box Client") {
                 }
             }
         }
+    }
+
+    companion object {
+        const val APP_WIDTH = IMAGE_WIDTH * 5 + IMAGE_SPACING_WIDTH * (5 + 2) + 40.0
+        const val APP_HEIGHT = 960.0
     }
 }
