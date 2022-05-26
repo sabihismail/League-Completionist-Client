@@ -8,7 +8,6 @@ import league.api.LeagueCommunityDragonApi
 import league.models.enums.*
 import tornadofx.Controller
 import tornadofx.runLater
-import tornadofx.toProperty
 import ui.views.*
 import util.LogType
 import util.Logging
@@ -38,6 +37,7 @@ open class MainViewController : Controller() {
 
             leagueConnection.role = Role.valueOf(newValue.toString())
 
+            if(leagueConnection.isSmurf) return@addListener
             val newSortedChampionInfo = leagueConnection.getChampionMasteryInfo()
             normalView.setChampions(FXCollections.observableList(newSortedChampionInfo))
         }
@@ -109,6 +109,7 @@ open class MainViewController : Controller() {
             if (!ACCEPTABLE_GAME_MODES.contains(leagueConnection.gameMode)) return@onChampionSelectChange
 
             replaceDisplay()
+            updateCurrentChampion()
 
             if (!manualGameModeSelect) {
                 runLater {
@@ -163,11 +164,12 @@ open class MainViewController : Controller() {
     }
 
     private fun updateCurrentChampion() {
-        if (leagueConnection.championSelectInfo.teamChampions.any { championInfo -> championInfo?.isSummonerSelectedChamp == true }) {
-            runLater {
-                val champion = leagueConnection.championSelectInfo.teamChampions.firstOrNull { championInfo -> championInfo!!.isSummonerSelectedChamp }
-                view.currentEternalView.set(champion!!.eternal.toProperty())
-            }
+        if (!leagueConnection.championSelectInfo.teamChampions.any { championInfo -> championInfo?.isSummonerSelectedChamp == true }) return
+
+        runAsync {
+            leagueConnection.championSelectInfo.teamChampions.firstOrNull { championInfo -> championInfo!!.isSummonerSelectedChamp }!!
+        } ui {
+            view.currentChampionView.champion.value = it
         }
     }
 
@@ -188,7 +190,7 @@ open class MainViewController : Controller() {
         }
 
         if (ROLE_SPECIFIC_MODES.contains(leagueConnection.gameMode) && !manualRoleSelect) {
-            if (leagueConnection.summonerInfo.uniqueId != 2549404233031175L) {
+            if (leagueConnection.isSmurf) {
                 runLater {
                     normalView.currentRole.set(leagueConnection.championSelectInfo.assignedRole.toString())
                 }

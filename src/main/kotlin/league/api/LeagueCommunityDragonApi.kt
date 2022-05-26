@@ -4,7 +4,6 @@ import com.stirante.lolclient.libs.com.google.gson.GsonBuilder
 import com.stirante.lolclient.libs.com.google.gson.reflect.TypeToken
 import javafx.scene.effect.*
 import javafx.scene.image.Image
-import league.LeagueConnection
 import league.models.CacheInfo
 import league.models.ChampionInfo
 import league.models.enums.CacheType
@@ -28,10 +27,6 @@ import kotlin.reflect.KMutableProperty0
 
 object LeagueCommunityDragonApi {
     private val gson = GsonBuilder().create()
-
-    private val VERSION by lazy {
-        LeagueConnection.VERSION
-    }
 
     private val CHAMPION_ROLE_ENDPOINT by lazy {
         "https://raw.communitydragon.org/$VERSION/plugins/rcp-fe-lol-champion-statistics/global/default/rcp-fe-lol-champion-statistics.js"
@@ -59,6 +54,11 @@ object LeagueCommunityDragonApi {
             CacheType.JSON to CacheInfo("json/$VERSION")
         )
     }
+
+    var VERSION = Paths.get(Paths.get("").toAbsolutePath().toString(), "/cache/json")
+        .listDirectoryEntries()
+        .filter { it.name != "latest" }
+        .maxOfOrNull { it.name } ?: "latest"
 
     var CHAMPION_ROLE_MAPPING = hashMapOf<Role, HashMap<Int, Float>>()
     var QUEUE_MAPPING = hashMapOf<Int, ApiQueueInfoResponse>()
@@ -207,7 +207,7 @@ object LeagueCommunityDragonApi {
         val json = StringUtil.extractJSONFromString<ApiEternalsResponse>(jsonStr)
 
         ETERNALS_MAPPING = HashMap(json.statstoneData.flatMap { data ->
-            data.statstones.map { it.contentId to it.milestones.zip(it.getMilestoneValues()) }
+            data.statstones.map { it.contentId to it.getMilestoneValues() }
         }.toMap())
         addJsonCache(::ETERNALS_MAPPING)
     }

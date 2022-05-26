@@ -35,7 +35,7 @@ class ChallengeFragment : Fragment() {
                     blackLabel("Title: ${challenge.rewardTitle}" + if (challenge.rewardObtained) " ✓" else " (${challenge.rewardLevel.toString()[0]})")
                 }
 
-                blackLabel("${challenge.currentLevel} (${challenge.thresholds!!.keys.sorted().indexOf(challenge.currentLevel) + 1}/${challenge.thresholds!!.count()})")
+                blackLabel("${challenge.currentLevel} (${challenge.levelByThreshold}/${challenge.thresholds!!.count()})")
 
                 blackLabel("${challenge.currentValue!!.toInt()}/${challenge.nextThreshold!!.toInt()} (+${challenge.nextLevelPoints})") {
                     tooltip(challenge.thresholdSummary) {

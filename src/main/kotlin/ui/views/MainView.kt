@@ -2,10 +2,12 @@ package ui.views
 
 import DEBUG_FAKE_UI_DATA_ARAM
 import DEBUG_FAKE_UI_DATA_NORMAL
+import DEBUG_FAKE_UI_DATA_UPDATED_CHALLENGES
 import generated.LolGameflowGameflowPhase
 import javafx.beans.property.SimpleObjectProperty
 import javafx.geometry.Pos
 import javafx.scene.text.Font
+import javafx.scene.text.FontWeight
 import league.models.MasteryChestInfo
 import league.models.SummonerInfo
 import league.models.enums.GameMode
@@ -14,15 +16,18 @@ import tornadofx.*
 import ui.controllers.MainViewController
 import ui.mock.AramMockController
 import ui.mock.NormalMockController
-import ui.views.fragments.EternalsFragment
+import ui.mock.extra.ChallengesUpdatedMockController
+import ui.views.fragments.ChampionFragment
 import util.constants.ViewConstants
+import util.constants.ViewConstants.APP_HEIGHT
+import util.constants.ViewConstants.APP_WIDTH
 import util.constants.ViewConstants.DEFAULT_SPACING
 
 
 class MainView: View("LoL Mastery Box Client") {
     val defaultGridView = find(DefaultGridView::class)
     val masteryAccountView = find(MasteryAccountView::class)
-    val currentEternalView = find<EternalsFragment>(mapOf(EternalsFragment::eternal to null, EternalsFragment::fontSizeIn to 12.0))
+    val currentChampionView = find(ChampionFragment::class)
 
     val summonerProperty = SimpleObjectProperty(SummonerInfo())
     val chestProperty = SimpleObjectProperty(MasteryChestInfo())
@@ -33,12 +38,13 @@ class MainView: View("LoL Mastery Box Client") {
     private val controller = find(
         if (DEBUG_FAKE_UI_DATA_ARAM) AramMockController::class
         else if (DEBUG_FAKE_UI_DATA_NORMAL) NormalMockController::class
+        else if (DEBUG_FAKE_UI_DATA_UPDATED_CHALLENGES) ChallengesUpdatedMockController::class
         else MainViewController::class
     )
 
     override val root = vbox {
-        prefWidth = ViewConstants.APP_WIDTH
-        prefHeight = ViewConstants.APP_HEIGHT
+        prefWidth = APP_WIDTH
+        prefHeight = APP_HEIGHT
 
         borderpane {
             top = vbox {
@@ -49,6 +55,15 @@ class MainView: View("LoL Mastery Box Client") {
                 label(chestProperty.select { "Available chests: ${it.chestCount} (next one in ${it.remainingStr} days)".toProperty() })
                 label(clientStateProperty.select { "Client State: ${it.name}".toProperty() })
                 label(gameModeProperty.select { "Game Mode: $it".toProperty() })
+
+                borderpane {
+                    paddingHorizontal = 16.0
+
+                    top = label("You:") {
+                        font = Font.font(Font.getDefault().family, FontWeight.BOLD, Font.getDefault().size)
+                    }
+                    left = currentChampionView.root
+                }
             }
 
             center = defaultGridView.root
@@ -82,7 +97,6 @@ class MainView: View("LoL Mastery Box Client") {
                         }
                         label("Not Owned/Free to Play")
                     }
-                    currentEternalView.root
                 }
 
                 separator {

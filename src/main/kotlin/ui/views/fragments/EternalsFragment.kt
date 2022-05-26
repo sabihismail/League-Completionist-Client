@@ -16,7 +16,9 @@ class EternalsFragment : Fragment() {
     val eternal: SimpleObjectProperty<LolStatstonesStatstoneSet>? by param()
     val fontSizeIn: Double by param()
 
-    override var root = stackpane {  }
+    override var root = stackpane {
+        alignment = Pos.BOTTOM_LEFT
+    }
 
     init {
         if (eternal != null) {
@@ -27,22 +29,21 @@ class EternalsFragment : Fragment() {
     fun set(newEternal: SimpleObjectProperty<LolStatstonesStatstoneSet>) {
         if (newEternal.value == null) return
 
-        root = stackpane {
-            alignment = Pos.BOTTOM_LEFT
-
-            vbox {
-                newEternal.value.statstones.forEach {
-                    val regex = StringUtil.getSafeRegex(ETERNALS_DESCRIPTION_REGEX, it.description)
-                    blackLabel(regex + "Lvl ${it.formattedMilestoneLevel} - ${it.formattedValue}/${it.nextMilestone}", fontSize = fontSizeIn, isWrapText = false) {
-                        tooltip("${it.description} (${getEternalsThreshold(it)})") {
-                            style {
-                                font = Font.font(fontSizeIn)
-                            }
+        val vBox = vbox {
+            newEternal.value.statstones.forEach {
+                val regex = StringUtil.getSafeRegex(ETERNALS_DESCRIPTION_REGEX, it.description)
+                blackLabel(regex + "Lvl ${it.formattedMilestoneLevel} - ${it.formattedValue}/${it.nextMilestone}", fontSize = fontSizeIn, isWrapText = false) {
+                    tooltip("${it.description} (${getEternalsThreshold(it)})") {
+                        style {
+                            font = Font.font(fontSizeIn)
                         }
                     }
                 }
             }
         }
+
+        root.children.clear()
+        root.add(vBox)
     }
 
     private fun getEternalsThreshold(currentEternal: LolStatstonesStatstone): String {

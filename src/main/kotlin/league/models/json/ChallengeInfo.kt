@@ -62,6 +62,7 @@ class ChallengeInfo {
     val rewardObtained get() = rewardLevel <= currentLevel!!
     var hasRewardTitle = false
     var gameModeSet = setOf<GameMode>()
+    val levelByThreshold get() = thresholds!!.keys.sorted().indexOf(currentLevel) + 1
 
     val percentage get() = currentValue!!.toDouble() / nextThreshold!!
     val nextLevelPoints get() = try {

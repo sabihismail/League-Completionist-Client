@@ -4,7 +4,11 @@ import javafx.beans.property.SimpleListProperty
 import javafx.geometry.Pos
 import javafx.scene.control.ScrollPane
 import league.models.json.ChallengeInfo
-import tornadofx.*
+import tornadofx.View
+import tornadofx.datagrid
+import tornadofx.scrollpane
+import tornadofx.vbox
+import ui.views.fragments.ChallengeUpdateFragment
 import util.constants.ViewConstants.CHALLENGE_IMAGE_WIDTH
 
 class ChallengesUpdatedView : View("LoL Updated Challenges") {
@@ -19,9 +23,8 @@ class ChallengesUpdatedView : View("LoL Updated Challenges") {
                 cellWidth = CHALLENGE_IMAGE_WIDTH
                 cellHeight = CHALLENGE_IMAGE_WIDTH
                 cellFormat {
-                    graphic = vbox {
-                        label(it.first.description!!)
-                    }
+                    graphic = find<ChallengeUpdateFragment>(mapOf(ChallengeUpdateFragment::challenge to it.first, ChallengeUpdateFragment::challengeUpdate to it.second))
+                        .root
                 }
             }
         }

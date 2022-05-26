@@ -29,6 +29,7 @@ class LeagueConnection {
     var gameId = -1L
     var gameMode = GameMode.NONE
     var role = Role.ANY
+    val isSmurf get() = summonerInfo.uniqueId == 2549404233031175L
 
     var summonerInfo = SummonerInfo()
     var masteryChestInfo = MasteryChestInfo()
@@ -197,7 +198,7 @@ class LeagueConnection {
     }
 
     private fun runLootCleanup() {
-        if(summonerInfo.uniqueId == 2549404233031175L) return
+        if (isSmurf) return
 
         val loot = clientApi!!.executeGet("/lol-loot/v1/player-loot", Array<LolLootPlayerLoot>::class.java).responseObject ?: return
         Logging.log(loot, LogType.VERBOSE)
@@ -567,7 +568,7 @@ class LeagueConnection {
 
     private fun getClientVersion() {
         val versionInfo = clientApi!!.executeGet("/system/v1/builds", BuildInfo::class.java).responseObject
-        VERSION = versionInfo.version.split(".").subList(0, 2).joinToString(".")
+        LeagueCommunityDragonApi.VERSION = versionInfo.version.split(".").subList(0, 2).joinToString(".")
     }
 
     private fun getEternalsQueueIds() {
@@ -597,9 +598,5 @@ class LeagueConnection {
 
     private fun loggedIn() {
         onLoggedInList.forEach { it() }
-    }
-
-    companion object {
-        lateinit var VERSION: String
     }
 }

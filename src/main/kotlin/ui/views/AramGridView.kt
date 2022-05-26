@@ -2,13 +2,9 @@ package ui.views
 
 import javafx.beans.property.SimpleListProperty
 import javafx.geometry.Pos
-import javafx.scene.text.TextAlignment
-import league.api.LeagueCommunityDragonApi
 import league.models.ChampionInfo
-import league.models.enums.CacheType
 import tornadofx.*
-import ui.views.fragments.EternalsFragment
-import ui.views.fragments.util.blackLabel
+import ui.views.fragments.ChampionFragment
 import util.constants.ViewConstants.IMAGE_SPACING_WIDTH
 import util.constants.ViewConstants.IMAGE_WIDTH
 
@@ -34,6 +30,8 @@ class AramGridView: View() {
                 cellHeight = IMAGE_WIDTH
 
                 cellCache {
+                    find<ChampionFragment>(mapOf(ChampionFragment::champion to it.toProperty(), ChampionFragment::showTokens to false)).root
+                    /*
                     stackpane {
                         alignment = Pos.TOP_LEFT
 
@@ -45,6 +43,7 @@ class AramGridView: View() {
                             find<EternalsFragment>(mapOf(EternalsFragment::eternal to it.eternal.toProperty(), EternalsFragment::fontSizeIn to 12.0)).root
                         }
                     }
+                     */
                 }
             }
 
@@ -59,6 +58,9 @@ class AramGridView: View() {
                 horizontalCellSpacing = IMAGE_SPACING_WIDTH
 
                 cellCache {
+                    find<ChampionFragment>(mapOf(ChampionFragment::champion to it.toProperty(), ChampionFragment::showTokens to false, ChampionFragment::showYou to true))
+                        .root
+                    /*
                     stackpane {
                         stackpane {
                             alignment = Pos.BOTTOM_CENTER
@@ -82,6 +84,7 @@ class AramGridView: View() {
                             }
                         }
                     }
+                     */
                 }
             }
         }
