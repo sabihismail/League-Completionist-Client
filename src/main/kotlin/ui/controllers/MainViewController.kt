@@ -6,6 +6,7 @@ import javafx.collections.FXCollections
 import league.LeagueConnection
 import league.api.LeagueCommunityDragonApi
 import league.models.enums.*
+import league.models.json.ChallengeInfo
 import tornadofx.Controller
 import tornadofx.runLater
 import ui.views.*
@@ -38,7 +39,6 @@ open class MainViewController : Controller() {
 
             leagueConnection.role = Role.valueOf(newValue.toString())
 
-            if(leagueConnection.isSmurf) return@addListener
             val newSortedChampionInfo = leagueConnection.getChampionMasteryInfo()
             normalView.setChampions(FXCollections.observableList(newSortedChampionInfo))
         }
@@ -113,16 +113,16 @@ open class MainViewController : Controller() {
             updateCurrentChampion()
 
             if (!manualGameModeSelect) {
-                runLater {
-                    view.find<ChallengesView>().currentGameModeProperty.set(
-                        if (leagueConnection.gameMode.isClassic) {
-                            GameMode.CLASSIC
-                        } else if (leagueConnection.gameMode == GameMode.ARAM) {
-                            GameMode.ARAM
-                        } else {
-                            throw IllegalArgumentException("onChampionSelectChange - Invalid GameMode - " + leagueConnection.gameMode)
-                        }
-                    )
+                runAsync {
+                    if (leagueConnection.gameMode.isClassic) {
+                        GameMode.CLASSIC
+                    } else if (leagueConnection.gameMode == GameMode.ARAM) {
+                        GameMode.ARAM
+                    } else {
+                        throw IllegalArgumentException("onChampionSelectChange - Invalid GameMode - " + leagueConnection.gameMode)
+                    }
+                } ui {
+                    view.find<ChallengesView>().currentGameModeProperty.set(it)
                 }
             }
         }
@@ -168,9 +168,11 @@ open class MainViewController : Controller() {
         if (!leagueConnection.championSelectInfo.teamChampions.any { championInfo -> championInfo?.isSummonerSelectedChamp == true }) return
 
         runAsync {
-            leagueConnection.championSelectInfo.teamChampions.firstOrNull { championInfo -> championInfo!!.isSummonerSelectedChamp }!!
+            leagueConnection.championSelectInfo.teamChampions.firstOrNull { championInfo -> championInfo!!.isSummonerSelectedChamp }
         } ui {
-            view.currentChampionView.replaceWith(view.find<ChampionFragment>(mapOf(ChampionFragment::champion to it)))
+            if (it != null) {
+                view.currentChampionView.replaceWith(view.find<ChampionFragment>(mapOf(ChampionFragment::champion to it)))
+            }
         }
     }
 
@@ -222,15 +224,21 @@ open class MainViewController : Controller() {
     }
 
     fun updateChallengesView() {
-        runLater {
-            view.find<ChallengesView>().setChallenges(leagueConnection.challengeInfoSummary, leagueConnection.challengeInfo,
-                leagueConnection.challengeInfo.keys.sortedBy { it })
+        runAsync {
+            leagueConnection.challengeInfo.keys.sortedBy { it }
+        } ui {
+            view.find<ChallengesView>().setChallenges(leagueConnection.challengeInfoSummary, leagueConnection.challengeInfo, it)
         }
     }
 
     fun updateChallengesUpdatedView() {
-        runLater {
-            view.find<ChallengesUpdatedView>().challengesProperty.set(FXCollections.observableList(leagueConnection.challengesUpdatedInfo))
+        runAsync {
+            leagueConnection.challengesUpdatedInfo.sortedWith(
+                compareByDescending<Pair<ChallengeInfo, ChallengeInfo>> { it.second.currentLevel }
+                    .thenByDescending { it.second.percentage }
+            )
+        } ui {
+            view.find<ChallengesUpdatedView>().challengesProperty.set(FXCollections.observableList(it))
         }
     }
 

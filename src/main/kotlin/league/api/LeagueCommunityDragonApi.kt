@@ -59,8 +59,9 @@ object LeagueCommunityDragonApi {
 
     var VERSION = Paths.get(Paths.get("").toAbsolutePath().toString(), "/cache/json")
         .listDirectoryEntries()
-        .filter { it.name != "latest" }
-        .maxOfOrNull { it.name } ?: "latest"
+        .map { it.name }
+        .sorted()
+        .firstOrNull { it != "latest" } ?: "latest"
 
     var CHAMPION_ROLE_MAPPING = hashMapOf<Role, HashMap<Int, Float>>()
     var QUEUE_MAPPING = hashMapOf<Int, ApiQueueInfoResponse>()

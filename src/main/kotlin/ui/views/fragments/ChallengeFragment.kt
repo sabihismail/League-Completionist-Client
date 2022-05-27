@@ -11,6 +11,7 @@ import util.constants.ViewConstants.CHALLENGE_IMAGE_WIDTH
 
 class ChallengeFragment : Fragment() {
     val challenge: ChallengeInfo by param()
+    val bracketText: String by param()
 
     override val root = stackpane {
         alignment = Pos.TOP_CENTER
@@ -37,7 +38,7 @@ class ChallengeFragment : Fragment() {
 
                 blackLabel("${challenge.currentLevel} (${challenge.levelByThreshold}/${challenge.thresholds!!.count()})")
 
-                blackLabel("${challenge.currentValue!!.toInt()}/${challenge.nextThreshold!!.toInt()} (+${challenge.nextLevelPoints})") {
+                blackLabel("${challenge.currentValue!!.toInt()}/${challenge.nextThreshold!!.toInt()} (+$bracketText)") {
                     tooltip(challenge.thresholdSummary) {
                         style {
                             font = Font.font(9.0)

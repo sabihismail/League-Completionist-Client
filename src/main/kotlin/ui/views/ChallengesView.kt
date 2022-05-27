@@ -216,7 +216,9 @@ class ChallengesView : View("LoL Challenges") {
                             cellHeight = CHALLENGE_IMAGE_WIDTH
 
                             cellFormat {
-                                graphic = find<ChallengeFragment>(mapOf(ChallengeFragment::challenge to it)).root
+                                graphic = find<ChallengeFragment>(
+                                    mapOf(ChallengeFragment::challenge to it, ChallengeFragment::bracketText to it.nextLevelPoints.toString())
+                                ).root
                             }
                         }
                     }

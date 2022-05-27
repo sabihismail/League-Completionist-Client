@@ -49,20 +49,25 @@ class MainView: View("LoL Mastery Box Client") {
         prefHeight = APP_HEIGHT
 
         borderpane {
-            top = vbox {
-                alignment = Pos.CENTER
+            top = hbox {
                 paddingBottom = 16.0
-
-                label(summonerProperty.select { it.toDisplayString().toProperty() })
-                label(chestProperty.select { "Available chests: ${it.chestCount} (next one in ${it.remainingStr} days)".toProperty() })
-                label(clientStateProperty.select { "Client State: ${it.name}".toProperty() })
-                label(gameModeProperty.select { "Game Mode: $it".toProperty() })
+                paddingHorizontal = 16.0
 
                 borderpane {
-                    paddingHorizontal = 16.0
-
                     top = boldLabel("You:")
                     left = currentChampionView.root
+                }
+
+                vbox {
+                    paddingTop = 16.0
+                    paddingLeft = 8.0
+                    alignment = Pos.TOP_LEFT
+
+                    fitToParentWidth()
+                    label(summonerProperty.select { it.toDisplayString().toProperty() })
+                    label(chestProperty.select { "Available chests: ${it.chestCount} (next one in ${it.remainingStr} days)".toProperty() })
+                    label(clientStateProperty.select { "Client State: ${it.name}".toProperty() })
+                    label(gameModeProperty.select { "Game Mode: $it".toProperty() })
                 }
             }
 
