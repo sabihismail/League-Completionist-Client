@@ -30,7 +30,7 @@ import kotlin.reflect.KMutableProperty0
 object LeagueCommunityDragonApi {
     var VERSION = Paths.get(Paths.get("").toAbsolutePath().toString(), "/cache/json")
         .listDirectoryEntries()
-        .map { it.name }
+        .map { it.name.replace("_", ".") }
         .sorted()
         .firstOrNull { it != "latest" } ?: "latest"
 
@@ -62,7 +62,7 @@ object LeagueCommunityDragonApi {
         mapOf(
             CacheType.CHAMPION to CacheInfo("champion", CHAMPION_PORTRAIT_ENDPOINT),
             CacheType.CHALLENGE to CacheInfo("challenge", CHALLENGE_IMAGE_ENDPOINT),
-            CacheType.JSON to CacheInfo("json/$VERSION")
+            CacheType.JSON to CacheInfo("json/${VERSION.replace(".", "_")}")
         )
     }
 
@@ -93,12 +93,7 @@ object LeagueCommunityDragonApi {
     fun getImage(t: CacheType, vararg params: Any): Image {
         val path = getImagePath(t, *params)
 
-        try {
-            return Image(path!!.toUri().toString())
-        } catch (e: Exception) {
-            println("getImage - $t - ${params.joinToString(", ")} - $path")
-            throw e
-        }
+        return Image(path!!.toUri().toString())
     }
 
     fun getPath(cacheType: CacheType): Path {

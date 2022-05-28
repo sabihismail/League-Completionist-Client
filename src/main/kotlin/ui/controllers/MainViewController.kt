@@ -5,6 +5,7 @@ import generated.LolGameflowGameflowPhase
 import javafx.collections.FXCollections
 import league.LeagueConnection
 import league.api.LeagueCommunityDragonApi
+import league.models.ChampionInfo
 import league.models.enums.*
 import league.models.json.ChallengeInfo
 import tornadofx.Controller
@@ -95,7 +96,7 @@ open class MainViewController : Controller() {
                     updateChampionList()
                 }
                 else -> {
-                    runLater { view.currentChampionView.replaceWith(view.find<ChampionFragment>()) }
+                    runLater { view.currentChampionView.replaceWith(view.find<ChampionFragment>(ChampionFragment::champion to ChampionInfo())) }
                 }
             }
         }

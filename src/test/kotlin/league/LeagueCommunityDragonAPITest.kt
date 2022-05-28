@@ -1,8 +1,8 @@
 package league
 
 import league.api.LeagueCommunityDragonApi
-import league.models.enums.ChallengeLevel
 import league.models.enums.CacheType
+import league.models.enums.ChallengeLevel
 import league.models.enums.Role
 import java.nio.file.Files
 import kotlin.io.path.fileSize
@@ -54,8 +54,8 @@ internal class LeagueCommunityDragonAPITest {
 
     @Test
     fun getChallengeImagePath() {
-        val imageId = 120001 // Co-Op vs AI challenge Id
-        val rankId = "bronze"
+        val imageId = 2022005 // Co-Op vs AI challenge Id
+        val rankId = "grandmaster"
 
         val image = LeagueCommunityDragonApi.getImagePath(CacheType.CHALLENGE, imageId, rankId)
 
