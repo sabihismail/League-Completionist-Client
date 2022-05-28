@@ -1,6 +1,5 @@
 package league.api
 
-import com.stirante.lolclient.libs.com.google.gson.GsonBuilder
 import com.stirante.lolclient.libs.com.google.gson.reflect.TypeToken
 import javafx.scene.effect.*
 import javafx.scene.image.Image
@@ -14,6 +13,7 @@ import league.models.json.*
 import util.LogType
 import util.Logging
 import util.StringUtil
+import util.constants.GenericConstants.GSON
 import util.constants.ViewConstants.CHAMPION_STATUS_AVAILABLE_CHEST_COLOR
 import util.constants.ViewConstants.CHAMPION_STATUS_UNAVAILABLE_CHEST_COLOR
 import util.constants.ViewConstants.IMAGE_WIDTH
@@ -28,7 +28,16 @@ import kotlin.reflect.KMutableProperty0
 
 
 object LeagueCommunityDragonApi {
-    private val gson = GsonBuilder().create()
+    var VERSION = Paths.get(Paths.get("").toAbsolutePath().toString(), "/cache/json")
+        .listDirectoryEntries()
+        .map { it.name }
+        .sorted()
+        .firstOrNull { it != "latest" } ?: "latest"
+
+    var CHAMPION_ROLE_MAPPING = hashMapOf<Role, HashMap<Int, Float>>()
+    var QUEUE_MAPPING = hashMapOf<Int, ApiQueueInfoResponse>()
+    var CHALLENGE_MAPPING = hashMapOf<String, Long>()
+    var ETERNALS_MAPPING = hashMapOf<String, List<Pair<Int, String>>>()
 
     private val CHAMPION_ROLE_ENDPOINT by lazy {
         "https://raw.communitydragon.org/$VERSION/plugins/rcp-fe-lol-champion-statistics/global/default/rcp-fe-lol-champion-statistics.js"
@@ -57,17 +66,6 @@ object LeagueCommunityDragonApi {
         )
     }
 
-    var VERSION = Paths.get(Paths.get("").toAbsolutePath().toString(), "/cache/json")
-        .listDirectoryEntries()
-        .map { it.name }
-        .sorted()
-        .firstOrNull { it != "latest" } ?: "latest"
-
-    var CHAMPION_ROLE_MAPPING = hashMapOf<Role, HashMap<Int, Float>>()
-    var QUEUE_MAPPING = hashMapOf<Int, ApiQueueInfoResponse>()
-    var CHALLENGE_MAPPING = hashMapOf<String, Long>()
-    var ETERNALS_MAPPING = hashMapOf<String, List<Pair<Int, String>>>()
-
     fun getChampionsByRole(role: Role): List<Int> {
         checkIfJsonCached(::CHAMPION_ROLE_MAPPING, ::populateRoleMapping)
 
@@ -95,7 +93,12 @@ object LeagueCommunityDragonApi {
     fun getImage(t: CacheType, vararg params: Any): Image {
         val path = getImagePath(t, *params)
 
-        return Image(path!!.toUri().toString())
+        try {
+            return Image(path!!.toUri().toString())
+        } catch (e: Exception) {
+            println("getImage - $t - ${params.joinToString(", ")} - $path")
+            throw e
+        }
     }
 
     fun getPath(cacheType: CacheType): Path {
@@ -223,7 +226,7 @@ object LeagueCommunityDragonApi {
     }
 
     private fun <T1, T2> addJsonCache(data: KMutableProperty0<HashMap<T1, T2>>) {
-        val json = gson.toJson(data.get())
+        val json = GSON.toJson(data.get())
 
         val path = getPath(CacheType.JSON).resolve(data.name + ".json")
         path.deleteIfExists()
@@ -239,7 +242,7 @@ object LeagueCommunityDragonApi {
         }
 
         val jsonStr = path.readText()
-        val json: T = gson.fromJson(jsonStr, object: TypeToken<T>(){}.type)
+        val json: T = GSON.fromJson(jsonStr, object: TypeToken<T>(){}.type)
 
         data.set(json)
     }

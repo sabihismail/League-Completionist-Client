@@ -10,6 +10,7 @@ import league.models.json.ChallengeInfo
 import tornadofx.Controller
 import tornadofx.runLater
 import ui.views.*
+import ui.views.ChallengesView.Companion.CRINGE_MISSIONS
 import ui.views.fragments.ChampionFragment
 import util.LogType
 import util.Logging
@@ -19,6 +20,8 @@ import kotlin.concurrent.thread
 
 
 open class MainViewController : Controller() {
+    val leagueConnection = LeagueConnection()
+
     private val view: MainView by inject()
     private val aramView: AramGridView by inject()
     private val normalView: NormalGridView by inject()
@@ -26,8 +29,6 @@ open class MainViewController : Controller() {
     private var activeView = ActiveView.NORMAL
     private var manualRoleSelect = false
     private var manualGameModeSelect = false
-
-    val leagueConnection = LeagueConnection()
 
     init {
         runLater { view.defaultGridView.setRoot(normalView) }
@@ -85,13 +86,18 @@ open class MainViewController : Controller() {
         leagueConnection.onSummonerChange {
             runLater { view.summonerProperty.set(it) }
 
-            if (it.status != SummonerStatus.LOGGED_IN_AUTHORIZED) return@onSummonerChange
+            when (it.status) {
+                SummonerStatus.LOGGED_IN_AUTHORIZED -> {
+                    leagueConnection.updateMasteryChestInfo()
+                    leagueConnection.updateChampionMasteryInfo()
+                    leagueConnection.updateClientState()
 
-            leagueConnection.updateMasteryChestInfo()
-            leagueConnection.updateChampionMasteryInfo()
-            leagueConnection.updateClientState()
-
-            updateChampionList()
+                    updateChampionList()
+                }
+                else -> {
+                    runLater { view.currentChampionView.replaceWith(view.find<ChampionFragment>()) }
+                }
+            }
         }
 
         leagueConnection.onMasteryChestChange {
@@ -168,7 +174,7 @@ open class MainViewController : Controller() {
         if (!leagueConnection.championSelectInfo.teamChampions.any { championInfo -> championInfo?.isSummonerSelectedChamp == true }) return
 
         runAsync {
-            leagueConnection.championSelectInfo.teamChampions.firstOrNull { championInfo -> championInfo!!.isSummonerSelectedChamp }
+            leagueConnection.championSelectInfo.teamChampions.firstOrNull { championInfo -> championInfo?.isSummonerSelectedChamp == true }
         } ui {
             if (it != null) {
                 view.currentChampionView.replaceWith(view.find<ChampionFragment>(mapOf(ChampionFragment::champion to it)))
@@ -234,7 +240,8 @@ open class MainViewController : Controller() {
     fun updateChallengesUpdatedView() {
         runAsync {
             leagueConnection.challengesUpdatedInfo.sortedWith(
-                compareByDescending<Pair<ChallengeInfo, ChallengeInfo>> { it.second.currentLevel }
+                compareByDescending<Pair<ChallengeInfo, ChallengeInfo>> { !CRINGE_MISSIONS.any { x -> it.second.description!!.contains(x) } }
+                    .thenByDescending { it.second.currentLevel }
                     .thenByDescending { it.second.percentage }
             )
         } ui {

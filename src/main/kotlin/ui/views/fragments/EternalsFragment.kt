@@ -50,6 +50,6 @@ class EternalsFragment : Fragment() {
         return LeagueCommunityDragonApi.getEternal(currentEternal.statstoneId)
             .dropLast(1)
             .filter { it.first > NumberFormat.getNumberInstance().parse(currentEternal.nextMilestone).toInt() }
-            .joinToString(", ") { it.second }
+            .joinToString(" > ") { it.second }
     }
 }

@@ -12,7 +12,7 @@ data class ApiEternalsListing(val name: String, val contentId: String, val bound
         val elements = milestones.foldIndexed<Int, List<Int>>(listOf()) { i, acc, e -> acc + ((if (i >= 1) acc[i - 1] else 0) + e) }
         val displayedElements = when(trackingTypeValue) {
             EternalTrackingType.COUNT -> {
-                elements.map { it.toString() }
+                elements.map { "%,d".format(it) }
             }
             EternalTrackingType.TIME -> {
                 elements.map { StringUtil.parseSecondsToHMS(it) }

@@ -14,11 +14,11 @@ import util.constants.ViewConstants.IMAGE_WIDTH
 
 
 class NormalGridView: View() {
+    val currentRole = SimpleStringProperty(Role.ANY.name)
+
     private val allChampions = SimpleListProperty<ChampionInfo>()
     private val championListProperty = SimpleListProperty<ChampionInfo>()
     private val eternalsOnlyProperty = SimpleBooleanProperty(false)
-
-    val currentRole = SimpleStringProperty(Role.ANY.name)
 
     fun setChampions(lst: List<ChampionInfo>) {
         allChampions.value = FXCollections.observableList(lst)

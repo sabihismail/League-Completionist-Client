@@ -23,6 +23,8 @@ import util.constants.ViewConstants.SCROLLBAR_HEIGHT
 
 
 class ChallengesView : View("LoL Challenges") {
+    val currentGameModeProperty = SimpleObjectProperty(GameMode.ANY)
+
     private val challengesSummaryProperty = SimpleObjectProperty<ChallengeSummary>()
     private val allCategoriesProperty = SimpleListProperty<ChallengeCategory>()
     private val categoriesProperty = SimpleListProperty<ChallengeCategory>()
@@ -38,8 +40,6 @@ class ChallengesView : View("LoL Challenges") {
     private val hideCollectionProperty = SimpleBooleanProperty(false)
     private val hideLegacyProperty = SimpleBooleanProperty(true)
     private val currentSearchTextProperty = SimpleStringProperty("")
-
-    val currentGameModeProperty = SimpleObjectProperty(GameMode.ANY)
 
     private lateinit var verticalRow: ScrollPane
     private lateinit var grid: DataGrid<ChallengeCategory>
@@ -265,7 +265,7 @@ class ChallengesView : View("LoL Challenges") {
             (INNER_CELL_HEIGHT + SPACING_BETWEEN_ROW * 2) * ROW_COUNT + DEFAULT_SPACING * 2 + SCROLLBAR_HEIGHT
         }
 
-        private val CRINGE_MISSIONS = setOf(
+        val CRINGE_MISSIONS = setOf(
             "Earn points from challenges in the ",
         )
     }

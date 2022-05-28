@@ -93,6 +93,10 @@ class ChallengeInfo {
         hasRewardTitle = false
     }
 
+    operator fun minus(other: ChallengeInfo): Int {
+        return (this.currentValue!! - other.currentValue!!).toInt()
+    }
+
     override fun toString(): String {
         return "ChallengeInfo(id=$id, name=$name, description=$description, capstoneGroupId=$capstoneGroupId, capstoneGroupName=$capstoneGroupName, " +
                 "capstoneId=$capstoneId, currentLevelAchievedTime=$currentLevelAchievedTime, currentThreshold=$currentThreshold, currentValue=$currentValue, " +

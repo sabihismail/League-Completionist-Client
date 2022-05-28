@@ -1,7 +1,6 @@
 package league
 
 import com.stirante.lolclient.*
-import com.stirante.lolclient.libs.com.google.gson.GsonBuilder
 import com.stirante.lolclient.libs.com.google.gson.internal.LinkedTreeMap
 import com.stirante.lolclient.libs.org.apache.http.HttpException
 import com.stirante.lolclient.libs.org.apache.http.conn.HttpHostConnectException
@@ -17,6 +16,7 @@ import tornadofx.*
 import util.LogType
 import util.Logging
 import util.ProcessExecutor
+import util.constants.GenericConstants.GSON
 import java.io.*
 import java.net.ConnectException
 import java.util.*
@@ -68,9 +68,8 @@ class LeagueConnection {
         },
         "/lol-challenges/v1/my-updated-challenges/.*".toRegex() to { data ->
             handleChallengesChange((data as Array<*>).map {
-                val gson = GsonBuilder().create()
-                val obj = gson.toJson(it)
-                gson.fromJson(obj, ChallengeInfo::class.java)
+                val obj = GSON.toJson(it)
+                GSON.fromJson(obj, ChallengeInfo::class.java)
             })
         },
     )
@@ -125,13 +124,23 @@ class LeagueConnection {
         clientApi = null
         clientApiListener = null
 
+        gameId = -1L
         gameMode = GameMode.NONE
+        role = Role.ANY
         summonerInfo = SummonerInfo(SummonerStatus.NOT_LOGGED_IN)
         championSelectInfo = ChampionSelectInfo()
         championInfo = mapOf()
 
         clientState = LolGameflowGameflowPhase.NONE
+
+        summonerInfo = SummonerInfo()
         masteryChestInfo = MasteryChestInfo()
+        championSelectInfo = ChampionSelectInfo()
+        championInfo = mapOf()
+        challengeInfo = mapOf()
+        challengesUpdatedInfo = mutableListOf()
+        challengeInfoSummary = ChallengeSummary()
+        eternalsValidQueues = setOf()
 
         summonerChanged()
     }
@@ -170,7 +179,7 @@ class LeagueConnection {
                     .thenByDescending { it.name }
             )
 
-        if (role != Role.ANY) {
+        if (role != Role.ANY && !isSmurf) {
             val championsByRole = LeagueCommunityDragonApi.getChampionsByRole(role)
 
             info = info.filter { championsByRole.contains(it.id) }
@@ -199,6 +208,9 @@ class LeagueConnection {
 
     private fun runLootCleanup() {
         if (isSmurf) return
+        if (championInfo.isEmpty()) {
+            updateChampionMasteryInfo()
+        }
 
         val loot = clientApi!!.executeGet("/lol-loot/v1/player-loot", Array<LolLootPlayerLoot>::class.java).responseObject ?: return
         Logging.log(loot, LogType.VERBOSE)
@@ -208,7 +220,7 @@ class LeagueConnection {
         val tokens = loot.filter { it.type == "CHAMPION_TOKEN" }
         val map = mapOf(2 to 5, 3 to 6)
         map.forEach { (k, v) ->
-            val mastery = tokens.filter { it.count == k && championInfo[it.refId.toInt()]!!.level == v }
+            val mastery = tokens.filter { it.count == k && championInfo[it.refId.toInt()]?.level == v }
                 .forEach {
                     val recipes = clientApi!!.executeGet("/lol-loot/v1/recipes/initial-item/${it.lootId}", Array<LolLootRecipeWithMilestones>::class.java)
                         .responseObject ?: return
@@ -224,7 +236,7 @@ class LeagueConnection {
                 }
         }
 
-        val unneededShards = shards.filter { championInfo[it.storeItemId]!!.level == 7 }
+        val unneededShards = shards.filter { championInfo[it.storeItemId]?.level == 7 }
             .forEach {
                 val recipes = clientApi!!.executeGet("/lol-loot/v1/recipes/initial-item/${it.lootId}", Array<LolLootRecipeWithMilestones>::class.java)
                     .responseObject ?: return
@@ -243,7 +255,7 @@ class LeagueConnection {
 
         val eternalSummary = clientApi!!.executeGet("/lol-statstones/v2/player-summary-self", Array<LolStatstonesChampionStatstoneSummary>::class.java)
                 .responseObject
-                .associate { it.championId to (it.sets.first { set -> set.name == "Series 1" }.stonesOwned > 0) }
+                .associate { it.championId to (it.sets.first { set -> set.name != "Starter Series" }.stonesOwned > 0) }
         Logging.log(eternalSummary, LogType.VERBOSE)
 
         val masteryPairing = champions.filter { it.id != -1 }
@@ -283,7 +295,7 @@ class LeagueConnection {
                 if (eternalSummary[it.id] == true) {
                     eternal = clientApi!!.executeGet("/lol-statstones/v2/player-statstones-self/${it.id}", Array<LolStatstonesStatstoneSet>::class.java)
                         .responseObject
-                        .first { set -> set.name == "Series 1" && set.stonesOwned > 0 }
+                        .first { set -> set.name != "Starter Series" && set.stonesOwned > 0 }
                 }
 
                 ChampionInfo(it.id, it.name, championOwnershipStatus, championPoints, currentMasteryPoints, nextLevelMasteryPoints, championLevel, tokens,
@@ -375,8 +387,9 @@ class LeagueConnection {
                         if (event == null || event.uri == null || event.data == null) return
 
                         val mappedRegex = eventListenerMapping.keys.firstOrNull { event.uri.matches(it) }
-                        if (mappedRegex == null) {
-                            Logging.log(event.data, LogType.VERBOSE, "ClientAPI WebSocket: " + event.uri + " - " + event.eventType)
+                        val bad = listOf("/lol-hovercard", "/lol-chat", "/lol-game-client-chat")
+                        if (mappedRegex == null && !bad.any { event.uri.contains(it) }) {
+                            Logging.log("", LogType.VERBOSE, "ClientAPI WebSocket: " + event.uri + " - " + event.eventType)
                             return
                         }
 
