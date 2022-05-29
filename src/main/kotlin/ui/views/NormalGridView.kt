@@ -2,7 +2,7 @@ package ui.views
 
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleListProperty
-import javafx.beans.property.SimpleStringProperty
+import javafx.beans.property.SimpleObjectProperty
 import javafx.collections.FXCollections
 import javafx.geometry.Pos
 import league.models.ChampionInfo
@@ -14,7 +14,7 @@ import util.constants.ViewConstants.IMAGE_WIDTH
 
 
 class NormalGridView: View() {
-    val currentRole = SimpleStringProperty(Role.ANY.name)
+    val currentRole = SimpleObjectProperty(Role.ANY)
 
     private val allChampions = SimpleListProperty<ChampionInfo>()
     private val championListProperty = SimpleListProperty<ChampionInfo>()
@@ -73,7 +73,7 @@ class NormalGridView: View() {
                     alignment = Pos.BOTTOM_LEFT
                     spacing = 6.0
 
-                    combobox<String>(currentRole, Role.values().map { it.name })
+                    combobox(currentRole, Role.values().toList())
                     checkbox("Eternals Only", eternalsOnlyProperty).apply {
                         eternalsOnlyProperty.onChange { handleEternalsOnlyProperty(it) }
                     }

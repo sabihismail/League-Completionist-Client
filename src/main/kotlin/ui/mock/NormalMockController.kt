@@ -97,7 +97,7 @@ class NormalMockController : MainViewController() {
         }
 
         regularView.currentRole.addListener { _, _, newValue ->
-            leagueConnection.role = Role.valueOf(newValue.toString())
+            leagueConnection.role = newValue
             leagueConnection.gameMode = GameMode.RANKED_FLEX
             leagueConnection.championSelectInfo = ChampionSelectInfo(assignedRole = leagueConnection.role)
 

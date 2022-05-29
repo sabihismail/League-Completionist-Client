@@ -27,11 +27,11 @@ object DatabaseImpl {
         }
     }
 
-    fun setMasteryInfo(summonerInfo: SummonerInfo, masteryChestInfo: MasteryChestInfo, currentBoxRemainingTime: Double) {
+    fun setMasteryInfo(summonerInfo: SummonerInfo, masteryChestInfo: MasteryChestInfo) {
         val finalDate = if (CHEST_MAX_COUNT == masteryChestInfo.chestCount) {
             LocalDateTime.now()
         } else {
-            val count = ((CHEST_MAX_COUNT - masteryChestInfo.chestCount - 1) * CHEST_WAIT_TIME + currentBoxRemainingTime) * 24 * 60
+            val count = ((CHEST_MAX_COUNT - masteryChestInfo.chestCount - 1) * CHEST_WAIT_TIME + masteryChestInfo.remainingTime) * 24 * 60
 
             LocalDateTime.now().plusMinutes(count.toLong())
         }

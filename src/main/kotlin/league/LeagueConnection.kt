@@ -4,6 +4,7 @@ import com.stirante.lolclient.*
 import com.stirante.lolclient.libs.com.google.gson.internal.LinkedTreeMap
 import com.stirante.lolclient.libs.org.apache.http.HttpException
 import com.stirante.lolclient.libs.org.apache.http.conn.HttpHostConnectException
+import db.DatabaseImpl
 import generated.*
 import league.api.LeagueCommunityDragonApi
 import league.models.*
@@ -19,7 +20,9 @@ import util.ProcessExecutor
 import util.constants.GenericConstants.GSON
 import java.io.*
 import java.net.ConnectException
+import java.nio.file.Files
 import java.util.*
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.concurrent.thread
 
 class LeagueConnection {
@@ -179,7 +182,7 @@ class LeagueConnection {
                     .thenByDescending { it.name }
             )
 
-        if (role != Role.ANY && !isSmurf) {
+        if (role != Role.ANY) {
             val championsByRole = LeagueCommunityDragonApi.getChampionsByRole(role)
 
             info = info.filter { championsByRole.contains(it.id) }
@@ -215,24 +218,24 @@ class LeagueConnection {
         val loot = clientApi!!.executeGet("/lol-loot/v1/player-loot", Array<LolLootPlayerLoot>::class.java).responseObject ?: return
         Logging.log(loot, LogType.VERBOSE)
 
-        val shards = loot.filter { it.type == "CHAMPION_RENTAL" }
+        val recipesToCraft = mutableListOf<LolLootRecipeWithMilestones>()
 
+        val shards = loot.filter { it.type == "CHAMPION_RENTAL" }
         val tokens = loot.filter { it.type == "CHAMPION_TOKEN" }
-        val map = mapOf(2 to 5, 3 to 6)
-        map.forEach { (k, v) ->
-            val mastery = tokens.filter { it.count == k && championInfo[it.refId.toInt()]?.level == v }
+        mapOf(2 to 5, 3 to 6).map { (k, v) ->
+            tokens.filter { it.count == k && championInfo[it.refId.toInt()]?.level == v }
                 .forEach {
                     val recipes = clientApi!!.executeGet("/lol-loot/v1/recipes/initial-item/${it.lootId}", Array<LolLootRecipeWithMilestones>::class.java)
                         .responseObject ?: return
 
                     if (shards.any { shard -> shard.storeItemId == it.refId.toInt() && shard.count >= 1 }) {
                         val recipeShard = recipes.first { recipe -> recipe.recipeName.contains("shard") }
+                        recipesToCraft.add(recipeShard)
                         return
                     }
 
                     val recipeEssence = recipes.first { recipe -> recipe.recipeName.contains("essence") }
-
-                    Logging.log(recipes, LogType.VERBOSE)
+                    recipesToCraft.add(recipeEssence)
                 }
         }
 
@@ -242,6 +245,10 @@ class LeagueConnection {
                     .responseObject ?: return
                 Logging.log(recipes, LogType.VERBOSE)
             }
+
+        recipesToCraft.forEach { recipe ->
+            val postRequest = clientApi!!.executePost(recipe.recipeName, recipe.lootMilestoneIds, LolLootPlayerLootUpdate::class.java).responseObject
+        }
     }
 
     fun updateChampionMasteryInfo() {
@@ -305,7 +312,7 @@ class LeagueConnection {
         championInfo = masteryPairing.associateBy({ it.id }, { it })
     }
 
-    fun updateMasteryChestInfo(force: Boolean = false) {
+    private fun updateMasteryChestInfo(force: Boolean = false) {
         if (!force && masteryChestInfo.nextChestDate != null && Calendar.getInstance().time.before(masteryChestInfo.nextChestDate)) {
             masteryChestChanged()
             return
@@ -403,7 +410,10 @@ class LeagueConnection {
                     }
                 })
 
+                updateChallengesInfo()
                 loggedIn()
+
+                preloadChallengesCache()
             }
 
             override fun onClientDisconnected() {
@@ -439,6 +449,8 @@ class LeagueConnection {
         val chestCount = chestEligibility.earnableChests
 
         masteryChestInfo = MasteryChestInfo(nextChestDate, chestCount)
+        DatabaseImpl.setMasteryInfo(summonerInfo, masteryChestInfo)
+
         masteryChestChanged()
     }
 
@@ -459,6 +471,10 @@ class LeagueConnection {
 
     private fun handleClientStateChange(gameFlowPhase: LolGameflowGameflowPhase) {
         Logging.log(gameFlowPhase, LogType.DEBUG)
+
+        if (championInfo.isEmpty()) {
+            updateChampionMasteryInfo()
+        }
 
         gameMode = when (gameFlowPhase) {
             LolGameflowGameflowPhase.CHAMPSELECT -> {
@@ -492,6 +508,10 @@ class LeagueConnection {
         if (clientState == LolGameflowGameflowPhase.ENDOFGAME) {
             updateChampionMasteryInfo()
             runLootCleanup()
+        }
+
+        if (!isSmurf) {
+            role = championSelectInfo.assignedRole
         }
 
         clientState = gameFlowPhase
@@ -570,9 +590,42 @@ class LeagueConnection {
             summoner.percentCompleteForNextLevel, summoner.summonerLevel, summoner.xpUntilNextLevel)
         summonerChanged()
 
+        updateMasteryChestInfo()
+        updateChampionMasteryInfo()
+        updateClientState()
         getEternalsQueueIds()
 
         return true
+    }
+
+    private fun preloadChallengesCache() {
+        thread {
+            val elements = challengeInfo.values
+                .flatMap { challengeInfos -> challengeInfos.flatMap { challengeInfo -> challengeInfo.thresholds!!.keys.map { rank -> Pair(challengeInfo.id, rank) } } }
+                .toList()
+
+            val maxCount = elements.count()
+            val fileWalk = Files.walk(LeagueCommunityDragonApi.getPath(CacheType.CHALLENGE)).count()
+            if (fileWalk < maxCount) {
+                thread {
+                    Logging.log("Challenges - Starting Cache Download...", LogType.INFO)
+
+                    val num = AtomicInteger(0)
+                    elements.parallelStream()
+                        .forEach {
+                            LeagueCommunityDragonApi.getImagePath(CacheType.CHALLENGE, it.first.toString().lowercase(), it.second)
+
+                            num.incrementAndGet()
+                        }
+
+                    while (num.get() != maxCount) {
+                        Thread.sleep(1000)
+                    }
+
+                    Logging.log("Challenges - Finished Cache Download.", LogType.INFO)
+                }
+            }
+        }
     }
 
     private fun getClientVersion() {

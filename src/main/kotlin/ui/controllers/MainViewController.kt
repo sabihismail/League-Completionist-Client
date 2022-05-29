@@ -1,23 +1,19 @@
 package ui.controllers
 
-import db.DatabaseImpl
 import generated.LolGameflowGameflowPhase
 import javafx.collections.FXCollections
 import league.LeagueConnection
-import league.api.LeagueCommunityDragonApi
 import league.models.ChampionInfo
-import league.models.enums.*
+import league.models.enums.ActiveView
+import league.models.enums.GameMode
+import league.models.enums.Role
+import league.models.enums.SummonerStatus
 import league.models.json.ChallengeInfo
 import tornadofx.Controller
 import tornadofx.runLater
 import ui.views.*
 import ui.views.ChallengesView.Companion.CRINGE_MISSIONS
 import ui.views.fragments.ChampionFragment
-import util.LogType
-import util.Logging
-import java.nio.file.Files
-import java.util.concurrent.atomic.AtomicInteger
-import kotlin.concurrent.thread
 
 
 open class MainViewController : Controller() {
@@ -26,6 +22,8 @@ open class MainViewController : Controller() {
     private val view: MainView by inject()
     private val aramView: AramGridView by inject()
     private val normalView: NormalGridView by inject()
+    private val challengesView: ChallengesView by inject()
+    private val challengesUpdatedView: ChallengesUpdatedView by inject()
 
     private var activeView = ActiveView.NORMAL
     private var manualRoleSelect = false
@@ -39,49 +37,18 @@ open class MainViewController : Controller() {
         normalView.currentRole.addListener { _, _, newValue ->
             manualRoleSelect = true
 
-            leagueConnection.role = Role.valueOf(newValue.toString())
+            leagueConnection.role = newValue
 
             val newSortedChampionInfo = leagueConnection.getChampionMasteryInfo()
             normalView.setChampions(FXCollections.observableList(newSortedChampionInfo))
         }
 
-        normalView.find<ChallengesView>().currentGameModeProperty.addListener { _, _, _ ->
+        challengesView.currentGameModeProperty.addListener { _, _, _ ->
             manualGameModeSelect = true
         }
 
         leagueConnection.onLoggedIn {
-            leagueConnection.updateChallengesInfo()
             updateChallengesView()
-
-            val elements = leagueConnection.challengeInfo.values
-                .flatMap { challengeInfos ->
-                    challengeInfos.flatMap {
-                        challengeInfo -> challengeInfo.thresholds!!.keys.map { rank -> Pair(challengeInfo.id, rank) }
-                    }
-                }
-                .toList()
-
-            val maxCount = elements.count()
-            val fileWalk = Files.walk(LeagueCommunityDragonApi.getPath(CacheType.CHALLENGE)).count()
-            if (fileWalk < maxCount) {
-                thread {
-                    Logging.log("Challenges - Starting Cache Download...", LogType.INFO)
-
-                    val num = AtomicInteger(0)
-                    elements.parallelStream()
-                        .forEach {
-                            LeagueCommunityDragonApi.getImagePath(CacheType.CHALLENGE, it.first.toString().lowercase(), it.second)
-
-                            num.incrementAndGet()
-                        }
-
-                    while (num.get() != maxCount) {
-                        Thread.sleep(1000)
-                    }
-
-                    Logging.log("Challenges - Finished Cache Download.", LogType.INFO)
-                }
-            }
         }
 
         leagueConnection.onSummonerChange {
@@ -89,14 +56,11 @@ open class MainViewController : Controller() {
 
             when (it.status) {
                 SummonerStatus.LOGGED_IN_AUTHORIZED -> {
-                    leagueConnection.updateMasteryChestInfo()
-                    leagueConnection.updateChampionMasteryInfo()
-                    leagueConnection.updateClientState()
-
                     updateChampionList()
                 }
                 else -> {
                     runLater { view.currentChampionView.replaceWith(view.find<ChampionFragment>(ChampionFragment::champion to ChampionInfo())) }
+                    runLater { normalView.currentRole.set(Role.ANY) }
                 }
             }
         }
@@ -105,9 +69,6 @@ open class MainViewController : Controller() {
             if (it.nextChestDate == null) return@onMasteryChestChange
 
             runLater { view.chestProperty.set(it) }
-
-            DatabaseImpl.setMasteryInfo(leagueConnection.summonerInfo, leagueConnection.masteryChestInfo, it.remainingTime)
-
             runLater { view.masteryAccountView.run() }
         }
 
@@ -129,7 +90,7 @@ open class MainViewController : Controller() {
                         throw IllegalArgumentException("onChampionSelectChange - Invalid GameMode - " + leagueConnection.gameMode)
                     }
                 } ui {
-                    view.find<ChallengesView>().currentGameModeProperty.set(it)
+                    challengesView.currentGameModeProperty.set(it)
                 }
             }
         }
@@ -143,8 +104,6 @@ open class MainViewController : Controller() {
             if (it == LolGameflowGameflowPhase.CHAMPSELECT) {
                 manualRoleSelect = false
                 manualGameModeSelect = false
-
-                leagueConnection.role = leagueConnection.championSelectInfo.assignedRole
             }
 
             if (it == LolGameflowGameflowPhase.INPROGRESS) {
@@ -156,10 +115,6 @@ open class MainViewController : Controller() {
             }
 
             if (STATES_TO_REFRESH_DISPLAY.contains(it)) {
-                while (leagueConnection.championInfo.isEmpty()) {
-                    leagueConnection.updateChampionMasteryInfo()
-                }
-
                 replaceDisplay()
             }
 
@@ -201,9 +156,7 @@ open class MainViewController : Controller() {
 
         if (ROLE_SPECIFIC_MODES.contains(leagueConnection.gameMode) && !manualRoleSelect) {
             if (!leagueConnection.isSmurf) {
-                runLater {
-                    normalView.currentRole.set(leagueConnection.championSelectInfo.assignedRole.toString())
-                }
+                runLater { normalView.currentRole.set(leagueConnection.championSelectInfo.assignedRole) }
             }
         }
 
@@ -234,7 +187,7 @@ open class MainViewController : Controller() {
         runAsync {
             leagueConnection.challengeInfo.keys.sortedBy { it }
         } ui {
-            view.find<ChallengesView>().setChallenges(leagueConnection.challengeInfoSummary, leagueConnection.challengeInfo, it)
+            challengesView.setChallenges(leagueConnection.challengeInfoSummary, leagueConnection.challengeInfo, it)
         }
     }
 
@@ -246,7 +199,7 @@ open class MainViewController : Controller() {
                     .thenByDescending { it.second.percentage }
             )
         } ui {
-            view.find<ChallengesUpdatedView>().challengesProperty.set(FXCollections.observableList(it))
+            challengesUpdatedView.challengesProperty.set(FXCollections.observableList(it))
         }
     }
 

@@ -94,7 +94,7 @@ class ChallengeInfo {
     }
 
     operator fun minus(other: ChallengeInfo): Int {
-        return (this.currentValue!! - other.currentValue!!).toInt()
+        return (currentValue!! - other.currentValue!!).toInt()
     }
 
     override fun toString(): String {
