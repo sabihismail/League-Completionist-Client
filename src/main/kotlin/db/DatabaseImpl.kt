@@ -1,6 +1,5 @@
 package db
 
-import db.models.HextechTable
 import db.models.MasteryChestTable
 import league.models.MasteryChestInfo
 import league.models.SummonerInfo
@@ -22,7 +21,6 @@ object DatabaseImpl {
         transaction {
             SchemaUtils.createMissingTablesAndColumns(
                 MasteryChestTable,
-                HextechTable,
             )
         }
     }

@@ -46,10 +46,20 @@ class EternalsFragment : Fragment() {
         root.add(vBox)
     }
 
+    private fun parseNextMilestone(parsed: String, nextMilestone: String): Int {
+        val timeMapping = hashMapOf('h' to 60 * 60, 'm' to 60, 's' to 1)
+
+        return if (timeMapping.keys.any { parsed.contains(it) }) {
+            nextMilestone.split(" ").sumOf { it.substring(0, it.length - 1).toInt() * timeMapping[it.last()]!! }
+        } else {
+            return NumberFormat.getNumberInstance().parse(nextMilestone).toInt()
+        }
+    }
+
     private fun getEternalsThreshold(currentEternal: LolStatstonesStatstone): String {
         return LeagueCommunityDragonApi.getEternal(currentEternal.statstoneId)
             .dropLast(1)
-            .filter { it.first > NumberFormat.getNumberInstance().parse(currentEternal.nextMilestone).toInt() }
+            .filter {  it.first > parseNextMilestone(it.second, currentEternal.nextMilestone) }
             .joinToString(" > ") { it.second }
     }
 }

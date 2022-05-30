@@ -3,11 +3,7 @@ package ui.controllers
 import generated.LolGameflowGameflowPhase
 import javafx.collections.FXCollections
 import league.LeagueConnection
-import league.models.ChampionInfo
-import league.models.enums.ActiveView
-import league.models.enums.GameMode
-import league.models.enums.Role
-import league.models.enums.SummonerStatus
+import league.models.enums.*
 import league.models.json.ChallengeInfo
 import tornadofx.Controller
 import tornadofx.runLater
@@ -28,6 +24,7 @@ open class MainViewController : Controller() {
     private var activeView = ActiveView.NORMAL
     private var manualRoleSelect = false
     private var manualGameModeSelect = false
+    private var championFragmentSet = false
 
     init {
         runLater { view.defaultGridView.setRoot(normalView) }
@@ -59,7 +56,11 @@ open class MainViewController : Controller() {
                     updateChampionList()
                 }
                 else -> {
-                    runLater { view.currentChampionView.replaceWith(view.find<ChampionFragment>(ChampionFragment::champion to ChampionInfo())) }
+                    runLater {
+                        val newFragment = view.find<ChampionFragment>()
+                        view.currentChampionView.replaceWith(newFragment)
+                        view.currentChampionView = newFragment
+                    }
                     runLater { normalView.currentRole.set(Role.ANY) }
                 }
             }
@@ -104,6 +105,7 @@ open class MainViewController : Controller() {
             if (it == LolGameflowGameflowPhase.CHAMPSELECT) {
                 manualRoleSelect = false
                 manualGameModeSelect = false
+                championFragmentSet = false
             }
 
             if (it == LolGameflowGameflowPhase.INPROGRESS) {
@@ -112,6 +114,7 @@ open class MainViewController : Controller() {
 
             if (it == LolGameflowGameflowPhase.ENDOFGAME) {
                 updateChampionList()
+                updateCurrentChampion()
             }
 
             if (STATES_TO_REFRESH_DISPLAY.contains(it)) {
@@ -127,13 +130,18 @@ open class MainViewController : Controller() {
     }
 
     private fun updateCurrentChampion() {
+        if (championFragmentSet) return
         if (!leagueConnection.championSelectInfo.teamChampions.any { championInfo -> championInfo?.isSummonerSelectedChamp == true }) return
 
         runAsync {
             leagueConnection.championSelectInfo.teamChampions.firstOrNull { championInfo -> championInfo?.isSummonerSelectedChamp == true }
         } ui {
             if (it != null) {
-                view.currentChampionView.replaceWith(view.find<ChampionFragment>(mapOf(ChampionFragment::champion to it)))
+                val newFragment = view.find<ChampionFragment>(mapOf(ChampionFragment::champion to it))
+                view.currentChampionView.replaceWith(newFragment)
+                view.currentChampionView = newFragment
+
+                championFragmentSet = true
             }
         }
     }
@@ -195,6 +203,7 @@ open class MainViewController : Controller() {
         runAsync {
             leagueConnection.challengesUpdatedInfo.sortedWith(
                 compareByDescending<Pair<ChallengeInfo, ChallengeInfo>> { !CRINGE_MISSIONS.any { x -> it.second.description!!.contains(x) } }
+                    .thenByDescending { it.second.category != ChallengeCategory.LEGACY }
                     .thenByDescending { it.second.currentLevel }
                     .thenByDescending { it.second.percentage }
             )

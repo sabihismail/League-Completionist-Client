@@ -218,6 +218,8 @@ class LeagueConnection {
         val loot = clientApi!!.executeGet("/lol-loot/v1/player-loot", Array<LolLootPlayerLoot>::class.java).responseObject ?: return
         Logging.log(loot, LogType.VERBOSE)
 
+        val ip = loot.first { it.lootId == "CURRENCY_champion" }
+        // val rp = loot.first { it.lootId == "CURRENCY_RP" }
         val recipesToCraft = mutableListOf<LolLootRecipeWithMilestones>()
 
         val shards = loot.filter { it.type == "CHAMPION_RENTAL" }
@@ -247,7 +249,9 @@ class LeagueConnection {
             }
 
         recipesToCraft.forEach { recipe ->
-            val postRequest = clientApi!!.executePost(recipe.recipeName, recipe.lootMilestoneIds, LolLootPlayerLootUpdate::class.java).responseObject
+            val lootIds = recipe.slots.flatMap { it.lootIds }
+            val postRequest = clientApi!!.executePost(recipe.recipeName, lootIds, LolLootPlayerLootUpdate::class.java).responseObject
+            Logging.log(postRequest, LogType.VERBOSE)
         }
     }
 

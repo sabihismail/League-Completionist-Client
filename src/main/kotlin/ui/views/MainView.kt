@@ -29,7 +29,7 @@ import util.constants.ViewConstants.IMAGE_WIDTH
 class MainView: View("LoL Mastery Box Client") {
     val defaultGridView = find(DefaultGridView::class)
     val masteryAccountView = find(MasteryAccountView::class)
-    val currentChampionView = find(ChampionFragment::class)
+    var currentChampionView = find(ChampionFragment::class)
 
     val summonerProperty = SimpleObjectProperty(SummonerInfo())
     val chestProperty = SimpleObjectProperty(MasteryChestInfo())
@@ -82,7 +82,7 @@ class MainView: View("LoL Mastery Box Client") {
                         rectangle(0, 0, 20, 20) {
                             fill = CHAMPION_STATUS_AVAILABLE_CHEST_COLOR
                         }
-                        label("Available")
+                        label("Mastery Chest Available")
                     }
                     hbox {
                         spacing = 4.0
@@ -91,7 +91,7 @@ class MainView: View("LoL Mastery Box Client") {
                         rectangle(0, 0, 20, 20) {
                             fill = CHAMPION_STATUS_UNAVAILABLE_CHEST_COLOR
                         }
-                        label("Already Obtained")
+                        label("Mastery Chest Already Obtained")
                     }
                     hbox {
                         spacing = 4.0
