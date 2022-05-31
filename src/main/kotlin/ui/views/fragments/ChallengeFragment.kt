@@ -7,6 +7,7 @@ import league.models.enums.CacheType
 import league.models.json.ChallengeInfo
 import tornadofx.*
 import ui.views.fragments.util.blackLabel
+import util.KotlinExtensionUtil.toReadableNumber
 import util.constants.ViewConstants.CHALLENGE_IMAGE_WIDTH
 
 class ChallengeFragment : Fragment() {
@@ -38,7 +39,7 @@ class ChallengeFragment : Fragment() {
 
                 blackLabel("${challenge.currentLevel} (${challenge.levelByThreshold}/${challenge.thresholds!!.count()})")
 
-                blackLabel("${challenge.currentValue!!.toInt()}/${challenge.nextThreshold!!.toInt()} (+$bracketText)") {
+                blackLabel("${challenge.currentValue!!.toInt().toReadableNumber()}/${challenge.nextThreshold!!.toInt().toReadableNumber()} (+$bracketText)") {
                     tooltip(challenge.thresholdSummary) {
                         style {
                             font = Font.font(9.0)

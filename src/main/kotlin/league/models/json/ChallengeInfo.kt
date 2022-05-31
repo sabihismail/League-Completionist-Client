@@ -5,6 +5,7 @@ import league.models.enums.ChallengeCategory
 import league.models.enums.ChallengeLevel
 import league.models.enums.ChallengeThresholdRewardCategory
 import league.models.enums.GameMode
+import util.KotlinExtensionUtil.toReadableNumber
 
 
 @Serializable
@@ -46,7 +47,7 @@ class ChallengeInfo {
 
     val thresholdSummary get() = try {
         thresholds!!.toList().sortedBy { it.first }.filter { it.first > nextLevel!! }
-            .joinToString(", ") { it.second.value!!.toInt().toString() }
+            .joinToString(" > ") { it.second.value!!.toInt().toReadableNumber() }
     } catch (_: Exception) {
         ""
     }

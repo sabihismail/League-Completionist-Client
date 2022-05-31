@@ -209,50 +209,49 @@ class LeagueConnection {
         }
     }
 
-    private fun runLootCleanup() {
-        if (isSmurf) return
-        if (championInfo.isEmpty()) {
-            updateChampionMasteryInfo()
-        }
+    private fun getRecipes(lootId: String): Array<LolLootRecipeWithMilestones> {
+        return clientApi!!.executeGet("/lol-loot/v1/recipes/initial-item/$lootId", Array<LolLootRecipeWithMilestones>::class.java)
+            .responseObject!!
+    }
 
+    private fun runLootCleanup() {
         val loot = clientApi!!.executeGet("/lol-loot/v1/player-loot", Array<LolLootPlayerLoot>::class.java).responseObject ?: return
         Logging.log(loot, LogType.VERBOSE)
 
-        val ip = loot.first { it.lootId == "CURRENCY_champion" }
-        // val rp = loot.first { it.lootId == "CURRENCY_RP" }
-        val recipesToCraft = mutableListOf<LolLootRecipeWithMilestones>()
+        val ip = loot.first { it.lootId == "CURRENCY_champion" } // CURRENCY_RP
+        val keyFragments = loot.firstOrNull { it.lootId == "MATERIAL_key_fragment" }
+        val keyFragmentsEnchantment = if (keyFragments != null && keyFragments.count >= 3) getRecipes(keyFragments.lootId).toList() else listOf()
 
-        val shards = loot.filter { it.type == "CHAMPION_RENTAL" }
-        val tokens = loot.filter { it.type == "CHAMPION_TOKEN" }
-        mapOf(2 to 5, 3 to 6).map { (k, v) ->
-            tokens.filter { it.count == k && championInfo[it.refId.toInt()]?.level == v }
-                .forEach {
-                    val recipes = clientApi!!.executeGet("/lol-loot/v1/recipes/initial-item/${it.lootId}", Array<LolLootRecipeWithMilestones>::class.java)
-                        .responseObject ?: return
+        var masteryEnchantments = listOf<LolLootRecipeWithMilestones>()
+        if (!isSmurf) {
+            if (championInfo.isEmpty()) {
+                updateChampionMasteryInfo()
+            }
 
-                    if (shards.any { shard -> shard.storeItemId == it.refId.toInt() && shard.count >= 1 }) {
-                        val recipeShard = recipes.first { recipe -> recipe.recipeName.contains("shard") }
-                        recipesToCraft.add(recipeShard)
-                        return
+            val shards = loot.filter { it.type == "CHAMPION_RENTAL" }
+            val tokens = loot.filter { it.type == "CHAMPION_TOKEN" }
+            masteryEnchantments = mapOf(2 to 5, 3 to 6).flatMap { (k, v) ->
+                tokens.filter { it.count == k && championInfo[it.refId.toInt()]?.level == v }
+                    .map {
+                        val txt = if (shards.any { shard -> shard.storeItemId == it.refId.toInt() && shard.count >= 1 }) "shard" else "essence"
+                        getRecipes(it.lootId).first { recipe -> recipe.recipeName.contains(txt) }
                     }
+            }
 
-                    val recipeEssence = recipes.first { recipe -> recipe.recipeName.contains("essence") }
-                    recipesToCraft.add(recipeEssence)
+            val unneededShards = shards.filter { championInfo[it.storeItemId]?.level == 7 }
+                .forEach {
+                    val recipes = getRecipes(it.lootId)
+                    Logging.log(recipes, LogType.VERBOSE)
                 }
         }
 
-        val unneededShards = shards.filter { championInfo[it.storeItemId]?.level == 7 }
-            .forEach {
-                val recipes = clientApi!!.executeGet("/lol-loot/v1/recipes/initial-item/${it.lootId}", Array<LolLootRecipeWithMilestones>::class.java)
-                    .responseObject ?: return
-                Logging.log(recipes, LogType.VERBOSE)
+        listOf(masteryEnchantments, keyFragmentsEnchantment)
+            .flatten()
+            .forEach { recipe ->
+                val lootIds = recipe.slots.flatMap { it.lootIds }
+                val postRequest = clientApi!!.executePost(recipe.recipeName, lootIds, LolLootPlayerLootUpdate::class.java).responseObject
+                Logging.log(postRequest, LogType.VERBOSE)
             }
-
-        recipesToCraft.forEach { recipe ->
-            val lootIds = recipe.slots.flatMap { it.lootIds }
-            val postRequest = clientApi!!.executePost(recipe.recipeName, lootIds, LolLootPlayerLootUpdate::class.java).responseObject
-            Logging.log(postRequest, LogType.VERBOSE)
-        }
     }
 
     fun updateChampionMasteryInfo() {
