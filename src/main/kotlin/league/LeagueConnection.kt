@@ -238,7 +238,12 @@ class LeagueConnection {
                     }
             }
 
-            val unneededShards = shards.filter { championInfo[it.storeItemId]?.level == 7 }
+            val unneededShardFilters = listOf<(LolLootPlayerLoot) -> Boolean>(
+                { championInfo[it.storeItemId]?.level == 7 },
+                { championInfo[it.storeItemId]?.level == 6 && it.count == 2 },
+            )
+
+            val unneededShards = shards.filter { shard -> unneededShardFilters.any { filter -> filter(shard) } }
                 .forEach {
                     val recipes = getRecipes(it.lootId)
                     Logging.log(recipes, LogType.VERBOSE)
