@@ -59,7 +59,7 @@ class EternalsFragment : Fragment() {
     private fun getEternalsThreshold(currentEternal: LolStatstonesStatstone): String {
         return LeagueCommunityDragonApi.getEternal(currentEternal.statstoneId)
             .dropLast(1)
-            .filter {  it.first > parseNextMilestone(it.second, currentEternal.nextMilestone) }
+            .filter { it.first > parseNextMilestone(it.second, currentEternal.nextMilestone) }
             .joinToString(" > ") { it.second }
     }
 }

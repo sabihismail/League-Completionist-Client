@@ -36,6 +36,7 @@ class ChallengesView : View("LoL Challenges") {
     private val hideCompletedChallengesProperty = SimpleBooleanProperty(true)
     private val hideNonTitleChallengesProperty = SimpleBooleanProperty(false)
     private val hideWinChallengesProperty = SimpleBooleanProperty(true)
+    private val hideNonWinChallengesProperty = SimpleBooleanProperty(false)
     private val hideMultiTierChallengesProperty = SimpleBooleanProperty(false)
     private val hideCollectionProperty = SimpleBooleanProperty(false)
     private val hideLegacyProperty = SimpleBooleanProperty(true)
@@ -62,6 +63,8 @@ class ChallengesView : View("LoL Challenges") {
                 ChallengeFilter(hideNonTitleChallengesProperty.get()) { challengeInfo -> challengeInfo.hasRewardTitle },
 
                 ChallengeFilter(hideWinChallengesProperty.get()) { challengeInfo -> !challengeInfo.description!!.lowercase().contains("win") },
+
+                ChallengeFilter(hideNonWinChallengesProperty.get()) { challengeInfo -> challengeInfo.description!!.lowercase().contains("win") },
 
                 ChallengeFilter(hideMultiTierChallengesProperty.get()) { challengeInfo -> challengeInfo.thresholds!!.count() == 1 },
 
@@ -113,6 +116,7 @@ class ChallengesView : View("LoL Challenges") {
             hideCompletedChallengesProperty,
             hideNonTitleChallengesProperty,
             hideWinChallengesProperty,
+            hideNonWinChallengesProperty,
             hideMultiTierChallengesProperty,
             hideCollectionProperty,
             hideLegacyProperty,
@@ -242,6 +246,7 @@ class ChallengesView : View("LoL Challenges") {
                 checkbox("Hide Completed", hideCompletedChallengesProperty)
                 checkbox("Hide Non-Title", hideNonTitleChallengesProperty)
                 checkbox("Hide Win", hideWinChallengesProperty)
+                checkbox("Hide Non-Win", hideNonWinChallengesProperty)
                 checkbox("Hide Multi-tier", hideMultiTierChallengesProperty)
                 checkbox("Hide Collection", hideCollectionProperty)
                 checkbox("Hide Legacy", hideLegacyProperty)

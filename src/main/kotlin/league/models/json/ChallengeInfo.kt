@@ -47,7 +47,7 @@ class ChallengeInfo {
 
     val thresholdSummary get() = try {
         thresholds!!.toList().sortedBy { it.first }.filter { it.first > nextLevel!! }
-            .joinToString(" > ") { it.second.value!!.toInt().toReadableNumber() }
+            .joinToString(" > ") { it.second.value!!.toLong().toReadableNumber() }
     } catch (_: Exception) {
         ""
     }
