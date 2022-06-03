@@ -235,7 +235,7 @@ class LeagueConnection {
         val response = postRequest.responseObject
 
         if (postRequest.isOk && (response.added.isNotEmpty() || response.removed.isNotEmpty() || response.removed.isNotEmpty())) {
-            Logging.log("Disenchanted ${recipe.description} ($path) - ${lootIds.joinToString(", ")}", LogType.INFO)
+            Logging.log("Disenchanted '${recipe.description}' ($path) with params [${lootIds.joinToString(", ")}]", LogType.INFO)
         } else {
             Logging.log("Failed disenchant", LogType.INFO)
         }

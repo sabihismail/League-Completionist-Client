@@ -24,6 +24,22 @@ object StringUtil {
         return (hoursStr + (if (m > 0) " " else "") + minuteStr + (if (s > 0) " " else "") + secondsStr).trim()
     }
 
+    data class Tee(val text: String, val prefixZeroes: Boolean = false)
+
+    fun toFormattedString(lst: HashMap<Long, Tee>, value: Long, separator: String = " "): String {
+        val s = StringBuilder()
+
+        val reversedKeys = lst.keys.reversed()
+        var currentValue = lst.keys.sum()
+        reversedKeys.forEach {
+
+
+            currentValue /= it
+        }
+
+        return s.toString()
+    }
+
     fun getSafeRegex(regex: Regex, text: String, group: Int = 1, default: String = ""): String {
         return if (regex.matches(text)) regex.find(text)!!.groups[group]!!.value + " " else default
     }
