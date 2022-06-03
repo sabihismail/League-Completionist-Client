@@ -16,16 +16,10 @@ data class ApiEternalsListing(val name: String, val contentId: String, val bound
                 elements.map { it.toReadableNumber() }
             }
             EternalTrackingType.TIME -> {
-                elements.map { StringUtil.parseSecondsToHMS(it) }
+                elements.map { StringUtil.toTimeStyleString(it, listOf(1 to "s", 60 to "m", 60 to "h")) }
             }
             EternalTrackingType.DISTANCE -> {
-                elements.map {
-                    if (it < 1000) {
-                        it.toString()
-                    } else {
-                        "%.1f".format(it / 1000.0)
-                    }
-                }
+                elements.map { StringUtil.toDistanceString(it, listOf(1 to "m", 1000 to "km")) }
             }
         }
 

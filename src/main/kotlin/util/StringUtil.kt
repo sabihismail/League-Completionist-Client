@@ -4,6 +4,7 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.jsonObject
+import util.KotlinExtensionUtil.length
 
 object StringUtil {
     val JSON_FORMAT = Json {
@@ -11,33 +12,54 @@ object StringUtil {
         ignoreUnknownKeys = true
     }
 
-    fun parseSecondsToHMS(value: Int, space: Boolean = false, hours: String = "h", minutes: String = "m", seconds: String = "s"): String {
-        val h = value / 3600
-        val m = value % 3600 / 60
-        val s = value % 60
-
-        val spaceValue = if (space) " " else ""
-        val hoursStr = if (h > 0) "$h$spaceValue$hours" else ""
-        val minuteStr = (if (m in 1..9 && h > 0) "0" else "") + if (m > 0) if (h > 0 && s == 0) "$m$spaceValue$minutes" else "$m$spaceValue$minutes" else ""
-        val secondsStr = if (s == 0 && (h > 0 || m > 0)) "" else (if (s < 10 && (h > 0 || m > 0)) "0" else "") + "$s$spaceValue$seconds"
-
-        return (hoursStr + (if (m > 0) " " else "") + minuteStr + (if (s > 0) " " else "") + secondsStr).trim()
+    fun toTimeStyleString(value: Int, lst: List<Pair<Int, String>>, excludeEndingZeroes: Boolean = true, separator: String = " ", minimumValueCount: Int = 1): String {
+        return toTimeStyleString(value.toLong(), lst.map { Pair(it.first.toLong(), it.second) }, excludeEndingZeroes, separator, minimumValueCount)
     }
 
-    data class Tee(val text: String, val prefixZeroes: Boolean = false)
-
-    fun toFormattedString(lst: HashMap<Long, Tee>, value: Long, separator: String = " "): String {
+    fun toTimeStyleString(value: Long, lst: List<Pair<Long, String>>, excludeEndingZeroes: Boolean = true, separator: String = " ", minimumValueCount: Int = 1): String {
         val s = StringBuilder()
 
-        val reversedKeys = lst.keys.reversed()
-        var currentValue = lst.keys.sum()
-        reversedKeys.forEach {
+        val reversedStr = lst.reversed()
+        var currentOffset = lst.map { it.first }.reduce { sum, element -> sum * element }
+        var currentValue = value
+        reversedStr.forEach { (num, str) ->
+            val diff = currentValue / currentOffset
 
+            val diffLength = diff.length()
+            val diffStr = if (diffLength >= minimumValueCount) {
+                diff.toString()
+            } else {
+                "0".repeat(minimumValueCount - diffLength) + diff
+            }
 
-            currentValue /= it
+            if (!(excludeEndingZeroes && diff == 0L)) {
+                s.append("$diffStr$str$separator")
+            }
+
+            currentValue -= diff * currentOffset
+            currentOffset /= num
         }
 
-        return s.toString()
+        val toStr = s.toString()
+        return toStr.substring(0, toStr.length - separator.length)
+    }
+
+    fun toDistanceString(value: Int, lst: List<Pair<Int, String>>, separator: String = ".", decimalCount: Int = 1): String {
+        return toDistanceString(value.toLong(), lst.map { Pair(it.first.toLong(), it.second) }, separator, decimalCount)
+    }
+
+    fun toDistanceString(value: Long, lst: List<Pair<Long, String>>, separator: String = ".", decimalCount: Int = 1): String {
+        var surpassedIndex = lst.indexOfFirst { it.first > value }
+        if (surpassedIndex == -1) {
+            surpassedIndex = lst.size
+        }
+
+        val (num, str) = lst[surpassedIndex - 1]
+
+        val divided = value / num.toDouble()
+        val formatted = "%.${decimalCount}f".format(divided).replace(".", separator)
+
+        return "$formatted$str"
     }
 
     fun getSafeRegex(regex: Regex, text: String, group: Int = 1, default: String = ""): String {

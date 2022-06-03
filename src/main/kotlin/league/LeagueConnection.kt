@@ -235,7 +235,7 @@ class LeagueConnection {
         val response = postRequest.responseObject
 
         if (postRequest.isOk && (response.added.isNotEmpty() || response.removed.isNotEmpty() || response.removed.isNotEmpty())) {
-            Logging.log("Disenchanted '${recipe.description}' ($path) with params [${lootIds.joinToString(", ")}]", LogType.INFO)
+            Logging.log("Disenchanted '${recipe.recipeName}' ($path) with params [${lootIds.joinToString(", ")}]", LogType.INFO)
         } else {
             Logging.log("Failed disenchant", LogType.INFO)
         }
@@ -258,12 +258,22 @@ class LeagueConnection {
             .forEach { disenchant(it) }
     }
 
+    @Suppress("SameParameterValue")
     private fun disenchantByText(loot: Array<LolLootPlayerLoot>, element: String) {
         val specificLoot = loot.firstOrNull { it.localizedName.contains(element) } ?: return
         val recipes = getRecipes(specificLoot.lootId).firstOrNull() ?: return
 
         val toRun = Collections.nCopies(specificLoot.count, recipes)
         toRun.forEach { disenchant(it) }
+    }
+
+    private fun upgradeChampionShard(loot: List<LolLootPlayerLoot>, filter: (LolLootPlayerLoot) -> Boolean) {
+        loot.filter { filter(it) }.forEach {
+            val recipes = getRecipes(it.lootId)
+            val upgradeRecipe = recipes.first { recipe -> recipe.recipeName.contains("Upgrade") }
+
+            disenchant(upgradeRecipe)
+        }
     }
 
     private fun runLootCleanup() {
@@ -296,6 +306,7 @@ class LeagueConnection {
 
             disenchant(shards) { championInfo[it.storeItemId]?.level == 7 }
             disenchant(shards) { championInfo[it.storeItemId]?.level == 6 && it.count == 2 }
+            upgradeChampionShard(shards) { championInfo[it.storeItemId]?.ownershipStatus == ChampionOwnershipStatus.NOT_OWNED }
             disenchant(loot, "Mystery Emote") // Orb
         } else {
             disenchant(loot, "Random Champion Shard")
