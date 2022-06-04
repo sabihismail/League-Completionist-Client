@@ -5,7 +5,7 @@ import league.models.enums.ChallengeCategory
 import league.models.enums.ChallengeLevel
 import league.models.enums.ChallengeThresholdRewardCategory
 import league.models.enums.GameMode
-import util.KotlinExtensionUtil.toReadableNumber
+import util.KotlinExtensionUtil.toCommaSeparatedNumber
 
 
 @Serializable
@@ -48,7 +48,7 @@ class ChallengeInfo {
     val thresholdSummary by lazy {
         try {
             thresholds!!.toList().sortedBy { it.first }.filter { it.first > nextLevel!! }
-                .joinToString(THRESHOLD_SEPARATOR) { it.second.value!!.toLong().toReadableNumber() }
+                .joinToString(THRESHOLD_SEPARATOR) { it.second.value!!.toLong().toCommaSeparatedNumber() }
         } catch (_: Exception) {
             ""
         }
@@ -80,7 +80,7 @@ class ChallengeInfo {
             currentLevel!!.name.lowercase()
     }
 
-    val isComplete get() = currentLevel == thresholds!!.keys.maxOf { x -> x }
+    val isComplete by lazy { currentLevel == thresholds!!.keys.maxOf { x -> x } }
     var rewardTitle = ""
     var rewardLevel = ChallengeLevel.NONE
     val rewardObtained get() = rewardLevel <= currentLevel!!
@@ -88,11 +88,13 @@ class ChallengeInfo {
     var gameModeSet = setOf<GameMode>()
     val levelByThreshold get() = thresholds!!.keys.sorted().indexOf(currentLevel) + 1
 
-    val percentage get() = currentValue!!.toDouble() / nextThreshold!!
-    val nextLevelPoints get() = try {
-        thresholds!![nextLevel]!!.rewards!!.firstOrNull { it.category == ChallengeThresholdRewardCategory.CHALLENGE_POINTS }!!.quantity!!.toInt()
-    } catch (_: Exception) {
-        -1
+    val percentage by lazy { currentValue!!.toDouble() / nextThreshold!! }
+    val nextLevelPoints by lazy {
+        try {
+            thresholds!![nextLevel]!!.rewards!!.firstOrNull { it.category == ChallengeThresholdRewardCategory.CHALLENGE_POINTS }!!.quantity!!.toInt()
+        } catch (_: Exception) {
+            -1
+        }
     }
 
     fun init() {

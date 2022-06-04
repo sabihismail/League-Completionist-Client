@@ -5,11 +5,11 @@ import kotlin.math.log10
 
 @Suppress("unused")
 object KotlinExtensionUtil {
-    fun Int.toReadableNumber(): String {
+    fun Int.toCommaSeparatedNumber(): String {
         return "%,d".format(this)
     }
 
-    fun Long.toReadableNumber(): String {
+    fun Long.toCommaSeparatedNumber(): String {
         return "%,d".format(this)
     }
 

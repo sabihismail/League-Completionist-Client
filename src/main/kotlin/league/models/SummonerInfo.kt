@@ -4,7 +4,7 @@ import league.models.enums.SummonerStatus
 
 data class SummonerInfo(var status: SummonerStatus = SummonerStatus.NOT_CHECKED, val accountID: Long = 0, val summonerId: Long = 0, val displayName: String = "",
                         val internalName: String = "", val percentCompleteForNextLevel: Int = 0, val summonerLevel: Int = 0, val xpUntilNextLevel: Long = 0) {
-    val uniqueId get() = accountID.xor(summonerId)
+    val uniqueId by lazy { accountID.xor(summonerId) }
 
     fun toDisplayString(): String {
         return when (status) {

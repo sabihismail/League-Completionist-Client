@@ -2,7 +2,7 @@ package league.models.json
 
 import kotlinx.serialization.Serializable
 import league.models.enums.EternalTrackingType
-import util.KotlinExtensionUtil.toReadableNumber
+import util.KotlinExtensionUtil.toCommaSeparatedNumber
 import util.StringUtil
 
 @Serializable
@@ -13,7 +13,7 @@ data class ApiEternalsListing(val name: String, val contentId: String, val bound
         val elements = milestones.foldIndexed<Int, List<Int>>(listOf()) { i, acc, e -> acc + ((if (i >= 1) acc[i - 1] else 0) + e) }
         val displayedElements = when(trackingTypeValue) {
             EternalTrackingType.COUNT -> {
-                elements.map { it.toReadableNumber() }
+                elements.map { it.toCommaSeparatedNumber() }
             }
             EternalTrackingType.TIME -> {
                 elements.map { StringUtil.toTimeStyleString(it, listOf(1 to "s", 60 to "m", 60 to "h")) }
