@@ -47,12 +47,10 @@ class ChallengeFragment : Fragment() {
                     }
                 }
 
-                if (challenge.thresholdSummary.length <= 20) {
-                    blackLabel("(${challenge.thresholdSummary})") {
-                        tooltip(challenge.thresholdSummary) {
-                            style {
-                                font = Font.font(9.0)
-                            }
+                blackLabel("(${challenge.thresholdSummaryOneLiner})") {
+                    tooltip(challenge.thresholdSummary) {
+                        style {
+                            font = Font.font(9.0)
                         }
                     }
                 }

@@ -48,9 +48,28 @@ class ChallengeInfo {
     val thresholdSummary by lazy {
         try {
             thresholds!!.toList().sortedBy { it.first }.filter { it.first > nextLevel!! }
-                .joinToString(" > ") { it.second.value!!.toLong().toReadableNumber() }
+                .joinToString(THRESHOLD_SEPARATOR) { it.second.value!!.toLong().toReadableNumber() }
         } catch (_: Exception) {
             ""
+        }
+    }
+
+    val thresholdSummaryOneLiner by lazy {
+        val maxNum = 18
+
+        if (thresholdSummary.length <= maxNum) {
+            thresholdSummary
+        } else {
+            val s = StringBuilder()
+
+            for (value in thresholdSummary.split(THRESHOLD_SEPARATOR)) {
+                if (s.length > maxNum - "...".length) break
+                s.append(value)
+                s.append(THRESHOLD_SEPARATOR)
+            }
+
+            val str = s.toString()
+            str.substring(0, str.length - THRESHOLD_SEPARATOR.length) + "..."
         }
     }
 
@@ -110,5 +129,9 @@ class ChallengeInfo {
                 "nextLevelIconPath=$nextLevelIconPath, nextThreshold=$nextThreshold, percentile=$percentile, pointsAwarded=$pointsAwarded, position=$position, " +
                 "previousLevel=$previousLevel, previousValue=$previousValue, source=$source, valueMapping=$valueMapping, thresholds=$thresholds, category=$category, " +
                 "currentLevel=$currentLevel, rewardTitle='$rewardTitle', rewardLevel=$rewardLevel, hasRewardTitle=$hasRewardTitle)"
+    }
+
+    companion object {
+        const val THRESHOLD_SEPARATOR = " > "
     }
 }
