@@ -1,4 +1,4 @@
-package ui.views.fragments.util
+package ui.views.util
 
 import javafx.event.EventTarget
 import javafx.scene.Node

@@ -6,7 +6,7 @@ import league.api.LeagueCommunityDragonApi
 import league.models.ChampionInfo
 import league.models.enums.CacheType
 import tornadofx.*
-import ui.views.fragments.util.blackLabel
+import ui.views.util.blackLabel
 import util.constants.ViewConstants.IMAGE_WIDTH
 
 class ChampionFragment : Fragment() {

@@ -9,7 +9,7 @@ import league.models.ChampionInfo
 import league.models.enums.Role
 import tornadofx.*
 import ui.views.fragments.ChampionFragment
-import ui.views.fragments.util.boldLabel
+import ui.views.util.boldLabel
 import util.constants.ViewConstants.IMAGE_WIDTH
 
 

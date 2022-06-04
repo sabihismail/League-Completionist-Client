@@ -5,7 +5,7 @@ import javafx.geometry.Pos
 import league.models.ChampionInfo
 import tornadofx.*
 import ui.views.fragments.ChampionFragment
-import ui.views.fragments.util.boldLabel
+import ui.views.util.boldLabel
 import util.constants.ViewConstants.IMAGE_SPACING_WIDTH
 import util.constants.ViewConstants.IMAGE_WIDTH
 

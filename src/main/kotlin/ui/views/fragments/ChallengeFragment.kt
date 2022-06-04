@@ -6,7 +6,7 @@ import league.api.LeagueCommunityDragonApi
 import league.models.enums.CacheType
 import league.models.json.ChallengeInfo
 import tornadofx.*
-import ui.views.fragments.util.blackLabel
+import ui.views.util.blackLabel
 import util.KotlinExtensionUtil.toReadableNumber
 import util.constants.ViewConstants.CHALLENGE_IMAGE_WIDTH
 
@@ -43,6 +43,16 @@ class ChallengeFragment : Fragment() {
                     tooltip(challenge.thresholdSummary) {
                         style {
                             font = Font.font(9.0)
+                        }
+                    }
+                }
+
+                if (challenge.thresholdSummary.length <= 20) {
+                    blackLabel("(${challenge.thresholdSummary})") {
+                        tooltip(challenge.thresholdSummary) {
+                            style {
+                                font = Font.font(9.0)
+                            }
                         }
                     }
                 }

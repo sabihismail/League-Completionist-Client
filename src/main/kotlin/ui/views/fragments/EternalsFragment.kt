@@ -7,7 +7,7 @@ import javafx.geometry.Pos
 import javafx.scene.text.Font
 import league.api.LeagueCommunityDragonApi
 import tornadofx.*
-import ui.views.fragments.util.blackLabel
+import ui.views.util.blackLabel
 import util.StringUtil
 import util.constants.GenericConstants.ETERNALS_DESCRIPTION_REGEX
 import java.text.NumberFormat

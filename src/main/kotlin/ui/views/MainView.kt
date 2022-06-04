@@ -17,7 +17,7 @@ import ui.mock.AramMockController
 import ui.mock.NormalMockController
 import ui.mock.extra.ChallengesUpdatedMockController
 import ui.views.fragments.ChampionFragment
-import ui.views.fragments.util.boldLabel
+import ui.views.util.boldLabel
 import util.constants.ViewConstants.CHAMPION_STATUS_AVAILABLE_CHEST_COLOR
 import util.constants.ViewConstants.CHAMPION_STATUS_NOT_OWNED_COLOR
 import util.constants.ViewConstants.CHAMPION_STATUS_UNAVAILABLE_CHEST_COLOR
@@ -139,6 +139,13 @@ class MainView: View("LoL Mastery Box Client") {
                             controller.updateChallengesUpdatedView()
 
                             find<ChallengesUpdatedView>().openWindow(owner = null)
+                        }
+                    }
+
+                    button("Run Loot Cleanup").apply {
+                        enableWhen { summonerProperty.select { (it.status == SummonerStatus.LOGGED_IN_AUTHORIZED).toProperty() } }
+                        action {
+                            controller.leagueConnection.runLootCleanup()
                         }
                     }
 

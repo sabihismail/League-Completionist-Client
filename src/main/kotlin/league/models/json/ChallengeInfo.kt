@@ -45,17 +45,21 @@ class ChallengeInfo {
     var category: ChallengeCategory? = null
     var currentLevel: ChallengeLevel? = null
 
-    val thresholdSummary get() = try {
-        thresholds!!.toList().sortedBy { it.first }.filter { it.first > nextLevel!! }
-            .joinToString(" > ") { it.second.value!!.toLong().toReadableNumber() }
-    } catch (_: Exception) {
-        ""
+    val thresholdSummary by lazy {
+        try {
+            thresholds!!.toList().sortedBy { it.first }.filter { it.first > nextLevel!! }
+                .joinToString(" > ") { it.second.value!!.toLong().toReadableNumber() }
+        } catch (_: Exception) {
+            ""
+        }
     }
 
-    val currentLevelImage get() = if (currentLevel == ChallengeLevel.NONE)
-        ChallengeLevel.IRON.name.lowercase()
-    else
-        currentLevel!!.name.lowercase()
+    val currentLevelImage by lazy {
+        if (currentLevel == ChallengeLevel.NONE)
+            ChallengeLevel.IRON.name.lowercase()
+        else
+            currentLevel!!.name.lowercase()
+    }
 
     val isComplete get() = currentLevel == thresholds!!.keys.maxOf { x -> x }
     var rewardTitle = ""
