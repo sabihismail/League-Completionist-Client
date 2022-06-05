@@ -47,10 +47,12 @@ class ChallengeFragment : Fragment() {
                     }
                 }
 
-                blackLabel("(${challenge.thresholdSummaryOneLiner})") {
-                    tooltip(challenge.thresholdSummary) {
-                        style {
-                            font = Font.font(9.0)
+                if (challenge.thresholdSummaryOneLiner.isNotEmpty()) {
+                    blackLabel("(${challenge.thresholdSummaryOneLiner})") {
+                        tooltip(challenge.thresholdSummary) {
+                            style {
+                                font = Font.font(9.0)
+                            }
                         }
                     }
                 }

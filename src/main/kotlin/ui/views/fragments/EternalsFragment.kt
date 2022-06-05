@@ -48,9 +48,20 @@ class EternalsFragment : Fragment() {
 
     private fun parseNextMilestone(parsed: String, nextMilestone: String): Int {
         val timeMapping = hashMapOf('h' to 60 * 60, 'm' to 60, 's' to 1)
+        val distanceMapping = hashMapOf("km" to 1000, "m" to 1)
 
-        return if (timeMapping.keys.any { parsed.contains(it) }) {
+        return if (timeMapping.keys.any { parsed.contains(it) } && !parsed.contains(".")) {
             nextMilestone.split(" ").sumOf { it.substring(0, it.length - 1).toInt() * timeMapping[it.last()]!! }
+        } else if (distanceMapping.keys.any { parsed.contains(it) } && parsed.contains(".")) {
+            var numberOfStrOnly = nextMilestone
+            var key = ""
+
+            while (numberOfStrOnly.last().isLetter()) {
+                key = numberOfStrOnly.last() + key
+                numberOfStrOnly = numberOfStrOnly.substring(0, numberOfStrOnly.length - 1)
+            }
+
+            return (numberOfStrOnly.toDouble() * distanceMapping[key]!!).toInt()
         } else {
             return NumberFormat.getNumberInstance().parse(nextMilestone).toInt()
         }

@@ -29,7 +29,7 @@ class ChallengesUpdatedView : View("LoL Challenges - Updated") {
                 cellFormat {
                     graphic = find<ChallengeFragment>(mapOf(
                         ChallengeFragment::challenge to it.second,
-                        ChallengeFragment::bracketText to "${(it.second - it.first)} (${it.second.nextLevelPoints})"
+                        ChallengeFragment::bracketText to "${(it.second - it.first)}) (${it.second.nextLevelPoints}"
                     )).root
                 }
             }

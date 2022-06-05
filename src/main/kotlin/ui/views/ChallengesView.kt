@@ -136,9 +136,14 @@ class ChallengesView : View("LoL Challenges") {
 
     private fun getChallengeString(level: ChallengeLevel, key: String, current: Long, s: String = " - "): String {
         val maxPoints = LeagueCommunityDragonApi.getChallenge(key, ChallengeLevel.values()[level.ordinal + 1])
-        val currentPercentage = "%.2f".format(current.toDouble().div(maxPoints) * 100) + "%"
+        val minPoints = LeagueCommunityDragonApi.getChallenge(key, ChallengeLevel.values()[level.ordinal])
 
-        return "$level$s$currentPercentage ($current/$maxPoints)"
+        val currentPoints = current - minPoints
+        val maxPointsCurrentLevel = maxPoints - minPoints
+
+        val currentPercentage = "%.2f".format(currentPoints.toDouble().div(maxPointsCurrentLevel) * 100) + "%"
+
+        return "$level$s$currentPercentage ($currentPoints/$maxPointsCurrentLevel)"
     }
 
     override val root = vbox {

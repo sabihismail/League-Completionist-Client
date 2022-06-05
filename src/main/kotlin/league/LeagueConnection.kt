@@ -215,51 +215,58 @@ class LeagueConnection {
             .responseObject!!
     }
 
-    private fun disenchant(recipe: LolLootRecipeWithMilestones?) {
-        if (recipe == null) return
+    private fun craftLoot(recipe: LolLootRecipeWithMilestones?): Boolean {
+        if (recipe == null) return false
 
         val path = "/lol-loot/v1/recipes/${recipe.recipeName}/craft"
         val lootIds = recipe.slots.flatMap { it.lootIds }
         val postRequest = clientApi!!.executePost(path, lootIds, LolLootPlayerLootUpdate::class.java)
         val response = postRequest.responseObject
 
-        if (postRequest.isOk && (response.added.isNotEmpty() || response.removed.isNotEmpty() || response.removed.isNotEmpty())) {
-            Logging.log("Disenchanted '${recipe.recipeName}' ($path) with params [${lootIds.joinToString(", ")}]", LogType.INFO)
+        return if (postRequest.isOk && (response.added.isNotEmpty() || response.removed.isNotEmpty() || response.removed.isNotEmpty())) {
+            Logging.log("Crafted '${recipe.recipeName}' ($path) with params [${lootIds.joinToString(", ")}]", LogType.INFO)
+            true
         } else {
-            Logging.log("Failed disenchant", LogType.INFO)
+            Logging.log("Failed Craft", LogType.INFO)
+            false
         }
     }
 
-    private fun disenchantTokenItem(loot: Array<LolLootPlayerLoot>, element: String) {
-        val tokens = loot.firstOrNull { it.localizedRecipeSubtitle.contains("Tokens expire") } ?: return
+    private fun disenchantTokenItem(loot: Array<LolLootPlayerLoot>, element: String): Boolean {
+        val tokens = loot.firstOrNull { it.localizedRecipeSubtitle.contains("Tokens expire") } ?: return false
         val recipes = getRecipes(tokens.lootId)
 
         val recipe = recipes.first { it.description.contains(element) }
         val numberOfTimes = tokens.count / recipe.slots.first { it.lootIds.contains(tokens.lootId) }.quantity
 
         val toRun = Collections.nCopies(numberOfTimes, recipe)
-        toRun.forEach { disenchant(it) }
+        val mapped = toRun.map { craftLoot(it) }
+
+        return mapped.any()
     }
 
-    private fun disenchant(lootElement: LolLootPlayerLoot?) {
+    private fun craftLoot(lootElement: LolLootPlayerLoot?) {
         if (lootElement == null) return
 
         val recipe = getRecipes(lootElement.lootId).toList()
-        disenchant(recipe.firstOrNull())
+        craftLoot(recipe.firstOrNull())
     }
 
-    private fun disenchant(loot: List<LolLootPlayerLoot>, filter: (LolLootPlayerLoot) -> Boolean) {
-        loot.filter { filter(it) }.forEach { disenchant(it) }
+    private fun craftLoot(loot: List<LolLootPlayerLoot>, filter: (LolLootPlayerLoot) -> Boolean): Boolean {
+        return loot.filter { filter(it) }.map {
+            craftLoot(it)
+            return@map true
+        }.any()
     }
 
     @Suppress("SameParameterValue")
-    private fun disenchant(loot: Array<LolLootPlayerLoot>, lootId: String, count: Int) {
+    private fun craftLoot(loot: Array<LolLootPlayerLoot>, lootId: String, count: Int) {
         loot.filter { it.lootId == lootId }
             .filter { it.count >= count }
-            .forEach { disenchant(it) }
+            .forEach { craftLoot(it) }
     }
 
-    private fun disenchantByText(loot: Array<LolLootPlayerLoot>, element: String) {
+    private fun disenchantByText(loot: Array<LolLootPlayerLoot>, element: String): Boolean {
         val specificLoot = loot.firstOrNull {
             val localizedName = if (it.localizedName.isNullOrEmpty()) {
                 LeagueCommunityDragonApi.getLootEntity("loot_name_" + it.lootId.lowercase()) ?: ""
@@ -268,23 +275,31 @@ class LeagueConnection {
             }
 
             localizedName.contains(element)
-        } ?: return
-        val recipes = getRecipes(specificLoot.lootId).firstOrNull() ?: return
+        } ?: return false
+        val recipes = getRecipes(specificLoot.lootId).firstOrNull() ?: return false
 
         val toRun = Collections.nCopies(specificLoot.count, recipes)
-        toRun.forEach { disenchant(it) }
+        val mapped = toRun.map { craftLoot(it) }
+
+        return mapped.any()
     }
 
-    private fun upgradeChampionShard(loot: List<LolLootPlayerLoot>, filter: (LolLootPlayerLoot) -> Boolean) {
-        loot.filter { filter(it) }.forEach {
+    private fun upgradeChampionShard(loot: List<LolLootPlayerLoot>, blueEssence: LolLootPlayerLoot, filter: (LolLootPlayerLoot) -> Boolean): Boolean {
+        return loot.filter { filter(it) }.map {
             val recipes = getRecipes(it.lootId)
-            val upgradeRecipe = recipes.first { recipe -> recipe.recipeName.contains("Upgrade") }
+            val upgradeRecipe = recipes.first { recipe -> recipe.recipeName.contains("upgrade") }
 
-            disenchant(upgradeRecipe)
-        }
+            if (blueEssence.count < upgradeRecipe.slots.first { slot -> slot.lootIds.contains(blueEssence.lootId) }.quantity) return@map false
+
+            craftLoot(upgradeRecipe)
+            return@map true
+        }.any()
     }
 
+    @Suppress("KotlinConstantConditions")
     fun runLootCleanup() {
+        var anyChanged = false
+
         val loot = clientApi!!.executeGet("/lol-loot/v1/player-loot", Array<LolLootPlayerLoot>::class.java).responseObject ?: return
         Logging.log(loot, LogType.VERBOSE)
 
@@ -296,10 +311,10 @@ class LeagueConnection {
             .filter { it.type != "CHAMPION_RENTAL" }
             .filter { it.type != "CHAMPION_TOKEN" }
 
-        val ip = loot.first { it.lootId == "CURRENCY_champion" } // CURRENCY_RP
+        val blueEssence = loot.first { it.lootId == "CURRENCY_champion" } // CURRENCY_RP
 
         val shards = loot.filter { it.type == "CHAMPION_RENTAL" }
-        disenchant(loot, "MATERIAL_key_fragment", 3)
+        craftLoot(loot, "MATERIAL_key_fragment", 3)
         disenchantByText(loot, "Little Legends")
         if (!isSmurf) {
             val tokens = loot.filter { it.type == "CHAMPION_TOKEN" }
@@ -310,18 +325,24 @@ class LeagueConnection {
                         getRecipes(it.lootId).first { recipe -> recipe.recipeName.contains(txt) }
                     }
             }
-            masteryEnchantments.forEach { disenchant(it) }
+            masteryEnchantments.forEach { craftLoot(it) }
 
-            disenchant(shards) { championInfo[it.storeItemId]?.level == 7 }
-            disenchant(shards) { championInfo[it.storeItemId]?.level == 6 && it.count == 2 }
-            upgradeChampionShard(shards) { championInfo[it.storeItemId]?.ownershipStatus == ChampionOwnershipStatus.NOT_OWNED }
-            disenchantTokenItem(loot, "Mystery Emote") // Orb
+            anyChanged = anyChanged || craftLoot(shards) { championInfo[it.storeItemId]?.level == 7 }
+            anyChanged = anyChanged || craftLoot(shards) { championInfo[it.storeItemId]?.level == 6 && it.count == 2 }
+            anyChanged = anyChanged || upgradeChampionShard(shards, blueEssence) { championInfo[it.storeItemId]?.ownershipStatus == ChampionOwnershipStatus.NOT_OWNED }
+            anyChanged = anyChanged || disenchantTokenItem(loot, "Mystery Emote") // Orb
+            anyChanged = anyChanged || disenchantByText(loot, "Mystery Emote")
         } else {
-            disenchantByText(loot, "Champion Capsule")
-            disenchantTokenItem(loot, "Random Champion Shard")
+            anyChanged = anyChanged || disenchantByText(loot, "Champion Capsule")
+            anyChanged = anyChanged || disenchantTokenItem(loot, "Random Champion Shard")
+            anyChanged = anyChanged || disenchantByText(loot, "Random Champion Shard")
 
-            upgradeChampionShard(shards) { championInfo[it.storeItemId]?.roles?.contains(ChampionRole.MARKSMAN) == true &&
+            anyChanged = anyChanged || upgradeChampionShard(shards, blueEssence) { championInfo[it.storeItemId]?.roles?.contains(ChampionRole.MARKSMAN) == true &&
                     championInfo[it.storeItemId]?.ownershipStatus == ChampionOwnershipStatus.NOT_OWNED }
+        }
+
+        if (anyChanged) {
+            runLootCleanup()
         }
     }
 
@@ -384,6 +405,14 @@ class LeagueConnection {
             }
 
         championInfo = masteryPairing.associateBy({ it.id }, { it })
+    }
+
+    private fun runTftBattlepassCheck() {
+        val battlepass = clientApi!!.executeGet("/lol-tft/v2/tft/battlepass", LolMissionsTftPaidBattlepass::class.java).responseObject
+        val missions = battlepass.milestones.filter { !it.isPaid && it.state == "REWARDABLE" }
+        if (missions.isNotEmpty()) {
+            Logging.log(missions, LogType.VERBOSE)
+        }
     }
 
     private fun updateMasteryChestInfo(force: Boolean = false) {
@@ -461,6 +490,7 @@ class LeagueConnection {
 
                 updateChampionMasteryInfo()
                 runLootCleanup()
+                runTftBattlepassCheck()
 
                 socket = clientApi?.openWebSocket()
                 socket?.setSocketListener(object : ClientWebSocket.SocketListener {
@@ -582,6 +612,7 @@ class LeagueConnection {
         if (clientState == LolGameflowGameflowPhase.ENDOFGAME) {
             updateChampionMasteryInfo()
             runLootCleanup()
+            runTftBattlepassCheck()
         }
 
         if (!isSmurf) {
