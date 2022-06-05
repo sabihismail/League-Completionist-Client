@@ -18,6 +18,7 @@ import ui.mock.NormalMockController
 import ui.mock.extra.ChallengesUpdatedMockController
 import ui.views.fragments.ChampionFragment
 import ui.views.util.boldLabel
+import util.ViewUtil
 import util.constants.ViewConstants.CHAMPION_STATUS_AVAILABLE_CHEST_COLOR
 import util.constants.ViewConstants.CHAMPION_STATUS_NOT_OWNED_COLOR
 import util.constants.ViewConstants.CHAMPION_STATUS_UNAVAILABLE_CHEST_COLOR
@@ -128,7 +129,8 @@ class MainView: View("LoL Mastery Box Client") {
                             controller.leagueConnection.updateChallengesInfo()
                             controller.updateChallengesView()
 
-                            find<ChallengesView>().openWindow(owner = null)
+                            val stage = find<ChallengesView>().openWindow(owner = null)
+                            ViewUtil.moveToScreen(stage)
                         }
                     }
 
@@ -138,7 +140,8 @@ class MainView: View("LoL Mastery Box Client") {
                             controller.leagueConnection.updateChallengesInfo()
                             controller.updateChallengesUpdatedView()
 
-                            find<ChallengesUpdatedView>().openWindow(owner = null)
+                            val stage = find<ChallengesUpdatedView>().openWindow(owner = null)
+                            ViewUtil.moveToScreen(stage)
                         }
                     }
 
