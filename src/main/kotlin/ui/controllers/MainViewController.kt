@@ -201,14 +201,25 @@ open class MainViewController : Controller() {
 
     fun updateChallengesUpdatedView() {
         runAsync {
-            leagueConnection.challengesUpdatedInfo.sortedWith(
-                compareByDescending<Pair<ChallengeInfo, ChallengeInfo>> { !CRINGE_MISSIONS.any { x -> it.second.description!!.contains(x) } }
-                    .thenByDescending { it.second.category != ChallengeCategory.LEGACY }
-                    .thenByDescending { it.second.currentLevel }
-                    .thenByDescending { it.second.percentage }
-            )
+            val upgraded = leagueConnection.challengesUpdatedInfo.filter { it.first.currentLevel != it.second.currentLevel }
+                .sortedWith(
+                    compareByDescending<Pair<ChallengeInfo, ChallengeInfo>> { it.second.category != ChallengeCategory.LEGACY }
+                        .thenByDescending { it.second.currentLevel }
+                        .thenByDescending { it.second.percentage }
+                )
+
+            val progressed = leagueConnection.challengesUpdatedInfo.filter { it.first.currentLevel == it.second.currentLevel }
+                .sortedWith(
+                    compareByDescending<Pair<ChallengeInfo, ChallengeInfo>> { !CRINGE_MISSIONS.any { x -> it.second.description!!.contains(x) } }
+                        .thenByDescending { it.second.category != ChallengeCategory.LEGACY }
+                        .thenByDescending { it.second.currentLevel }
+                        .thenByDescending { it.second.percentage }
+                )
+
+            Pair(upgraded, progressed)
         } ui {
-            challengesUpdatedView.challengesProperty.set(FXCollections.observableList(it))
+            challengesUpdatedView.challengesUpgradedProperty.set(FXCollections.observableList(it.first))
+            challengesUpdatedView.challengesProgressedProperty.set(FXCollections.observableList(it.second))
         }
     }
 
