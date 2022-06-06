@@ -33,8 +33,14 @@ class ChallengesUpdatedView : View("LoL Challenges - Updated") {
                 constraintsForRow(2).prefHeight = LABEL_HEIGHT
                 constraintsForRow(3).prefHeight = IMAGE_WIDTH * 1 + IMAGE_SPACING_WIDTH * (1 + 2) + 4.0
 
-                row { blackLabel("Progressed", fontSize = 14.0) }
+                constraintsForColumn(0).prefWidth = WINDOW_WIDTH
+
                 row {
+                    fitToParentWidth()
+                    blackLabel("Progressed", fontSize = 14.0)
+                }
+                row {
+                    fitToParentWidth()
                     datagrid(challengesProgressedProperty) {
                         cellWidth = CHALLENGE_IMAGE_WIDTH
                         cellHeight = CHALLENGE_IMAGE_WIDTH
@@ -50,8 +56,12 @@ class ChallengesUpdatedView : View("LoL Challenges - Updated") {
                     }
                 }
 
-                row { blackLabel("Upgraded", fontSize = 14.0) }
                 row {
+                    fitToParentWidth()
+                    blackLabel("Upgraded", fontSize = 14.0)
+                }
+                row {
+                    fitToParentWidth()
                     datagrid(challengesUpgradedProperty) {
                         cellWidth = CHALLENGE_IMAGE_WIDTH
                         cellHeight = CHALLENGE_IMAGE_WIDTH
@@ -70,7 +80,7 @@ class ChallengesUpdatedView : View("LoL Challenges - Updated") {
     }
 
     companion object {
-        const val ELEMENTS_PER_ROW = 8
+        private const val ELEMENTS_PER_ROW = 8
         const val ROWS = 7
         const val WINDOW_WIDTH = IMAGE_WIDTH * ELEMENTS_PER_ROW + IMAGE_SPACING_WIDTH * (ELEMENTS_PER_ROW + 2) + 4.0
 

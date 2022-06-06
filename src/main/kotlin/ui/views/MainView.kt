@@ -145,12 +145,14 @@ class MainView: View("LoL Mastery Box Client") {
                         }
                     }
 
+                    /*
                     button("Run Loot Cleanup").apply {
                         enableWhen { summonerProperty.select { (it.status == SummonerStatus.LOGGED_IN_AUTHORIZED).toProperty() } }
                         action {
                             controller.leagueConnection.runLootCleanup()
                         }
                     }
+                    */
 
                     /*
                     button("Settings").apply {
