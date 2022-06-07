@@ -8,6 +8,7 @@ import league.models.json.ChallengeInfo
 import tornadofx.*
 import ui.views.fragments.ChallengeFragment
 import ui.views.util.blackLabel
+import ui.views.util.blackLabelObs
 import util.constants.ViewConstants.CHALLENGE_IMAGE_WIDTH
 import util.constants.ViewConstants.DEFAULT_SPACING
 import util.constants.ViewConstants.IMAGE_SPACING_WIDTH
@@ -17,6 +18,9 @@ class ChallengesUpdatedView : View("LoL Challenges - Updated") {
     val challengesProgressedProperty = SimpleListProperty<Pair<ChallengeInfo, ChallengeInfo>>()
     val challengesUpgradedProperty = SimpleListProperty<Pair<ChallengeInfo, ChallengeInfo>>()
 
+    private fun getBracketTest(it: Pair<ChallengeInfo, ChallengeInfo>): String {
+        return "${it.second.pointsDifference}) (+${(it.second - it.first)}"
+    }
 
     override val root = borderpane {
         prefWidth = WINDOW_WIDTH
@@ -47,10 +51,7 @@ class ChallengesUpdatedView : View("LoL Challenges - Updated") {
 
                         cellFormat {
                             graphic = find<ChallengeFragment>(
-                                mapOf(
-                                    ChallengeFragment::challenge to it.second,
-                                    ChallengeFragment::bracketText to "${(it.second - it.first)}) (${it.second.nextLevelPoints}"
-                                )
+                                mapOf(ChallengeFragment::challenge to it.second, ChallengeFragment::bracketText to getBracketTest(it))
                             ).root
                         }
                     }
@@ -58,7 +59,13 @@ class ChallengesUpdatedView : View("LoL Challenges - Updated") {
 
                 row {
                     fitToParentWidth()
-                    blackLabel("Upgraded", fontSize = 14.0)
+                    blackLabelObs(challengesUpgradedProperty.select { "Upgraded - (+${it.sumOf { fragPair -> 
+                        if (fragPair.first.currentLevel != fragPair.second.currentLevel) {
+                            fragPair.first.pointsDifference
+                        } else {
+                            0
+                        }
+                    }})".toProperty() }, fontSize = 14.0)
                 }
                 row {
                     fitToParentWidth()
@@ -68,10 +75,9 @@ class ChallengesUpdatedView : View("LoL Challenges - Updated") {
                         maxRows = 1
 
                         cellFormat {
-                            graphic = find<ChallengeFragment>(mapOf(
-                                ChallengeFragment::challenge to it.second,
-                                ChallengeFragment::bracketText to "${(it.second - it.first)}) (${it.second.nextLevelPoints}"
-                            )).root
+                            graphic = find<ChallengeFragment>(
+                                mapOf(ChallengeFragment::challenge to it.second, ChallengeFragment::bracketText to getBracketTest(it))
+                            ).root
                         }
                     }
                 }

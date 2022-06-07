@@ -80,7 +80,7 @@ class ChallengeInfo {
             currentLevel!!.name.lowercase()
     }
 
-    val isComplete by lazy { currentLevel == thresholds!!.keys.maxOf { x -> x } }
+    val isComplete by lazy { currentLevel == thresholds!!.keys.maxOf { x -> x } || pointsDifference == 0 }
     var rewardTitle = ""
     var rewardLevel = ChallengeLevel.NONE
     val rewardObtained get() = rewardLevel <= currentLevel!!
@@ -93,9 +93,18 @@ class ChallengeInfo {
         try {
             thresholds!![nextLevel]!!.rewards!!.firstOrNull { it.category == ChallengeThresholdRewardCategory.CHALLENGE_POINTS }!!.quantity!!.toInt()
         } catch (_: Exception) {
-            -1
+            0
         }
     }
+    private val previousLevelPoints by lazy {
+        try {
+            thresholds!![currentLevel]!!.rewards!!.firstOrNull { it.category == ChallengeThresholdRewardCategory.CHALLENGE_POINTS }!!.quantity!!.toInt()
+        } catch (_: Exception) {
+            0
+        }
+    }
+
+    val pointsDifference by lazy { nextLevelPoints - previousLevelPoints }
 
     fun init() {
         initGameMode()

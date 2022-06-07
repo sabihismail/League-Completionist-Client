@@ -35,7 +35,7 @@ class ChallengesView : View("LoL Challenges") {
     private val hidePremadeChallengesProperty = SimpleBooleanProperty(true)
     private val hideCompletedChallengesProperty = SimpleBooleanProperty(true)
     private val hideNonTitleChallengesProperty = SimpleBooleanProperty(false)
-    private val hideWinChallengesProperty = SimpleBooleanProperty(true)
+    private val hideWinChallengesProperty = SimpleBooleanProperty(false)
     private val hideNonWinChallengesProperty = SimpleBooleanProperty(false)
     private val hideMultiTierChallengesProperty = SimpleBooleanProperty(false)
     private val hideCollectionProperty = SimpleBooleanProperty(false)
@@ -226,7 +226,7 @@ class ChallengesView : View("LoL Challenges") {
 
                             cellFormat {
                                 graphic = find<ChallengeFragment>(
-                                    mapOf(ChallengeFragment::challenge to it, ChallengeFragment::bracketText to it.nextLevelPoints.toString())
+                                    mapOf(ChallengeFragment::challenge to it, ChallengeFragment::bracketText to it.pointsDifference.toString())
                                 ).root
                             }
                         }
