@@ -77,6 +77,9 @@ open class MainViewController : Controller() {
             runLater { view.gameModeProperty.set(leagueConnection.gameMode) }
 
             if (!ACCEPTABLE_GAME_MODES.contains(leagueConnection.gameMode)) return@onChampionSelectChange
+            if (view.currentChampionView.champion.id != it.teamChampions.firstOrNull { championInfo -> championInfo?.isSummonerSelectedChamp == true }?.id) {
+                championFragmentSet = false
+            }
 
             replaceDisplay()
             updateCurrentChampion()

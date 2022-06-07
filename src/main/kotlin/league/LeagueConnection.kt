@@ -44,6 +44,7 @@ class LeagueConnection {
 
     private var clientState = LolGameflowGameflowPhase.NONE
     private var gameId = -1L
+    private val isMain get() = summonerInfo.uniqueId == 192669723L
 
     private var masteryChestInfo = MasteryChestInfo()
     private var eternalsValidQueues = setOf<Int>()
@@ -69,6 +70,9 @@ class LeagueConnection {
         },
         "/lol-collections/v1/inventories/chest-eligibility.*".toRegex() to { data ->
             handleMasteryChestChange(data as LolCollectionsCollectionsChestEligibility)
+        },
+        "/lol-loot/v1/loot-grants".toRegex() to {
+            runLootCleanup()
         },
         "/lol-challenges/v1/my-updated-challenges/.*".toRegex() to { data ->
             handleChallengesChange((data as Array<*>).map {
@@ -232,8 +236,8 @@ class LeagueConnection {
         }
     }
 
-    private fun disenchantTokenItem(loot: Array<LolLootPlayerLoot>, element: String): Boolean {
-        val tokens = loot.firstOrNull { it.localizedRecipeSubtitle.contains("Tokens expire") } ?: return false
+    private fun disenchantTokenItem(loot: Array<LolLootPlayerLoot>, primaryElement: String, element: String): Boolean {
+        val tokens = loot.firstOrNull { it.localizedRecipeSubtitle.contains(primaryElement) } ?: return false
         val recipes = getRecipes(tokens.lootId)
 
         val recipe = recipes.first { it.description.contains(element) }
@@ -316,7 +320,7 @@ class LeagueConnection {
         val shards = loot.filter { it.type == "CHAMPION_RENTAL" }
         craftLoot(loot, "MATERIAL_key_fragment", 3)
         disenchantByText(loot, "Little Legends")
-        if (!isSmurf) {
+        if (isMain) {
             val tokens = loot.filter { it.type == "CHAMPION_TOKEN" }
             val masteryEnchantments = mapOf(2 to 5, 3 to 6).flatMap { (k, v) ->
                 tokens.filter { it.count == k && championInfo[it.refId.toInt()]?.level == v }
@@ -330,15 +334,23 @@ class LeagueConnection {
             anyChanged = anyChanged || craftLoot(shards) { championInfo[it.storeItemId]?.level == 7 }
             anyChanged = anyChanged || craftLoot(shards) { championInfo[it.storeItemId]?.level == 6 && it.count == 2 }
             anyChanged = anyChanged || upgradeChampionShard(shards, blueEssence) { championInfo[it.storeItemId]?.ownershipStatus == ChampionOwnershipStatus.NOT_OWNED }
-            anyChanged = anyChanged || disenchantTokenItem(loot, "Mystery Emote") // Orb
+            anyChanged = anyChanged || disenchantTokenItem(loot, "Tokens expire", "Mystery Emote") // Orb
             anyChanged = anyChanged || disenchantByText(loot, "Mystery Emote")
-        } else {
+        }
+
+        if (isSmurf) {
             anyChanged = anyChanged || disenchantByText(loot, "Champion Capsule")
-            anyChanged = anyChanged || disenchantTokenItem(loot, "Random Champion Shard")
+            anyChanged = anyChanged || disenchantTokenItem(loot, "Tokens expire", "Random Champion Shard")
             anyChanged = anyChanged || disenchantByText(loot, "Random Champion Shard")
+            anyChanged = anyChanged || disenchantTokenItem(loot, "Rare crafting essence", "Random Skin Shard")
 
             anyChanged = anyChanged || upgradeChampionShard(shards, blueEssence) { championInfo[it.storeItemId]?.roles?.contains(ChampionRole.MARKSMAN) == true &&
                     championInfo[it.storeItemId]?.ownershipStatus == ChampionOwnershipStatus.NOT_OWNED }
+
+            if (blueEssence.count > 7000) {
+                anyChanged = anyChanged || upgradeChampionShard(shards, blueEssence) { championInfo[it.storeItemId]?.roles?.contains(ChampionRole.ASSASSIN) == true &&
+                        championInfo[it.storeItemId]?.ownershipStatus == ChampionOwnershipStatus.NOT_OWNED }
+            }
         }
 
         if (anyChanged) {
@@ -611,10 +623,10 @@ class LeagueConnection {
 
         if (clientState == LolGameflowGameflowPhase.ENDOFGAME) {
             updateChampionMasteryInfo()
-            runLootCleanup()
             runTftBattlepassCheck()
         }
 
+        runLootCleanup()
         if (!isSmurf) {
             role = championSelectInfo.assignedRole
         }
