@@ -1,5 +1,6 @@
 package db
 
+import db.models.GenericKeyValueTable
 import db.models.MasteryChestTable
 import league.models.MasteryChestInfo
 import league.models.SummonerInfo
@@ -21,8 +22,20 @@ object DatabaseImpl {
         transaction {
             SchemaUtils.createMissingTablesAndColumns(
                 MasteryChestTable,
+                GenericKeyValueTable,
             )
         }
+    }
+
+    fun getValue(key: GenericKeyValueKeys): String? {
+        var str: String? = null
+
+        transaction {
+            val result = GenericKeyValueTable.select { GenericKeyValueTable.key eq key.name }.singleOrNull() ?: return@transaction
+            str = result[GenericKeyValueTable.value]
+        }
+
+        return str
     }
 
     fun setMasteryInfo(summonerInfo: SummonerInfo, masteryChestInfo: MasteryChestInfo) {

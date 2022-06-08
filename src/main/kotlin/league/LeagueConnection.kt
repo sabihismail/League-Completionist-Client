@@ -5,7 +5,9 @@ import com.stirante.lolclient.libs.com.google.gson.internal.LinkedTreeMap
 import com.stirante.lolclient.libs.org.apache.http.HttpException
 import com.stirante.lolclient.libs.org.apache.http.conn.HttpHostConnectException
 import db.DatabaseImpl
+import db.GenericKeyValueKeys
 import generated.*
+import league.api.LeagueApi
 import league.api.LeagueCommunityDragonApi
 import league.models.*
 import league.models.enums.*
@@ -13,6 +15,7 @@ import league.models.enums.Role
 import league.models.json.ChallengeInfo
 import league.models.json.ChallengeSummary
 import league.util.LeagueConnectionUtil
+import org.joda.time.DateTime
 import tornadofx.*
 import util.LogType
 import util.Logging
@@ -71,7 +74,7 @@ class LeagueConnection {
         "/lol-collections/v1/inventories/chest-eligibility.*".toRegex() to { data ->
             handleMasteryChestChange(data as LolCollectionsCollectionsChestEligibility)
         },
-        "/lol-loot/v1/loot-grants".toRegex() to {
+        "/lol-loot/v1/loot-grants.*".toRegex() to {
             runLootCleanup()
         },
         "/lol-challenges/v1/my-updated-challenges/.*".toRegex() to { data ->
@@ -300,6 +303,21 @@ class LeagueConnection {
         }.any()
     }
 
+    private fun upgradeMasteryTokens(loot: Array<LolLootPlayerLoot>): Boolean {
+        val shards = loot.filter { it.type == "CHAMPION_RENTAL" }
+        val tokens = loot.filter { it.type == "CHAMPION_TOKEN" }
+
+        return mapOf(2 to 5, 3 to 6).flatMap { (k, v) ->
+            tokens.filter { it.count == k && championInfo[it.refId.toInt()]?.level == v }
+                .map {
+                    val txt = if (shards.any { shard -> shard.storeItemId == it.refId.toInt() && shard.count >= 1 }) "shard" else "essence"
+                    getRecipes(it.lootId).first { recipe -> recipe.recipeName.contains(txt) }
+                }
+        }
+            .map { craftLoot(it) }
+            .any()
+    }
+
     @Suppress("KotlinConstantConditions")
     fun runLootCleanup() {
         var anyChanged = false
@@ -321,19 +339,12 @@ class LeagueConnection {
         craftLoot(loot, "MATERIAL_key_fragment", 3)
         disenchantByText(loot, "Little Legends")
         if (isMain) {
-            val tokens = loot.filter { it.type == "CHAMPION_TOKEN" }
-            val masteryEnchantments = mapOf(2 to 5, 3 to 6).flatMap { (k, v) ->
-                tokens.filter { it.count == k && championInfo[it.refId.toInt()]?.level == v }
-                    .map {
-                        val txt = if (shards.any { shard -> shard.storeItemId == it.refId.toInt() && shard.count >= 1 }) "shard" else "essence"
-                        getRecipes(it.lootId).first { recipe -> recipe.recipeName.contains(txt) }
-                    }
-            }
-            masteryEnchantments.forEach { craftLoot(it) }
+            anyChanged = anyChanged || upgradeMasteryTokens(loot)
 
             anyChanged = anyChanged || craftLoot(shards) { championInfo[it.storeItemId]?.level == 7 }
             anyChanged = anyChanged || craftLoot(shards) { championInfo[it.storeItemId]?.level == 6 && it.count == 2 }
             anyChanged = anyChanged || upgradeChampionShard(shards, blueEssence) { championInfo[it.storeItemId]?.ownershipStatus == ChampionOwnershipStatus.NOT_OWNED }
+
             anyChanged = anyChanged || disenchantTokenItem(loot, "Tokens expire", "Mystery Emote") // Orb
             anyChanged = anyChanged || disenchantByText(loot, "Mystery Emote")
         }
@@ -359,8 +370,8 @@ class LeagueConnection {
     }
 
     fun updateChampionMasteryInfo() {
-        val champions = clientApi!!.executeGet("/lol-champions/v1/inventories/${summonerInfo.summonerId}/champions",
-            Array<LolChampionsCollectionsChampion>::class.java).responseObject ?: return
+        val champions = clientApi?.executeGet("/lol-champions/v1/inventories/${summonerInfo.summonerId}/champions",
+            Array<LolChampionsCollectionsChampion>::class.java)?.responseObject ?: return
         Logging.log(champions, LogType.VERBOSE)
 
         val championMasteryList = clientApi!!.executeGet("/lol-collections/v1/inventories/${summonerInfo.summonerId}/champion-mastery",
@@ -710,9 +721,20 @@ class LeagueConnection {
         updateMasteryChestInfo()
         updateChampionMasteryInfo()
         updateClientState()
+        updateMatchHistory()
         getEternalsQueueIds()
 
         return true
+    }
+
+    private fun updateMatchHistory() {
+        val startTimeStr = DatabaseImpl.getValue(GenericKeyValueKeys.CHALLENGES_MATCH_HISTORY_LAST_DATE)
+
+        val obj = if (!startTimeStr.isNullOrEmpty()) {
+            LeagueApi.getData(summonerInfo.displayName, startTime = DateTime.parse(startTimeStr))
+        } else {
+            LeagueApi.getData(summonerInfo.displayName)
+        }
     }
 
     private fun preloadChallengesCache() {

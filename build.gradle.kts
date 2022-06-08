@@ -47,6 +47,7 @@ dependencies {
     implementation("no.tornado", "tornadofx", "1.7.20")
     implementation("org.apache.commons", "commons-lang3", "3.12.0")
     implementation("org.junit.jupiter", "junit-jupiter", "5.8.2")
+    implementation("com.merakianalytics.orianna", "orianna", "4.0.0-rc8")
 
     val exposedVersion = "0.38.2"
     implementation("org.jetbrains.exposed", "exposed-core", exposedVersion)
