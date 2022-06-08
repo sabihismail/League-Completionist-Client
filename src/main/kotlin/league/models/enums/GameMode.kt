@@ -27,7 +27,7 @@ enum class GameMode {
     URF,
     @SerializedName("TUTORIAL")
     TUTORIAL,
-    @SerializedName("BOT", alternate = ["Beginner", "Intermediate", "Co-op vs. AI"])
+    @SerializedName("BOT", alternate = ["Beginner", "Intermediate", "Co-op vs. AI", "Intro"])
     BOT,
     @SerializedName("PRACTICETOOL")
     PRACTICE_TOOL,

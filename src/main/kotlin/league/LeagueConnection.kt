@@ -7,6 +7,7 @@ import com.stirante.lolclient.libs.org.apache.http.conn.HttpHostConnectException
 import db.DatabaseImpl
 import generated.*
 import league.api.CacheUtil
+import league.api.LeagueApi
 import league.api.LeagueCommunityDragonApi
 import league.models.*
 import league.models.enums.*
@@ -628,6 +629,7 @@ class LeagueConnection {
         }
 
         if (clientState == LolGameflowGameflowPhase.ENDOFGAME) {
+            LeagueApi.updateMatchHistory()
             updateChampionMasteryInfo()
             runTftBattlepassCheck()
         }

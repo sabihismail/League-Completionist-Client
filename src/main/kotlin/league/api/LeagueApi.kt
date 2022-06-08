@@ -26,30 +26,30 @@ object LeagueApi {
     var WIN_WITHOUT_DYING_MAPPING = hashMapOf<Int, Boolean>()
 
     fun getChampionWinInSummonersRift(championId: Int): Boolean {
-        CacheUtil.checkIfJsonCached(CacheType.API_JSON, ::WIN_SUMMONERS_RIFT_MAPPING, ::populateData)
+        CacheUtil.checkIfJsonCached(CacheType.API_JSON, ::WIN_SUMMONERS_RIFT_MAPPING, ::updateMatchHistory)
 
         return getOrPut(::WIN_SUMMONERS_RIFT_MAPPING, championId)
     }
 
     fun getChampionWinInBotGames(championId: Int): Boolean {
-        CacheUtil.checkIfJsonCached(CacheType.API_JSON, ::WIN_BOT_GAMES_MAPPING, ::populateData)
+        CacheUtil.checkIfJsonCached(CacheType.API_JSON, ::WIN_BOT_GAMES_MAPPING, ::updateMatchHistory)
 
         return getOrPut(::WIN_BOT_GAMES_MAPPING, championId)
     }
 
     fun getChampionGotPentakill(championId: Int): Boolean {
-        CacheUtil.checkIfJsonCached(CacheType.API_JSON, ::PENTAKILL_MAPPING, ::populateData)
+        CacheUtil.checkIfJsonCached(CacheType.API_JSON, ::PENTAKILL_MAPPING, ::updateMatchHistory)
 
         return getOrPut(::PENTAKILL_MAPPING, championId)
     }
 
     fun getChampionWonWithoutDying(championId: Int): Boolean {
-        CacheUtil.checkIfJsonCached(CacheType.API_JSON, ::WIN_WITHOUT_DYING_MAPPING, ::populateData)
+        CacheUtil.checkIfJsonCached(CacheType.API_JSON, ::WIN_WITHOUT_DYING_MAPPING, ::updateMatchHistory)
 
         return getOrPut(::WIN_WITHOUT_DYING_MAPPING, championId)
     }
 
-    private fun populateData() {
+    fun updateMatchHistory() {
         val settings = Settings.get()
 
         DataCall.setCredentials(APICredentials(settings.riotApiKey, "", "", "", ""))
@@ -57,7 +57,7 @@ object LeagueApi {
 
         val lastEndDate = DatabaseImpl.getValue(GenericKeyValueKey.CHALLENGES_MATCH_HISTORY_END_DATE)
         val startTime = if (!lastEndDate.isNullOrEmpty())
-            ZonedDateTime.ofInstant(Instant.ofEpochMilli(lastEndDate.toLong()), ZoneId.of("UTC"))
+            ZonedDateTime.ofInstant(Instant.ofEpochSecond(lastEndDate.toLong()), ZoneId.of("UTC"))
         else
             ZonedDateTime.of(2021, 6, 1, 0, 0, 0, 0, ZoneId.of("UTC")) // Technically June 16th but whatever
 

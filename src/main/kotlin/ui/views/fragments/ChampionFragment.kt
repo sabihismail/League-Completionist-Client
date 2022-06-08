@@ -32,7 +32,7 @@ class ChampionFragment : Fragment() {
             left = stackpane {
                 alignment = Pos.TOP_LEFT
 
-                blackLabel("Lvl ${champion.level}${champion.percentageUntilNextLevel}", fontSize = 9.0)
+                blackLabel("Lvl ${champion.level}${champion.percentageUntilNextLevel}", fontSize = 9.6)
             }
 
             right = stackpane {
@@ -48,7 +48,7 @@ class ChampionFragment : Fragment() {
                                 5 -> "${champion.tokens}/2"
                                 else -> ""
                             },
-                            fontSize = 9.0, textAlignment = TextAlignment.RIGHT
+                            fontSize = 9.6, textAlignment = TextAlignment.RIGHT
                         ) {
                             isVisible = listOf(5, 6).contains(champion.level)
                         }
