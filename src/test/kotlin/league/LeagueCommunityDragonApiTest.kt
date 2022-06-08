@@ -8,30 +8,30 @@ import java.nio.file.Files
 import kotlin.io.path.fileSize
 import kotlin.test.Test
 
-internal class LeagueCommunityDragonAPITest {
+internal class LeagueCommunityDragonApiTest {
     @Test
-    fun checkLeagueQueueMappingAPI() {
+    fun checkLeagueQueueMappingApi() {
         assert(LeagueCommunityDragonApi.QUEUE_MAPPING.size == 0)
         assert(LeagueCommunityDragonApi.getQueueMapping(0).name == "Custom")
         assert(LeagueCommunityDragonApi.QUEUE_MAPPING.size > 0)
     }
 
     @Test
-    fun checkLeagueRoleMappingAPI() {
+    fun checkLeagueRoleMappingApi() {
         assert(LeagueCommunityDragonApi.CHAMPION_ROLE_MAPPING.size == 0)
         assert(LeagueCommunityDragonApi.getChampionsByRole(Role.TOP).isNotEmpty())
         assert(LeagueCommunityDragonApi.CHAMPION_ROLE_MAPPING.size == 5)
     }
 
     @Test
-    fun checkLeagueChallengeMappingAPI() {
+    fun checkLeagueChallengeMappingApi() {
         assert(LeagueCommunityDragonApi.CHALLENGE_MAPPING.size == 0)
         assert(LeagueCommunityDragonApi.getChallenge("CRYSTAL", ChallengeLevel.BRONZE) > 0)
         assert(LeagueCommunityDragonApi.QUEUE_MAPPING.size > 0)
     }
 
     @Test
-    fun checkLeagueEternalsMappingAPI() {
+    fun checkLeagueEternalsMappingApi() {
         assert(LeagueCommunityDragonApi.ETERNALS_MAPPING.size == 0)
         assert(LeagueCommunityDragonApi.getEternal("bd5ea729-424c-410f-8cf8-864575a08430").isNotEmpty())
         assert(LeagueCommunityDragonApi.ETERNALS_MAPPING.size > 0)

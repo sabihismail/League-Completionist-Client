@@ -74,3 +74,4 @@ kotlin-ide/
 
 cache/
 database.db
+config.json

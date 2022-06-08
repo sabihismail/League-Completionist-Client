@@ -5,9 +5,8 @@ import com.stirante.lolclient.libs.com.google.gson.internal.LinkedTreeMap
 import com.stirante.lolclient.libs.org.apache.http.HttpException
 import com.stirante.lolclient.libs.org.apache.http.conn.HttpHostConnectException
 import db.DatabaseImpl
-import db.GenericKeyValueKeys
 import generated.*
-import league.api.LeagueApi
+import league.api.CacheUtil
 import league.api.LeagueCommunityDragonApi
 import league.models.*
 import league.models.enums.*
@@ -15,7 +14,6 @@ import league.models.enums.Role
 import league.models.json.ChallengeInfo
 import league.models.json.ChallengeSummary
 import league.util.LeagueConnectionUtil
-import org.joda.time.DateTime
 import tornadofx.*
 import util.LogType
 import util.Logging
@@ -23,9 +21,7 @@ import util.ProcessExecutor
 import util.constants.GenericConstants.GSON
 import java.io.*
 import java.net.ConnectException
-import java.nio.file.Files
 import java.util.*
-import java.util.concurrent.atomic.AtomicInteger
 import kotlin.concurrent.thread
 
 class LeagueConnection {
@@ -36,7 +32,6 @@ class LeagueConnection {
     var role = Role.ANY
     val isSmurf get() = summonerInfo.uniqueId == 2549404233031175L
 
-    var summonerInfo = SummonerInfo()
     var championSelectInfo = ChampionSelectInfo()
     var championInfo = mapOf<Int, ChampionInfo>()
     var challengeInfo = mapOf<ChallengeCategory, MutableList<ChallengeInfo>>()
@@ -540,7 +535,7 @@ class LeagueConnection {
                 updateChallengesInfo()
                 loggedIn()
 
-                preloadChallengesCache()
+                CacheUtil.preloadChallengesCache(challengeInfo)
             }
 
             override fun onClientDisconnected() {
@@ -721,50 +716,9 @@ class LeagueConnection {
         updateMasteryChestInfo()
         updateChampionMasteryInfo()
         updateClientState()
-        updateMatchHistory()
         getEternalsQueueIds()
 
         return true
-    }
-
-    private fun updateMatchHistory() {
-        val startTimeStr = DatabaseImpl.getValue(GenericKeyValueKeys.CHALLENGES_MATCH_HISTORY_LAST_DATE)
-
-        val obj = if (!startTimeStr.isNullOrEmpty()) {
-            LeagueApi.getData(summonerInfo.displayName, startTime = DateTime.parse(startTimeStr))
-        } else {
-            LeagueApi.getData(summonerInfo.displayName)
-        }
-    }
-
-    private fun preloadChallengesCache() {
-        thread {
-            val elements = challengeInfo.values
-                .flatMap { challengeInfos -> challengeInfos.flatMap { challengeInfo -> challengeInfo.thresholds!!.keys.map { rank -> Pair(challengeInfo.id, rank) } } }
-                .toList()
-
-            val maxCount = elements.count()
-            val fileWalk = Files.walk(LeagueCommunityDragonApi.getPath(CacheType.CHALLENGE)).count()
-            if (fileWalk < maxCount) {
-                thread {
-                    Logging.log("Challenges - Starting Cache Download...", LogType.INFO)
-
-                    val num = AtomicInteger(0)
-                    elements.parallelStream()
-                        .forEach {
-                            LeagueCommunityDragonApi.getImagePath(CacheType.CHALLENGE, it.first.toString().lowercase(), it.second)
-
-                            num.incrementAndGet()
-                        }
-
-                    while (num.get() != maxCount) {
-                        Thread.sleep(1000)
-                    }
-
-                    Logging.log("Challenges - Finished Cache Download.", LogType.INFO)
-                }
-            }
-        }
     }
 
     private fun getClientVersion() {
@@ -799,5 +753,9 @@ class LeagueConnection {
 
     private fun loggedIn() {
         onLoggedInList.forEach { it() }
+    }
+
+    companion object {
+        var summonerInfo = SummonerInfo()
     }
 }

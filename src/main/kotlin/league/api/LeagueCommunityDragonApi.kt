@@ -1,9 +1,7 @@
 package league.api
 
-import com.stirante.lolclient.libs.com.google.gson.reflect.TypeToken
 import javafx.scene.effect.*
 import javafx.scene.image.Image
-import league.models.CacheInfo
 import league.models.ChampionInfo
 import league.models.enums.CacheType
 import league.models.enums.ChallengeLevel
@@ -13,7 +11,6 @@ import league.models.json.*
 import util.LogType
 import util.Logging
 import util.StringUtil
-import util.constants.GenericConstants.GSON
 import util.constants.ViewConstants.CHAMPION_STATUS_AVAILABLE_CHEST_COLOR
 import util.constants.ViewConstants.CHAMPION_STATUS_UNAVAILABLE_CHEST_COLOR
 import util.constants.ViewConstants.IMAGE_WIDTH
@@ -24,7 +21,6 @@ import java.nio.channels.Channels
 import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.io.path.*
-import kotlin.reflect.KMutableProperty0
 
 
 object LeagueCommunityDragonApi {
@@ -49,53 +45,45 @@ object LeagueCommunityDragonApi {
     private val CHALLENGES_ENDPOINT by lazy {
         "https://raw.communitydragon.org/$VERSION/plugins/rcp-be-lol-game-data/global/default/v1/challenges.json"
     }
-    private val CHAMPION_PORTRAIT_ENDPOINT by lazy {
+    val CHAMPION_PORTRAIT_ENDPOINT by lazy {
         "https://raw.communitydragon.org/$VERSION/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/%s.png"
     }
     private val ETERNALS_ENDPOINT by lazy {
         "https://raw.communitydragon.org/$VERSION/plugins/rcp-be-lol-game-data/global/default/v1/statstones.json"
     }
-    private val CHALLENGE_IMAGE_ENDPOINT by lazy {
+    val CHALLENGE_IMAGE_ENDPOINT by lazy {
         "https://raw.communitydragon.org/$VERSION/game/assets/challenges/config/%s/tokens/%s.png"
     }
     private val LOOT_NAME_ENDPOINT by lazy {
         "https://raw.communitydragon.org/$VERSION/plugins/rcp-fe-lol-loot/global/default/trans.json"
     }
 
-    private val CACHE_MAPPING by lazy {
-        mapOf(
-            CacheType.CHAMPION to CacheInfo("champion", CHAMPION_PORTRAIT_ENDPOINT),
-            CacheType.CHALLENGE to CacheInfo("challenge", CHALLENGE_IMAGE_ENDPOINT),
-            CacheType.JSON to CacheInfo("json/${VERSION.replace(".", "_")}")
-        )
-    }
-
     fun getLootEntity(lootName: String): String? {
-        checkIfJsonCached(::LOOT_TRANSLATION_MAPPING, ::populateLootTranslationMapping)
+        CacheUtil.checkIfJsonCached(CacheType.JSON, ::LOOT_TRANSLATION_MAPPING, ::populateLootTranslationMapping)
 
         return LOOT_TRANSLATION_MAPPING[lootName]
     }
 
     fun getChampionsByRole(role: Role): List<Int> {
-        checkIfJsonCached(::CHAMPION_ROLE_MAPPING, ::populateRoleMapping)
+        CacheUtil.checkIfJsonCached(CacheType.JSON, ::CHAMPION_ROLE_MAPPING, ::populateRoleMapping)
 
         return CHAMPION_ROLE_MAPPING[role]?.map { it.key }!!
     }
 
     fun getQueueMapping(id: Int): ApiQueueInfoResponse {
-        checkIfJsonCached(::QUEUE_MAPPING, ::populateQueueMapping)
+        CacheUtil.checkIfJsonCached(CacheType.JSON, ::QUEUE_MAPPING, ::populateQueueMapping)
 
         return QUEUE_MAPPING[id]!!
     }
 
     fun getChallenge(id: String, challengeLevel: ChallengeLevel): Long {
-        checkIfJsonCached(::CHALLENGE_MAPPING, ::populateChallengeMapping)
+        CacheUtil.checkIfJsonCached(CacheType.JSON, ::CHALLENGE_MAPPING, ::populateChallengeMapping)
 
         return CHALLENGE_MAPPING[id + challengeLevel.name]!!
     }
 
     fun getEternal(contentId: String): List<Pair<Int, String>> {
-        checkIfJsonCached(::ETERNALS_MAPPING, ::populateEternalsMapping)
+        CacheUtil.checkIfJsonCached(CacheType.JSON, ::ETERNALS_MAPPING, ::populateEternalsMapping)
 
         return ETERNALS_MAPPING[contentId]!!
     }
@@ -106,16 +94,8 @@ object LeagueCommunityDragonApi {
         return Image(path!!.toUri().toString())
     }
 
-    fun getPath(cacheType: CacheType): Path {
-        val info = CACHE_MAPPING[cacheType]!!
-        val path = Paths.get(Paths.get("").toAbsolutePath().toString(), "/cache/${info.folder.replace(".", "_")}")
-        path.createDirectories()
-
-        return path
-    }
-
     fun getImagePath(cacheType: CacheType, vararg params: Any): Path? {
-        val path = getPath(cacheType)
+        val path = CacheUtil.getPath(cacheType)
 
         if (path.notExists()) {
             path.createDirectory()
@@ -123,7 +103,7 @@ object LeagueCommunityDragonApi {
 
         val imagePath = path.resolve(params.joinToString("-") + ".png")
         if (!imagePath.exists()) {
-            val urlStr = CACHE_MAPPING[cacheType]!!.endpoint!!.format(*params)
+            val urlStr = CacheUtil.getEndpoint(cacheType)?.format(*params)
 
             val connection = URL(urlStr).openConnection()
             connection.setRequestProperty("User-Agent", "LoL-Mastery-Box-Client")
@@ -183,7 +163,7 @@ object LeagueCommunityDragonApi {
         val json = StringUtil.extractJSONMapFromString<ApiQueueInfoResponse>(jsonStr)
 
         QUEUE_MAPPING = HashMap(json.mapKeys { it.key.toInt() })
-        addJsonCache(::QUEUE_MAPPING)
+        CacheUtil.addJsonCache(CacheType.JSON, ::QUEUE_MAPPING)
     }
 
     private fun populateRoleMapping() {
@@ -197,7 +177,7 @@ object LeagueCommunityDragonApi {
         CHAMPION_ROLE_MAPPING[Role.MIDDLE] = json.middle
         CHAMPION_ROLE_MAPPING[Role.BOTTOM] = json.bottom
         CHAMPION_ROLE_MAPPING[Role.SUPPORT] = if (json.support.isNullOrEmpty()) json.utility!! else json.support
-        addJsonCache(::CHAMPION_ROLE_MAPPING)
+        CacheUtil.addJsonCache(CacheType.JSON, ::CHAMPION_ROLE_MAPPING)
     }
 
     private fun populateChallengeMapping() {
@@ -208,7 +188,7 @@ object LeagueCommunityDragonApi {
 
         CHALLENGE_MAPPING = HashMap(json.challenges.values.flatMap { c -> c.thresholds!!.map { (k, v) -> (c.name!! + k.name) to v.value!!.toLong() } }
             .toMap())
-        addJsonCache(::CHALLENGE_MAPPING)
+        CacheUtil.addJsonCache(CacheType.JSON, ::CHALLENGE_MAPPING)
     }
 
     private fun populateEternalsMapping() {
@@ -220,7 +200,7 @@ object LeagueCommunityDragonApi {
         ETERNALS_MAPPING = HashMap(json.statstoneData.flatMap { data ->
             data.statstones.map { it.contentId to it.getMilestoneValues() }
         }.toMap())
-        addJsonCache(::ETERNALS_MAPPING)
+        CacheUtil.addJsonCache(CacheType.JSON, ::ETERNALS_MAPPING)
     }
 
     private fun populateLootTranslationMapping() {
@@ -230,7 +210,7 @@ object LeagueCommunityDragonApi {
         val json = StringUtil.extractJSONFromString<Map<String, String>>(jsonStr)
 
         LOOT_TRANSLATION_MAPPING = HashMap(json)
-        addJsonCache(::LOOT_TRANSLATION_MAPPING)
+        CacheUtil.addJsonCache(CacheType.JSON, ::LOOT_TRANSLATION_MAPPING)
     }
 
     private fun sendRequest(url: String): String {
@@ -238,27 +218,5 @@ object LeagueCommunityDragonApi {
         connection.setRequestProperty("User-Agent", "LoL-Mastery-Box-Client")
 
         return connection.getInputStream().bufferedReader().use { it.readText() }
-    }
-
-    private fun <T1, T2> addJsonCache(data: KMutableProperty0<HashMap<T1, T2>>) {
-        val json = GSON.toJson(data.get())
-
-        val path = getPath(CacheType.JSON).resolve(data.name + ".json")
-        path.deleteIfExists()
-        path.createFile()
-        path.writeText(json)
-    }
-
-    private inline fun <reified T> checkIfJsonCached(data: KMutableProperty0<T>, runnable: () -> Unit) {
-        val path = getPath(CacheType.JSON).resolve(data.name + ".json")
-        if (!path.exists()) {
-            runnable()
-            return
-        }
-
-        val jsonStr = path.readText()
-        val json: T = GSON.fromJson(jsonStr, object: TypeToken<T>(){}.type)
-
-        data.set(json)
     }
 }

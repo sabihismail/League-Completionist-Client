@@ -27,7 +27,7 @@ object DatabaseImpl {
         }
     }
 
-    fun getValue(key: GenericKeyValueKeys): String? {
+    fun getValue(key: GenericKeyValueKey): String? {
         var str: String? = null
 
         transaction {
@@ -36,6 +36,22 @@ object DatabaseImpl {
         }
 
         return str
+    }
+
+    fun setValue(keyIn: GenericKeyValueKey, valueIn: Any) {
+        transaction {
+            val query: (SqlExpressionBuilder.() -> Op<Boolean>) = { GenericKeyValueTable.key eq keyIn.name }
+            if (GenericKeyValueTable.select(query).count() == 1L) {
+                GenericKeyValueTable.update(query) { update ->
+                    update[value] = valueIn.toString()
+                }
+            } else {
+                GenericKeyValueTable.insert { insert ->
+                    insert[key] = keyIn.name
+                    insert[value] = valueIn.toString()
+                }
+            }
+        }
     }
 
     fun setMasteryInfo(summonerInfo: SummonerInfo, masteryChestInfo: MasteryChestInfo) {
