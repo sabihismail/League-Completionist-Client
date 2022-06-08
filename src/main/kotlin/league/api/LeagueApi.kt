@@ -107,7 +107,7 @@ object LeagueApi {
 
     private fun getOrPut(mapping: KMutableProperty0<HashMap<Int, Boolean>>, key: Int, default: Boolean = false): Boolean {
         return if (mapping.get().containsKey(key)) {
-            true
+            mapping.get()[key]!!
         } else {
             mapping.get()[key] = default
             CacheUtil.addJsonCache(CacheType.API_JSON, mapping)

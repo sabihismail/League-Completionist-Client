@@ -32,19 +32,31 @@ class ChampionFragment : Fragment() {
             left = stackpane {
                 alignment = Pos.TOP_LEFT
 
-                blackLabel("Lvl ${champion.level}${champion.percentageUntilNextLevel}", fontSize = 11.0)
+                blackLabel("Lvl ${champion.level}${champion.percentageUntilNextLevel}", fontSize = 9.0)
             }
 
-            if (showTokens) {
-                right = stackpane {
-                    alignment = Pos.TOP_RIGHT
+            right = stackpane {
+                alignment = Pos.TOP_RIGHT
 
-                    blackLabel(when (champion.level) {
-                        6 -> "${champion.tokens}/3"
-                        5 -> "${champion.tokens}/2"
-                        else -> ""
-                    }, fontSize = 11.0) {
-                        isVisible = listOf(5, 6).contains(champion.level)
+                if (showTokens) {
+                    vbox {
+                        alignment = Pos.TOP_RIGHT
+
+                        blackLabel(
+                            "Tokens: " + when (champion.level) {
+                                6 -> "${champion.tokens}/3"
+                                5 -> "${champion.tokens}/2"
+                                else -> ""
+                            },
+                            fontSize = 9.0, textAlignment = TextAlignment.RIGHT
+                        ) {
+                            isVisible = listOf(5, 6).contains(champion.level)
+                        }
+
+                        blackLabel("SR - ${if (champion.challengeWonInSummonersRift) "Y" else "N"}", fontSize = 9.0)
+                        blackLabel("0D - ${if (champion.challengeWonWithoutDying) "Y" else "N"}", fontSize = 9.0)
+                        blackLabel("P - ${if (champion.challengeGotPentakill) "Y" else "N"}", fontSize = 9.0)
+                        blackLabel("Bot - ${if (champion.challengeWonInBotGames) "Y" else "N"}", fontSize = 9.0)
                     }
                 }
             }

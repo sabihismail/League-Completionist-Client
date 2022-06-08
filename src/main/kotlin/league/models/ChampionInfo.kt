@@ -1,6 +1,7 @@
 package league.models
 
 import generated.LolStatstonesStatstoneSet
+import league.api.LeagueApi
 import league.models.enums.ChampionOwnershipStatus
 import league.models.enums.ChampionRole
 
@@ -13,6 +14,14 @@ data class ChampionInfo(val id: Int = -1, val name: String = "None", val ownersh
         else
             ""
     }
+
+    val challengeWonInSummonersRift by lazy { LeagueApi.getChampionWinInSummonersRift(id) }
+
+    val challengeWonInBotGames by lazy { LeagueApi.getChampionWinInBotGames(id) }
+
+    val challengeWonWithoutDying by lazy { LeagueApi.getChampionWonWithoutDying(id) }
+
+    val challengeGotPentakill by lazy { LeagueApi.getChampionGotPentakill(id) }
 
     override fun toString(): String {
         return "ChampionInfo(id=$id, name='$name', ownershipStatus=$ownershipStatus, masteryPoints=$masteryPoints, currentMasteryPoints=$currentMasteryPoints, " +
