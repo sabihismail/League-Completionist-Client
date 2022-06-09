@@ -53,10 +53,9 @@ class ChampionFragment : Fragment() {
                             isVisible = listOf(5, 6).contains(champion.level)
                         }
 
-                        blackLabel("SR - ${if (champion.challengeWonInSummonersRift) "Y" else "N"}", fontSize = 9.0)
-                        blackLabel("0D - ${if (champion.challengeWonWithoutDying) "Y" else "N"}", fontSize = 9.0)
-                        blackLabel("P - ${if (champion.challengeGotPentakill) "Y" else "N"}", fontSize = 9.0)
-                        blackLabel("Bot - ${if (champion.challengeWonInBotGames) "Y" else "N"}", fontSize = 9.0)
+                        blackLabel(champion.differentChallenges, fontSize = 9.0) {
+                            isVisible = champion.differentChallenges != "[]"
+                        }
                     }
                 }
             }

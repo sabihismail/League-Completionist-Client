@@ -715,6 +715,7 @@ class LeagueConnection {
             summoner.percentCompleteForNextLevel, summoner.summonerLevel, summoner.xpUntilNextLevel)
         summonerChanged()
 
+        LeagueApi.updateMatchHistory()
         updateMasteryChestInfo()
         updateChampionMasteryInfo()
         updateClientState()

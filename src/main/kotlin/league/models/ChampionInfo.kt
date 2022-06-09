@@ -10,18 +10,21 @@ data class ChampionInfo(val id: Int = -1, val name: String = "None", val ownersh
                         var isSummonerSelectedChamp: Boolean = false, var eternal: LolStatstonesStatstoneSet? = null, var roles: Set<ChampionRole>? = null) {
     val percentageUntilNextLevel by lazy {
         if (level in 1..4)
-            " (${"%.2f".format((currentMasteryPoints.toDouble()/(nextLevelMasteryPoints + currentMasteryPoints)) * 100)}%)"
+            " (${"%.1f".format((currentMasteryPoints.toDouble()/(nextLevelMasteryPoints + currentMasteryPoints)) * 100)}%)"
         else
             ""
     }
 
-    val challengeWonInSummonersRift by lazy { LeagueApi.getChampionWinInSummonersRift(id) }
+    val differentChallenges by lazy {
+        val map = listOf(
+            LeagueApi.getChampionWinInSummonersRift(id) to "SR",
+            LeagueApi.getChampionWinInBotGames(id) to "BOT",
+            LeagueApi.getChampionWonWithoutDying(id) to "0D",
+            LeagueApi.getChampionGotPentakill(id) to "P"
+        )
 
-    val challengeWonInBotGames by lazy { LeagueApi.getChampionWinInBotGames(id) }
-
-    val challengeWonWithoutDying by lazy { LeagueApi.getChampionWonWithoutDying(id) }
-
-    val challengeGotPentakill by lazy { LeagueApi.getChampionGotPentakill(id) }
+        "[" + map.filter { !it.first }.joinToString("|") { it.second } + "]"
+    }
 
     override fun toString(): String {
         return "ChampionInfo(id=$id, name='$name', ownershipStatus=$ownershipStatus, masteryPoints=$masteryPoints, currentMasteryPoints=$currentMasteryPoints, " +

@@ -28,9 +28,9 @@ object CacheUtil {
         )
     }
 
-    fun getPath(cacheType: CacheType): Path {
+    fun getPath(cacheType: CacheType, append: String = ""): Path {
         val info = CACHE_MAPPING[cacheType]!!
-        val path = Paths.get(Paths.get("").toAbsolutePath().toString(), "/cache/${info.folder.replace(".", "_")}")
+        val path = Paths.get(Paths.get("").toAbsolutePath().toString(), "/cache/${info.folder.replace(".", "_")}$append")
         path.createDirectories()
 
         return path
@@ -70,17 +70,17 @@ object CacheUtil {
         }
     }
 
-    fun <T1, T2> addJsonCache(cacheType: CacheType, data: KMutableProperty0<HashMap<T1, T2>>) {
+    fun <T1, T2> addJsonCache(cacheType: CacheType, data: KMutableProperty0<HashMap<T1, T2>>, append: String = "") {
         val json = GenericConstants.GSON.toJson(data.get())
 
-        val path = getPath(cacheType).resolve(data.name + ".json")
+        val path = getPath(cacheType, append = append).resolve(data.name + ".json")
         path.deleteIfExists()
         path.createFile()
         path.writeText(json)
     }
 
-    inline fun <reified T> checkIfJsonCached(cacheType: CacheType, data: KMutableProperty0<T>, runnable: () -> Unit) {
-        val path = getPath(cacheType).resolve(data.name + ".json")
+    inline fun <reified T> checkIfJsonCached(cacheType: CacheType, data: KMutableProperty0<T>, runnable: () -> Unit, append: String = "") {
+        val path = getPath(cacheType, append = append).resolve(data.name + ".json")
         if (!path.exists()) {
             runnable()
             return

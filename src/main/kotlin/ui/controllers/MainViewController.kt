@@ -207,6 +207,7 @@ open class MainViewController : Controller() {
             val upgraded = leagueConnection.challengesUpdatedInfo.filter { it.first.currentLevel != it.second.currentLevel }
                 .sortedWith(
                     compareByDescending<Pair<ChallengeInfo, ChallengeInfo>> { it.second.category != ChallengeCategory.LEGACY }
+                        .thenByDescending { it.first.pointsDifference != 0 }
                         .thenByDescending { it.second.currentLevel }
                         .thenByDescending { it.second.percentage }
                 )

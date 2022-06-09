@@ -26,25 +26,29 @@ object LeagueApi {
     var WIN_WITHOUT_DYING_MAPPING = hashMapOf<Int, Boolean>()
 
     fun getChampionWinInSummonersRift(championId: Int): Boolean {
-        CacheUtil.checkIfJsonCached(CacheType.API_JSON, ::WIN_SUMMONERS_RIFT_MAPPING, ::updateMatchHistory)
+        if (LeagueConnection.summonerInfo.uniqueId == 0L) return false
+        CacheUtil.checkIfJsonCached(CacheType.API_JSON, ::WIN_SUMMONERS_RIFT_MAPPING, ::updateMatchHistory, append = getAppend())
 
         return getOrPut(::WIN_SUMMONERS_RIFT_MAPPING, championId)
     }
 
     fun getChampionWinInBotGames(championId: Int): Boolean {
-        CacheUtil.checkIfJsonCached(CacheType.API_JSON, ::WIN_BOT_GAMES_MAPPING, ::updateMatchHistory)
+        if (LeagueConnection.summonerInfo.uniqueId == 0L) return false
+        CacheUtil.checkIfJsonCached(CacheType.API_JSON, ::WIN_BOT_GAMES_MAPPING, ::updateMatchHistory, append = getAppend())
 
         return getOrPut(::WIN_BOT_GAMES_MAPPING, championId)
     }
 
     fun getChampionGotPentakill(championId: Int): Boolean {
-        CacheUtil.checkIfJsonCached(CacheType.API_JSON, ::PENTAKILL_MAPPING, ::updateMatchHistory)
+        if (LeagueConnection.summonerInfo.uniqueId == 0L) return false
+        CacheUtil.checkIfJsonCached(CacheType.API_JSON, ::PENTAKILL_MAPPING, ::updateMatchHistory, append = getAppend())
 
         return getOrPut(::PENTAKILL_MAPPING, championId)
     }
 
     fun getChampionWonWithoutDying(championId: Int): Boolean {
-        CacheUtil.checkIfJsonCached(CacheType.API_JSON, ::WIN_WITHOUT_DYING_MAPPING, ::updateMatchHistory)
+        if (LeagueConnection.summonerInfo.uniqueId == 0L) return false
+        CacheUtil.checkIfJsonCached(CacheType.API_JSON, ::WIN_WITHOUT_DYING_MAPPING, ::updateMatchHistory, append = getAppend())
 
         return getOrPut(::WIN_WITHOUT_DYING_MAPPING, championId)
     }
@@ -62,7 +66,7 @@ object LeagueApi {
             ZonedDateTime.of(2021, 6, 1, 0, 0, 0, 0, ZoneId.of("UTC")) // Technically June 16th but whatever
 
         val startTimeEpoch = startTime.toEpochSecond()
-        val endTimeEpoch = ZonedDateTime.now().toEpochSecond()
+        val endTimeEpoch = ZonedDateTime.now(ZoneId.of("UTC")).toEpochSecond()
 
         val summoner = Summoner.byName(LeagueConnection.summonerInfo.region, LeagueConnection.summonerInfo.displayName)
         val matchBuilder = MatchBuilder(summoner.platform)
@@ -96,10 +100,10 @@ object LeagueApi {
                 .distinctBy { it.first }
                 .forEach { safeSet(WIN_WITHOUT_DYING_MAPPING, it) }
 
-            CacheUtil.addJsonCache(CacheType.API_JSON, ::WIN_SUMMONERS_RIFT_MAPPING)
-            CacheUtil.addJsonCache(CacheType.API_JSON, ::WIN_BOT_GAMES_MAPPING)
-            CacheUtil.addJsonCache(CacheType.API_JSON, ::PENTAKILL_MAPPING)
-            CacheUtil.addJsonCache(CacheType.API_JSON, ::WIN_WITHOUT_DYING_MAPPING)
+            CacheUtil.addJsonCache(CacheType.API_JSON, ::WIN_SUMMONERS_RIFT_MAPPING, append = getAppend())
+            CacheUtil.addJsonCache(CacheType.API_JSON, ::WIN_BOT_GAMES_MAPPING, append = getAppend())
+            CacheUtil.addJsonCache(CacheType.API_JSON, ::PENTAKILL_MAPPING, append = getAppend())
+            CacheUtil.addJsonCache(CacheType.API_JSON, ::WIN_WITHOUT_DYING_MAPPING, append = getAppend())
         }
 
         DatabaseImpl.setValue(GenericKeyValueKey.CHALLENGES_MATCH_HISTORY_END_DATE, endTimeEpoch)
@@ -110,7 +114,7 @@ object LeagueApi {
             mapping.get()[key]!!
         } else {
             mapping.get()[key] = default
-            CacheUtil.addJsonCache(CacheType.API_JSON, mapping)
+            CacheUtil.addJsonCache(CacheType.API_JSON, mapping, append = getAppend())
 
             default
         }
@@ -122,5 +126,9 @@ object LeagueApi {
 
     private fun safeSet(mapping: MutableMap<Int, Boolean>, it: Pair<Int, Boolean>) {
         mapping[it.first] = it.second || (mapping[it.first] ?: false) == true
+    }
+
+    private fun getAppend(): String {
+        return "/${LeagueConnection.summonerInfo.uniqueId}"
     }
 }
