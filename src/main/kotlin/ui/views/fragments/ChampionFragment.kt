@@ -32,27 +32,19 @@ class ChampionFragment : Fragment() {
             left = stackpane {
                 alignment = Pos.TOP_LEFT
 
-                blackLabel("Lvl ${champion.level}${champion.percentageUntilNextLevel}", fontSize = 9.6)
-            }
+                vbox {
+                    val extraInfoStr = if (showTokens && setOf(5, 6).any { champion.level == it })
+                        " (T: " + when (champion.level) {
+                            6 -> "${champion.tokens}/3"
+                            5 -> "${champion.tokens}/2"
+                            else -> ""
+                        } + ")"
+                    else
+                        champion.percentageUntilNextLevel
 
-            right = stackpane {
-                alignment = Pos.TOP_RIGHT
+                    blackLabel("Lvl ${champion.level}$extraInfoStr", fontSize = 9.6)
 
-                if (showTokens) {
-                    vbox {
-                        alignment = Pos.TOP_RIGHT
-
-                        blackLabel(
-                            "Tokens: " + when (champion.level) {
-                                6 -> "${champion.tokens}/3"
-                                5 -> "${champion.tokens}/2"
-                                else -> ""
-                            },
-                            fontSize = 9.6, textAlignment = TextAlignment.RIGHT
-                        ) {
-                            isVisible = listOf(5, 6).contains(champion.level)
-                        }
-
+                    if (setOf(5, 6, 7).any { champion.level == it }) {
                         blackLabel(champion.differentChallenges, fontSize = 9.0) {
                             isVisible = champion.differentChallenges != "[]"
                         }

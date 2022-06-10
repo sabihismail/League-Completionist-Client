@@ -24,7 +24,7 @@ object CacheUtil {
 
             CacheType.CHAMPION to CacheInfo("champion", LeagueCommunityDragonApi.CHAMPION_PORTRAIT_ENDPOINT),
             CacheType.CHALLENGE to CacheInfo("challenge", LeagueCommunityDragonApi.CHALLENGE_IMAGE_ENDPOINT),
-            CacheType.JSON to CacheInfo("json/${LeagueCommunityDragonApi.VERSION.replace(".", "_")}")
+            CacheType.JSON to CacheInfo("json/")
         )
     }
 

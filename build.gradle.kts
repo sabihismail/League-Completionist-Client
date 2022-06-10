@@ -32,8 +32,8 @@ tasks.register<Jar>("uberJar") {
 }
 
 plugins {
-    kotlin("jvm") version "1.6.10"
-    kotlin("plugin.serialization") version "1.6.10"
+    kotlin("jvm") version "1.7.0"
+    kotlin("plugin.serialization") version "1.7.0"
     application
 }
 
@@ -43,11 +43,11 @@ repositories {
 }
 
 dependencies {
-    implementation("com.github.stirante", "lol-client-java-api", "master-SNAPSHOT")
+    implementation("com.github.stelar7", "R4J", "2.1.11")
+    implementation("com.github.stirante", "lol-client-java-api", "1.2.5")
     implementation("no.tornado", "tornadofx", "1.7.20")
     implementation("org.apache.commons", "commons-lang3", "3.12.0")
     implementation("org.junit.jupiter", "junit-jupiter", "5.8.2")
-    implementation("com.github.stelar7", "R4J", "2.1.11")
 
     val exposedVersion = "0.38.2"
     implementation("org.jetbrains.exposed", "exposed-core", exposedVersion)
@@ -60,7 +60,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
 
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
+    implementation("org.jetbrains.kotlinx", "kotlinx-serialization-json", "1.3.3")
 
     testImplementation(kotlin("test"))
 }

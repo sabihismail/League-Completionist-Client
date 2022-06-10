@@ -113,7 +113,7 @@ object LeagueApi {
         return if (mapping.get().containsKey(key)) {
             mapping.get()[key]!!
         } else {
-            mapping.get()[key] = default
+            mapping.getter.call()[key] = default
             CacheUtil.addJsonCache(CacheType.API_JSON, mapping, append = getAppend())
 
             default
