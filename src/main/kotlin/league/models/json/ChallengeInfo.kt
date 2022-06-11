@@ -48,7 +48,7 @@ class ChallengeInfo {
     val thresholdSummary by lazy {
         try {
             thresholds!!.toList().sortedBy { it.first }.filter { it.first > nextLevel!! }
-                .filter { it.first <= ChallengeLevel.DIAMOND }
+                .filter { it.first <= ChallengeLevel.MASTER }
                 .joinToString(THRESHOLD_SEPARATOR) { it.second.value!!.toLong().toCommaSeparatedNumber() }
         } catch (_: Exception) {
             ""

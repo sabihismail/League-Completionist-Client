@@ -12,6 +12,8 @@ import no.stelar7.api.r4j.impl.lol.builders.matchv5.match.MatchBuilder
 import no.stelar7.api.r4j.pojo.lol.match.v5.LOLMatch
 import no.stelar7.api.r4j.pojo.lol.match.v5.MatchParticipant
 import no.stelar7.api.r4j.pojo.lol.summoner.Summoner
+import util.LogType
+import util.Logging
 import util.Settings
 import java.time.Instant
 import java.time.ZoneId
@@ -72,10 +74,14 @@ object LeagueApi {
         val matchBuilder = MatchBuilder(summoner.platform)
         val matchesLst = summoner.leagueGames.withStartTime(startTimeEpoch).withEndTime(endTimeEpoch).lazy
         matchesLst.loadFully()
-        val matches = matchesLst.map { matchBuilder.withId(it).match }
+        val matches = matchesLst.mapIndexed { i, matchId ->
+            Logging.log("Loaded Match: ${i + 1}/${matchesLst.size}", LogType.INFO, carriageReturn = i / (matchesLst.size - 1))
+            matchBuilder.withId(matchId).match
+        }
 
         if (matches.isNotEmpty()) {
-            val participantList = matches.map { it to it.participants?.first { participant -> participant.summonerId == summoner.summonerId } }
+            val participantList = matches.map { it to it.participants?.firstOrNull { participant -> participant.summonerId == summoner.summonerId } }
+                .filter { it.second != null }
             participantList.filter { !isBot(it) }
                 .filter { it.second?.didWin() ?: false }
                 .map { it.second?.championId!! to true }

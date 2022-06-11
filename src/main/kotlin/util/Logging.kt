@@ -21,7 +21,7 @@ object Logging {
         log(s, logType, header = headerValue, ignorableDuplicate = ignorableDuplicate)
     }
 
-    fun log(str: String, logType: LogType, header: String? = null, ignorableDuplicate: Boolean = false) {
+    fun log(str: String, logType: LogType, header: String? = null, ignorableDuplicate: Boolean = false, carriageReturn: Int = -1) {
         if (logType < LOG_MODE) return
         
         val s = StringBuilder()
@@ -36,6 +36,10 @@ object Logging {
 
         lastMessageLogged = toStr
 
-        println(toStr)
+        if (carriageReturn != -1) {
+            print(toStr + if (carriageReturn == 0) "\r" else "\n")
+        } else {
+            println(toStr)
+        }
     }
 }
