@@ -25,7 +25,7 @@ import kotlin.io.path.notExists
 
 
 object LeagueCommunityDragonApi {
-    lateinit var VERSION: String
+    var VERSION = "latest"
 
     var CHAMPION_ROLE_MAPPING = hashMapOf<Role, HashMap<Int, Float>>()
     var QUEUE_MAPPING = hashMapOf<Int, ApiQueueInfoResponse>()
@@ -35,47 +35,13 @@ object LeagueCommunityDragonApi {
 
     private val versionEscaped get() = VERSION.replace(".", "_")
 
-    private val CHAMPION_ROLE_ENDPOINT get() =
-        if (!::VERSION.isInitialized)
-            null
-        else
-            "https://raw.communitydragon.org/$VERSION/plugins/rcp-fe-lol-champion-statistics/global/default/rcp-fe-lol-champion-statistics.js"
-
-    private val QUEUE_TYPE_ENDPOINT get() =
-        if (!::VERSION.isInitialized)
-            null
-        else
-            "https://raw.communitydragon.org/$VERSION/plugins/rcp-be-lol-game-data/global/default/v1/queues.json"
-
-    private val CHALLENGES_ENDPOINT get() =
-        if (!::VERSION.isInitialized)
-            null
-        else
-            "https://raw.communitydragon.org/$VERSION/plugins/rcp-be-lol-game-data/global/default/v1/challenges.json"
-
-    val CHAMPION_PORTRAIT_ENDPOINT get() =
-        if (!::VERSION.isInitialized)
-            null
-        else
-            "https://raw.communitydragon.org/$VERSION/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/%s.png"
-
-    private val ETERNALS_ENDPOINT get() =
-        if (!::VERSION.isInitialized)
-            null
-        else
-            "https://raw.communitydragon.org/$VERSION/plugins/rcp-be-lol-game-data/global/default/v1/statstones.json"
-
-    val CHALLENGE_IMAGE_ENDPOINT get() =
-        if (!::VERSION.isInitialized)
-            null
-        else
-            "https://raw.communitydragon.org/$VERSION/game/assets/challenges/config/%s/tokens/%s.png"
-
-    private val LOOT_NAME_ENDPOINT get() =
-        if (!::VERSION.isInitialized)
-            null
-        else
-            "https://raw.communitydragon.org/$VERSION/plugins/rcp-fe-lol-loot/global/default/trans.json"
+    private val CHAMPION_ROLE_ENDPOINT get() = "https://raw.communitydragon.org/$VERSION/plugins/rcp-fe-lol-champion-statistics/global/default/rcp-fe-lol-champion-statistics.js"
+    private val QUEUE_TYPE_ENDPOINT get() = "https://raw.communitydragon.org/$VERSION/plugins/rcp-be-lol-game-data/global/default/v1/queues.json"
+    private val CHALLENGES_ENDPOINT get() = "https://raw.communitydragon.org/$VERSION/plugins/rcp-be-lol-game-data/global/default/v1/challenges.json"
+    val CHAMPION_PORTRAIT_ENDPOINT get() = "https://raw.communitydragon.org/$VERSION/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/%s.png"
+    private val ETERNALS_ENDPOINT get() = "https://raw.communitydragon.org/$VERSION/plugins/rcp-be-lol-game-data/global/default/v1/statstones.json"
+    val CHALLENGE_IMAGE_ENDPOINT get() = "https://raw.communitydragon.org/$VERSION/game/assets/challenges/config/%s/tokens/%s.png"
+    private val LOOT_NAME_ENDPOINT get() = "https://raw.communitydragon.org/$VERSION/plugins/rcp-fe-lol-loot/global/default/trans.json"
 
     fun getLootEntity(lootName: String): String? {
         CacheUtil.checkIfJsonCached(CacheType.JSON, ::LOOT_TRANSLATION_MAPPING, ::populateLootTranslationMapping, append = versionEscaped)
@@ -178,7 +144,7 @@ object LeagueCommunityDragonApi {
     private fun populateQueueMapping() {
         QUEUE_MAPPING.clear()
 
-        val jsonStr = sendRequest(QUEUE_TYPE_ENDPOINT ?: return)
+        val jsonStr = sendRequest(QUEUE_TYPE_ENDPOINT)
         val json = StringUtil.extractJSONMapFromString<ApiQueueInfoResponse>(jsonStr)
 
         QUEUE_MAPPING = HashMap(json.mapKeys { it.key.toInt() })
@@ -188,7 +154,7 @@ object LeagueCommunityDragonApi {
     private fun populateRoleMapping() {
         CHAMPION_ROLE_MAPPING.clear()
 
-        val jsonStr = sendRequest(CHAMPION_ROLE_ENDPOINT ?: return)
+        val jsonStr = sendRequest(CHAMPION_ROLE_ENDPOINT)
         val json = StringUtil.extractJSONFromString<RoleMapping>(jsonStr, "a.exports=")
 
         CHAMPION_ROLE_MAPPING[Role.TOP] = json.top
@@ -202,7 +168,7 @@ object LeagueCommunityDragonApi {
     private fun populateChallengeMapping() {
         CHALLENGE_MAPPING.clear()
 
-        val jsonStr = sendRequest(CHALLENGES_ENDPOINT ?: return)
+        val jsonStr = sendRequest(CHALLENGES_ENDPOINT)
         val json = StringUtil.extractJSONFromString<ApiChallengeResponse>(jsonStr)
 
         CHALLENGE_MAPPING = HashMap(json.challenges.values.flatMap { c -> c.thresholds!!.map { (k, v) -> (c.name!! + k.name) to v.value!!.toLong() } }
@@ -213,7 +179,7 @@ object LeagueCommunityDragonApi {
     private fun populateEternalsMapping() {
         ETERNALS_MAPPING.clear()
 
-        val jsonStr = sendRequest(ETERNALS_ENDPOINT ?: return)
+        val jsonStr = sendRequest(ETERNALS_ENDPOINT)
         val json = StringUtil.extractJSONFromString<ApiEternalsResponse>(jsonStr)
 
         ETERNALS_MAPPING = HashMap(json.statstoneData.flatMap { data ->
@@ -225,7 +191,7 @@ object LeagueCommunityDragonApi {
     private fun populateLootTranslationMapping() {
         LOOT_TRANSLATION_MAPPING.clear()
 
-        val jsonStr = sendRequest(LOOT_NAME_ENDPOINT ?: return)
+        val jsonStr = sendRequest(LOOT_NAME_ENDPOINT)
         val json = StringUtil.extractJSONFromString<Map<String, String>>(jsonStr)
 
         LOOT_TRANSLATION_MAPPING = HashMap(json)

@@ -44,10 +44,8 @@ class ChampionFragment : Fragment() {
 
                     blackLabel("Lvl ${champion.level}$extraInfoStr", fontSize = 9.6)
 
-                    if (setOf(5, 6, 7).any { champion.level == it }) {
-                        blackLabel(champion.differentChallenges, fontSize = 9.0) {
-                            isVisible = champion.differentChallenges != "[]"
-                        }
+                    blackLabel(champion.differentChallenges, fontSize = 9.0) {
+                        isVisible = champion.differentChallenges != "[]"
                     }
                 }
             }

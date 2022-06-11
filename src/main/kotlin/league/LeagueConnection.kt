@@ -270,10 +270,14 @@ class LeagueConnection {
     }
 
     @Suppress("SameParameterValue")
-    private fun craftLoot(loot: Array<LolLootPlayerLoot>, lootId: String, count: Int) {
-        loot.filter { it.lootId == lootId }
+    private fun craftLoot(loot: Array<LolLootPlayerLoot>, lootId: String, count: Int): Boolean {
+        return loot.filter { it.lootId == lootId }
             .filter { it.count >= count }
-            .forEach { craftLoot(it, recipeName = null) }
+            .map {
+                craftLoot(it, recipeName = null)
+                true
+            }
+            .any()
     }
 
     private fun disenchantByText(loot: Array<LolLootPlayerLoot>, element: String): Boolean {
@@ -299,9 +303,11 @@ class LeagueConnection {
             val recipes = getRecipes(it.lootId)
             val upgradeRecipe = recipes.first { recipe -> recipe.recipeName.contains("upgrade") }
 
-            if (blueEssence.count < upgradeRecipe.slots.first { slot -> slot.lootIds.contains(blueEssence.lootId) }.quantity) return@map false
+            val cost = upgradeRecipe.slots.first { slot -> slot.lootIds.contains(blueEssence.lootId) }.quantity
+            if (blueEssence.count < cost) return@map false
 
             craftLoot(upgradeRecipe)
+            blueEssence.count -= cost
             return@map true
         }.any()
     }
@@ -316,7 +322,7 @@ class LeagueConnection {
                     val txt = if (shards.any { shard -> shard.storeItemId == it.refId.toInt() && shard.count >= 1 }) "shard" else "essence"
                     getRecipes(it.lootId).first { recipe -> recipe.recipeName.contains(txt) }
                 }
-        }
+            }
             .map { craftLoot(it) }
             .any()
     }
@@ -339,8 +345,9 @@ class LeagueConnection {
         val blueEssence = loot.first { it.lootId == "CURRENCY_champion" } // CURRENCY_RP
 
         val shards = loot.filter { it.type == "CHAMPION_RENTAL" }
-        craftLoot(loot, "MATERIAL_key_fragment", 3)
-        disenchantByText(loot, "Little Legends")
+        anyChanged = anyChanged || craftLoot(loot, "MATERIAL_key_fragment", 3)
+        anyChanged = anyChanged || disenchantByText(loot, "Little Legends")
+        anyChanged = anyChanged || disenchantByText(loot, "Mystery Emote")
         if (isMain) {
             anyChanged = anyChanged || upgradeMasteryTokens(loot)
 
@@ -350,7 +357,6 @@ class LeagueConnection {
             anyChanged = anyChanged || upgradeChampionShard(shards, blueEssence) { championInfo[it.storeItemId]?.ownershipStatus == ChampionOwnershipStatus.NOT_OWNED }
 
             anyChanged = anyChanged || disenchantTokenItem(loot, "Tokens expire", "Mystery Emote") // Orb
-            anyChanged = anyChanged || disenchantByText(loot, "Mystery Emote")
         }
 
         if (isSmurf) {
@@ -368,7 +374,7 @@ class LeagueConnection {
             }
 
             if (blueEssence.count > 12000) {
-                anyChanged = anyChanged || upgradeChampionShard(shards, blueEssence) { championInfo[it.storeItemId]?.roles?.contains(ChampionRole.MARKSMAN) == true &&
+                anyChanged = anyChanged || upgradeChampionShard(shards, blueEssence) { championInfo[it.storeItemId]?.roles?.contains(ChampionRole.FIGHTER) == true &&
                         championInfo[it.storeItemId]?.ownershipStatus == ChampionOwnershipStatus.NOT_OWNED }
             }
         }
@@ -443,9 +449,10 @@ class LeagueConnection {
         val battlepass = clientApi!!.executeGet("/lol-tft/v2/tft/battlepass", LolMissionsTftPaidBattlepass::class.java).responseObject
         val missions = battlepass.milestones.filter { !it.isPaid && it.state == "REWARDABLE" }
         val completedMissions = missions.map {
-            val missionPut = clientApi?.executePut("/lol-missions/v1/player/" + it.missionId, LolMissionsRewardGroupsSelection::class.java)?.responseObject
+            //val missionPut = clientApi?.executePut("/lol-missions/v1/player/" + it.missionId, null)?.responseObject
 
-            println(missionPut)
+            //println(missionPut)
+            false
         }
 
         if (completedMissions.any()) {
@@ -536,7 +543,8 @@ class LeagueConnection {
                         if (event == null || event.uri == null || event.data == null) return
 
                         val mappedRegex = eventListenerMapping.keys.firstOrNull { event.uri.matches(it) }
-                        val bad = listOf("/lol-hovercard", "/lol-chat", "/lol-game-client-chat")
+                        val bad = listOf("/lol-hovercard", "/lol-chat", "/lol-game-client-chat", "/riot-messaging-service", "/lol-patch/v1/products/league_of_legends",
+                            "/patcher/v1/products/league_of_legends")
                         if (mappedRegex == null && !bad.any { event.uri.contains(it) }) {
                             Logging.log("", LogType.VERBOSE, "ClientAPI WebSocket: " + event.uri + " - " + event.eventType)
                             return
@@ -746,6 +754,7 @@ class LeagueConnection {
     private fun getClientVersion() {
         val versionInfo = clientApi!!.executeGet("/system/v1/builds", BuildInfo::class.java).responseObject
         LeagueCommunityDragonApi.VERSION = versionInfo.version.split(".").subList(0, 2).joinToString(".")
+        CacheUtil.CACHE_MAPPING
     }
 
     private fun getEternalsQueueIds() {

@@ -17,16 +17,14 @@ import kotlin.io.path.*
 import kotlin.reflect.KMutableProperty0
 
 object CacheUtil {
-    private val CACHE_MAPPING by lazy {
-        mapOf(
-            CacheType.API to CacheInfo("api"),
-            CacheType.API_JSON to CacheInfo("api_json/"),
+    val CACHE_MAPPING = mutableMapOf(
+        CacheType.API to CacheInfo("api"),
+        CacheType.API_JSON to CacheInfo("api_json/"),
 
-            CacheType.CHAMPION to CacheInfo("champion", LeagueCommunityDragonApi.CHAMPION_PORTRAIT_ENDPOINT),
-            CacheType.CHALLENGE to CacheInfo("challenge", LeagueCommunityDragonApi.CHALLENGE_IMAGE_ENDPOINT),
-            CacheType.JSON to CacheInfo("json/")
-        )
-    }
+        CacheType.CHAMPION to CacheInfo("champion") { LeagueCommunityDragonApi.CHAMPION_PORTRAIT_ENDPOINT },
+        CacheType.CHALLENGE to CacheInfo("challenge") { LeagueCommunityDragonApi.CHALLENGE_IMAGE_ENDPOINT },
+        CacheType.JSON to CacheInfo("json/")
+    )
 
     fun getPath(cacheType: CacheType, append: String = ""): Path {
         val info = CACHE_MAPPING[cacheType]!!
@@ -37,7 +35,7 @@ object CacheUtil {
     }
 
     fun getEndpoint(cacheType: CacheType): String? {
-        return CACHE_MAPPING[cacheType]!!.endpoint
+        return CACHE_MAPPING[cacheType]!!.endpoint()
     }
 
     fun preloadChallengesCache(challengeInfo: Map<ChallengeCategory, MutableList<ChallengeInfo>>) {

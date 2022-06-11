@@ -2,6 +2,7 @@ package db
 
 import db.models.GenericKeyValueTable
 import db.models.MasteryChestTable
+import league.LeagueConnection
 import league.models.MasteryChestInfo
 import league.models.SummonerInfo
 import org.jetbrains.exposed.sql.*
@@ -30,8 +31,9 @@ object DatabaseImpl {
     fun getValue(key: GenericKeyValueKey): String? {
         var str: String? = null
 
+        val keyId = key.name + "_" + LeagueConnection.summonerInfo.uniqueId
         transaction {
-            val result = GenericKeyValueTable.select { GenericKeyValueTable.key eq key.name }.singleOrNull() ?: return@transaction
+            val result = GenericKeyValueTable.select { GenericKeyValueTable.key eq keyId }.singleOrNull() ?: return@transaction
             str = result[GenericKeyValueTable.value]
         }
 
@@ -39,15 +41,16 @@ object DatabaseImpl {
     }
 
     fun setValue(keyIn: GenericKeyValueKey, valueIn: Any) {
+        val keyId = keyIn.name + "_" + LeagueConnection.summonerInfo.uniqueId
         transaction {
-            val query: (SqlExpressionBuilder.() -> Op<Boolean>) = { GenericKeyValueTable.key eq keyIn.name }
+            val query: (SqlExpressionBuilder.() -> Op<Boolean>) = { GenericKeyValueTable.key eq keyId }
             if (GenericKeyValueTable.select(query).count() == 1L) {
                 GenericKeyValueTable.update(query) { update ->
                     update[value] = valueIn.toString()
                 }
             } else {
                 GenericKeyValueTable.insert { insert ->
-                    insert[key] = keyIn.name
+                    insert[key] = keyId
                     insert[value] = valueIn.toString()
                 }
             }

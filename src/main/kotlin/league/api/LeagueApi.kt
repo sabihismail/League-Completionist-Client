@@ -94,10 +94,11 @@ object LeagueApi {
                 .distinctBy { it.first }
                 .forEach { safeSet(PENTAKILL_MAPPING, it) }
 
-            participantList.filter { !isBot(it) }
+            participantList.asSequence().filter { !isBot(it) }
                 .filter { it.second?.didWin() ?: false }
+                .filter { it.second?.deaths == 0 }
                 .map { it.second?.championId!! to (it.second?.deaths == 0) }
-                .distinctBy { it.first }
+                .distinctBy { it.first }.toList()
                 .forEach { safeSet(WIN_WITHOUT_DYING_MAPPING, it) }
 
             CacheUtil.addJsonCache(CacheType.API_JSON, ::WIN_SUMMONERS_RIFT_MAPPING, append = getAppend())
