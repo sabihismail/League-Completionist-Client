@@ -93,8 +93,8 @@ open class MainViewController : Controller() {
                     } else {
                         throw IllegalArgumentException("onChampionSelectChange - Invalid GameMode - " + leagueConnection.gameMode)
                     }
-                } ui {
-                    challengesView.currentGameModeProperty.set(it)
+                } ui { gameMode ->
+                    challengesView.currentGameModeProperty.set(gameMode)
                 }
             }
         }

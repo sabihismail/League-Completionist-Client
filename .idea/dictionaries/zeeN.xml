@@ -2,18 +2,25 @@
   <dictionary name="zeeN">
     <words>
       <w>battlepass</w>
+      <w>bladesurge</w>
       <w>eternals</w>
+      <w>hextech</w>
       <w>hovercard</w>
       <w>irelia</w>
+      <w>nashor</w>
       <w>penta</w>
       <w>pentakill</w>
       <w>pentakills</w>
       <w>premade</w>
       <w>rewardable</w>
       <w>rgapi</w>
+      <w>robo</w>
+      <w>statstone</w>
       <w>statstones</w>
       <w>stelar</w>
       <w>tryndamere</w>
+      <w>veterancy</w>
+      <w>wurm</w>
       <w>xerial</w>
     </words>
   </dictionary>
