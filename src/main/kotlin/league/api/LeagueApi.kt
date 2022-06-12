@@ -74,33 +74,40 @@ object LeagueApi {
         val matchBuilder = MatchBuilder(summoner.platform)
         val matchesLst = summoner.leagueGames.withStartTime(startTimeEpoch).withEndTime(endTimeEpoch).lazy
         matchesLst.loadFully()
-        val matches = matchesLst.mapIndexed { i, matchId ->
-            Logging.log("Loaded Match: ${i + 1}/${matchesLst.size}", LogType.INFO, carriageReturn = i / (matchesLst.size - 1))
-            matchBuilder.withId(matchId).match
-        }
+        if (matchesLst.isNotEmpty()) {
+            val matches = matchesLst.mapIndexed { i, matchId ->
+                Logging.log("Loaded Match: ${i + 1}/${matchesLst.size}", LogType.INFO, carriageReturn = (i + 1) / matchesLst.size)
+                matchBuilder.withId(matchId).match
+            }
 
-        if (matches.isNotEmpty()) {
             val participantList = matches.map { it to it.participants?.firstOrNull { participant -> participant.summonerId == summoner.summonerId } }
                 .filter { it.second != null }
-            participantList.filter { !isBot(it) }
+            participantList.asSequence()
+                .filter { !isBot(it) }
+                .filter { !isAram(it) }
                 .filter { it.second?.didWin() ?: false }
                 .map { it.second?.championId!! to true }
-                .distinctBy { it.first }
+                .distinctBy { it.first }.toList()
                 .forEach { safeSet(WIN_SUMMONERS_RIFT_MAPPING, it) }
 
-            participantList.filter { isBot(it) }
+            participantList.asSequence()
+                .filter { isBot(it) }
+                .filter { !isAram(it) }
                 .filter { it.second?.didWin() ?: false }
                 .map { it.second?.championId!! to true }
                 .distinctBy { it.first }
                 .forEach { safeSet(WIN_BOT_GAMES_MAPPING, it) }
 
-            participantList.filter { !isBot(it) }
+            participantList.asSequence()
+                .filter { !isBot(it) }
+                .filter { !isAram(it) }
                 .filter { (it.second?.pentaKills!! > 0) }
                 .map { it.second?.championId!! to (it.second?.pentaKills!! > 0) }
                 .distinctBy { it.first }
                 .forEach { safeSet(PENTAKILL_MAPPING, it) }
 
             participantList.asSequence().filter { !isBot(it) }
+                .filter { !isAram(it) }
                 .filter { it.second?.didWin() ?: false }
                 .filter { it.second?.deaths == 0 }
                 .map { it.second?.championId!! to (it.second?.deaths == 0) }
@@ -125,6 +132,10 @@ object LeagueApi {
 
             default
         }
+    }
+
+    private fun isAram(it: Pair<LOLMatch, MatchParticipant?>): Boolean {
+        return it.first.gameMode == GameModeType.ARAM
     }
 
     private fun isBot(it: Pair<LOLMatch, MatchParticipant?>): Boolean {

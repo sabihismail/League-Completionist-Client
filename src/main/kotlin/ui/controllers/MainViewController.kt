@@ -215,7 +215,7 @@ open class MainViewController : Controller() {
                 .sortedWith(
                     compareByDescending<Pair<ChallengeInfo, ChallengeInfo>> { !CRINGE_MISSIONS.any { x -> it.second.description!!.contains(x) } }
                         .thenByDescending { it.second.category != ChallengeCategory.LEGACY }
-                        .thenByDescending { it.first.pointsDifference != 0 }
+                        .thenByDescending { it.first.pointsDifference <= 0 }
                         .thenByDescending { it.second.currentLevel }
                         .thenByDescending { it.second.percentage }
                 )
