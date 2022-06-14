@@ -72,7 +72,7 @@ class NormalGridView: View() {
                 paddingRight = 24.0
 
                 vbox {
-                    alignment = Pos.BOTTOM_LEFT
+                    alignment = Pos.BOTTOM_RIGHT
                     spacing = 6.0
 
                     hbox {
