@@ -40,6 +40,11 @@ open class MainViewController : Controller() {
             normalView.setChampions(FXCollections.observableList(newSortedChampionInfo))
         }
 
+        normalView.currentChallenge.addListener { _, _, newValue ->
+            val newSortedChampionInfo = leagueConnection.getChampionMasteryInfo().filter { newValue == ChallengesMappingEnum.NONE || !it.challengesMapping[newValue]!! }
+            normalView.setChampions(FXCollections.observableList(newSortedChampionInfo))
+        }
+
         challengesView.currentGameModeProperty.addListener { _, _, _ ->
             manualGameModeSelect = true
         }

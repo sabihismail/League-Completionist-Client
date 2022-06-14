@@ -2,6 +2,7 @@ package league.models
 
 import generated.LolStatstonesStatstoneSet
 import league.api.LeagueApi
+import league.models.enums.ChallengesMappingEnum
 import league.models.enums.ChampionOwnershipStatus
 import league.models.enums.ChampionRole
 
@@ -15,15 +16,17 @@ data class ChampionInfo(val id: Int = -1, val name: String = "None", val ownersh
             ""
     }
 
-    val differentChallenges by lazy {
-        val map = listOf(
-            LeagueApi.getChampionWinInSummonersRift(id) to "SR",
-            LeagueApi.getChampionWinInBotGames(id) to "BOT",
-            LeagueApi.getChampionWonWithoutDying(id) to "0D",
-            LeagueApi.getChampionGotPentakill(id) to "P"
+    val challengesMapping by lazy {
+        mapOf(
+            ChallengesMappingEnum.WIN_SUMMONERS_RIFT to LeagueApi.getChampionWinInSummonersRift(id),
+            ChallengesMappingEnum.WIN_BOTS_GAME to LeagueApi.getChampionWinInBotGames(id),
+            ChallengesMappingEnum.NO_DEATHS_SUMMONERS_RIFT to LeagueApi.getChampionWonWithoutDying(id),
+            ChallengesMappingEnum.PENTA_IN_SUMMONERS_RIFT to LeagueApi.getChampionGotPentakill(id),
         )
+    }
 
-        "[" + map.filter { !it.first }.joinToString("|") { it.second } + "]"
+    val differentChallenges by lazy {
+        "[" + challengesMapping.toList().filter { !it.second }.joinToString("|") { ChallengesMappingEnum.mapping[it.first]!! } + "]"
     }
 
     override fun toString(): String {
