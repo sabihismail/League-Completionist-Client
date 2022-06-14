@@ -9,7 +9,7 @@ internal class LeagueApiTest {
     fun checkWinsSummonersRiftApi() {
         LeagueConnection.summonerInfo = SummonerInfo(displayName = "")
 
-        val champion = 55 // Katarina
+        // val champion = 55 // Katarina
 
         assert(LeagueApi.WIN_SUMMONERS_RIFT_MAPPING.size == 0)
         // assert(LeagueApi.getChampionWinInSummonersRift(champion))
@@ -20,7 +20,7 @@ internal class LeagueApiTest {
     fun checkWinWithoutDyingApi() {
         LeagueConnection.summonerInfo = SummonerInfo(displayName = "")
 
-        val champion = 236 // Lucian
+        // val champion = 236 // Lucian
 
         assert(LeagueApi.WIN_WITHOUT_DYING_MAPPING.size == 0)
         // assert(LeagueApi.getChampionWonWithoutDying(champion))
@@ -31,7 +31,7 @@ internal class LeagueApiTest {
     fun checkWinBotGamesApi() {
         LeagueConnection.summonerInfo = SummonerInfo(displayName = "")
 
-        val champion = 23 // Tryndamere
+        // val champion = 23 // Tryndamere
 
         assert(LeagueApi.WIN_BOT_GAMES_MAPPING.size == 0)
         // assert(LeagueApi.getChampionWinInBotGames(champion))
@@ -42,7 +42,7 @@ internal class LeagueApiTest {
     fun checkPentakillsApi() {
         LeagueConnection.summonerInfo = SummonerInfo(displayName = "")
 
-        val champion = 236 // Lucian
+        // val champion = 236 // Lucian
 
         assert(LeagueApi.PENTAKILL_MAPPING.size == 0)
         // assert(LeagueApi.getChampionGotPentakill(champion))
