@@ -11,29 +11,10 @@ tasks.test {
     useJUnitPlatform()
 }
 
-tasks.register<Jar>("uberJar") {
-    archiveClassifier.set("uber")
-
-    manifest {
-        attributes(
-            "Main-Class" to "MainKt",
-            "Implementation-Title" to "Gradle",
-            "Implementation-Version" to archiveVersion
-        )
-    }
-
-    from(sourceSets.main.get().output)
-
-    dependsOn(configurations.runtimeClasspath)
-    from({
-        configurations.runtimeClasspath.get().filter { it.name.endsWith("jar") }
-            .map { zipTree(it) }
-    })
-}
-
 plugins {
     kotlin("jvm") version "1.7.0"
     kotlin("plugin.serialization") version "1.7.0"
+    id("com.github.johnrengelman.shadow") version "7.1.2"
     application
 }
 
@@ -67,6 +48,12 @@ dependencies {
 
 application {
     mainClass.set("MainKt")
+}
+
+tasks {
+    build {
+        dependsOn(shadowJar)
+    }
 }
 
 val compileKotlin: KotlinCompile by tasks
