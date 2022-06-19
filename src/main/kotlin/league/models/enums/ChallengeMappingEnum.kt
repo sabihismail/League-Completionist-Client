@@ -1,12 +1,12 @@
 package league.models.enums
 
-enum class ChallengesMappingEnum {
+enum class ChallengeMappingEnum {
     @Suppress("unused")
     NONE,
 
     WIN_SUMMONERS_RIFT,
     PENTA_IN_SUMMONERS_RIFT,
-    NO_DEATHS_SUMMONERS_RIFT,
+    WIN_NO_DEATHS_SUMMONERS_RIFT,
     WIN_BOTS_GAME;
 
     companion object {
@@ -15,7 +15,7 @@ enum class ChallengesMappingEnum {
 
             WIN_SUMMONERS_RIFT to "SR",
             PENTA_IN_SUMMONERS_RIFT to "P",
-            NO_DEATHS_SUMMONERS_RIFT to "0d",
+            WIN_NO_DEATHS_SUMMONERS_RIFT to "0d",
             WIN_BOTS_GAME to "BOT",
         )
     }

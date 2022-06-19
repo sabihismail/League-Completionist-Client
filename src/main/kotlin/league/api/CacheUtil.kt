@@ -1,6 +1,9 @@
 package league.api
 
 import com.stirante.lolclient.libs.com.google.gson.reflect.TypeToken
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import league.models.CacheInfo
 import league.models.enums.CacheType
 import league.models.enums.ChallengeCategory
@@ -17,6 +20,8 @@ import kotlin.io.path.*
 import kotlin.reflect.KMutableProperty0
 
 object CacheUtil {
+    val FILE_LOCKS = hashMapOf<Path, Mutex>()
+
     val CACHE_MAPPING = mutableMapOf(
         CacheType.API to CacheInfo("api"),
         CacheType.API_JSON to CacheInfo("api_json/"),
@@ -55,7 +60,8 @@ object CacheUtil {
                         .forEach {
                             LeagueCommunityDragonApi.getImagePath(CacheType.CHALLENGE, it.first.toString().lowercase(), it.second)
 
-                            num.incrementAndGet()
+                            val n = num.incrementAndGet()
+                            Logging.log("Loaded Challenge Cache Image: ${n + 1}/${elements.size}", LogType.INFO, carriageReturn = (n + 1) / elements.size)
                         }
 
                     while (num.get() != maxCount) {
@@ -72,21 +78,33 @@ object CacheUtil {
         val json = GenericConstants.GSON.toJson(data.get())
 
         val path = getPath(cacheType, append = append).resolve(data.name + ".json")
-        path.deleteIfExists()
-        path.createFile()
-        path.writeText(json)
+
+        val mutex = FILE_LOCKS.getOrDefault(path, Mutex())
+        runBlocking {
+            mutex.withLock {
+                path.deleteIfExists()
+                path.createFile()
+                path.writeText(json)
+            }
+        }
     }
 
     inline fun <reified T> checkIfJsonCached(cacheType: CacheType, data: KMutableProperty0<T>, runnable: () -> Unit, append: String = "") {
         val path = getPath(cacheType, append = append).resolve(data.name + ".json")
+
         if (!path.exists()) {
             runnable()
             return
         }
 
-        val jsonStr = path.readText()
-        val json: T = GenericConstants.GSON.fromJson(jsonStr, object: TypeToken<T>(){}.type)
+        val mutex = FILE_LOCKS.getOrDefault(path, Mutex())
+        runBlocking {
+            mutex.withLock {
+                val jsonStr = path.readText()
+                val json: T = GenericConstants.GSON.fromJson(jsonStr, object : TypeToken<T>() {}.type)
 
-        data.set(json)
+                data.set(json)
+            }
+        }
     }
 }

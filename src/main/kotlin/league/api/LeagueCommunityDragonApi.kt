@@ -35,12 +35,12 @@ object LeagueCommunityDragonApi {
 
     private val versionEscaped get() = VERSION.replace(".", "_")
 
+    val CHAMPION_PORTRAIT_ENDPOINT get() = "https://raw.communitydragon.org/$VERSION/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/%s.png"
+    val CHALLENGE_IMAGE_ENDPOINT get() = "https://raw.communitydragon.org/$VERSION/game/assets/challenges/config/%s/tokens/%s.png"
     private val CHAMPION_ROLE_ENDPOINT get() = "https://raw.communitydragon.org/$VERSION/plugins/rcp-fe-lol-champion-statistics/global/default/rcp-fe-lol-champion-statistics.js"
     private val QUEUE_TYPE_ENDPOINT get() = "https://raw.communitydragon.org/$VERSION/plugins/rcp-be-lol-game-data/global/default/v1/queues.json"
     private val CHALLENGES_ENDPOINT get() = "https://raw.communitydragon.org/$VERSION/plugins/rcp-be-lol-game-data/global/default/v1/challenges.json"
-    val CHAMPION_PORTRAIT_ENDPOINT get() = "https://raw.communitydragon.org/$VERSION/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/%s.png"
     private val ETERNALS_ENDPOINT get() = "https://raw.communitydragon.org/$VERSION/plugins/rcp-be-lol-game-data/global/default/v1/statstones.json"
-    val CHALLENGE_IMAGE_ENDPOINT get() = "https://raw.communitydragon.org/$VERSION/game/assets/challenges/config/%s/tokens/%s.png"
     private val LOOT_NAME_ENDPOINT get() = "https://raw.communitydragon.org/$VERSION/plugins/rcp-fe-lol-loot/global/default/trans.json"
 
     fun getLootEntity(lootName: String): String? {

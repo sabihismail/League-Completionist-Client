@@ -6,7 +6,7 @@ import javafx.beans.property.SimpleObjectProperty
 import javafx.collections.FXCollections
 import javafx.geometry.Pos
 import league.models.ChampionInfo
-import league.models.enums.ChallengesMappingEnum
+import league.models.enums.ChallengeMappingEnum
 import league.models.enums.Role
 import tornadofx.*
 import ui.views.fragments.ChampionFragment
@@ -16,7 +16,7 @@ import util.constants.ViewConstants.IMAGE_WIDTH
 
 class NormalGridView: View() {
     val currentRole = SimpleObjectProperty(Role.ANY)
-    val currentChallenge = SimpleObjectProperty(ChallengesMappingEnum.NONE)
+    val currentChallenge = SimpleObjectProperty(ChallengeMappingEnum.NONE)
 
     private val allChampions = SimpleListProperty<ChampionInfo>()
     private val championListProperty = SimpleListProperty<ChampionInfo>()
@@ -86,7 +86,7 @@ class NormalGridView: View() {
                         alignment = Pos.CENTER_RIGHT
 
                         label("Challenge: ")
-                        combobox(currentChallenge, ChallengesMappingEnum.values().toList())
+                        combobox(currentChallenge, ChallengeMappingEnum.values().toList())
                     }
 
                     checkbox("Eternals Only", eternalsOnlyProperty).apply {

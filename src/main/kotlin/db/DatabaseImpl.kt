@@ -1,10 +1,12 @@
 package db
 
+import db.models.ChallengeMappingTable
 import db.models.GenericKeyValueTable
 import db.models.MasteryChestTable
 import league.LeagueConnection
 import league.models.MasteryChestInfo
 import league.models.SummonerInfo
+import league.models.enums.ChallengeMappingEnum
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.TransactionManager
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -24,6 +26,7 @@ object DatabaseImpl {
             SchemaUtils.createMissingTablesAndColumns(
                 MasteryChestTable,
                 GenericKeyValueTable,
+                ChallengeMappingTable,
             )
         }
     }
@@ -99,5 +102,46 @@ object DatabaseImpl {
         }
 
         return lst
+    }
+
+    fun getChallengeComplete(challengeType: ChallengeMappingEnum, championIdIn: Int): Boolean {
+        val s = transaction {
+            val result = ChallengeMappingTable.select {
+                ChallengeMappingTable.championId eq championIdIn and (ChallengeMappingTable.summonerUniqueId eq LeagueConnection.summonerInfo.uniqueId)
+            }.firstOrNull()
+
+            if (result == null) {
+                setChallengeComplete(challengeType, championIdIn, false)
+                return@transaction false
+            }
+
+            return@transaction result[ChallengeMappingTable.isComplete]
+        }
+
+        return s
+    }
+
+    fun setChallengeComplete(challengeType: ChallengeMappingEnum, championIdIn: Int, isSet: Boolean = true) {
+        transaction {
+            val query: (SqlExpressionBuilder.() -> Op<Boolean>) = {
+                ChallengeMappingTable.championId eq championIdIn and
+                        (ChallengeMappingTable.summonerUniqueId eq LeagueConnection.summonerInfo.uniqueId) and
+                        (ChallengeMappingTable.name eq challengeType.name)
+            }
+
+            val result = ChallengeMappingTable.select(query).firstOrNull()
+            if (result == null) {
+                ChallengeMappingTable.insert {
+                    it[name] = challengeType.name
+                    it[championId] = championIdIn
+                    it[summonerUniqueId] = LeagueConnection.summonerInfo.uniqueId
+                    it[isComplete] = isSet
+                }
+            } else {
+                ChallengeMappingTable.update(query) {
+                    it[isComplete] = isSet
+                }
+            }
+        }
     }
 }

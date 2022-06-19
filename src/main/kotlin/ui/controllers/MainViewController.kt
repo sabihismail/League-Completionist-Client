@@ -41,7 +41,7 @@ open class MainViewController : Controller() {
         }
 
         normalView.currentChallenge.addListener { _, _, newValue ->
-            val newSortedChampionInfo = leagueConnection.getChampionMasteryInfo().filter { newValue == ChallengesMappingEnum.NONE || !it.challengesMapping[newValue]!! }
+            val newSortedChampionInfo = leagueConnection.getChampionMasteryInfo().filter { newValue == ChallengeMappingEnum.NONE || !it.challengesMapping[newValue]!! }
             normalView.setChampions(FXCollections.observableList(newSortedChampionInfo))
         }
 

@@ -1,51 +1,45 @@
 package league
 
-import league.api.LeagueApi
+import db.DatabaseImpl
 import league.models.SummonerInfo
+import league.models.enums.ChallengeMappingEnum
 import kotlin.test.Test
+import kotlin.test.assertEquals
 
 internal class LeagueApiTest {
     @Test
     fun checkWinsSummonersRiftApi() {
-        LeagueConnection.summonerInfo = SummonerInfo(displayName = "")
+        LeagueConnection.summonerInfo = SummonerInfo(summonerId = 2549404233031175, accountID = 0)
 
-        // val champion = 55 // Katarina
+        val champion = 55 // Katarina
 
-        assert(LeagueApi.WIN_SUMMONERS_RIFT_MAPPING.size == 0)
-        // assert(LeagueApi.getChampionWinInSummonersRift(champion))
-        // assert(LeagueApi.WIN_SUMMONERS_RIFT_MAPPING.size > 0)
+        assertEquals(true, DatabaseImpl.getChallengeComplete(ChallengeMappingEnum.WIN_SUMMONERS_RIFT, champion))
     }
 
     @Test
     fun checkWinWithoutDyingApi() {
-        LeagueConnection.summonerInfo = SummonerInfo(displayName = "")
+        LeagueConnection.summonerInfo = SummonerInfo(summonerId = 2549404233031175, accountID = 0)
 
-        // val champion = 236 // Lucian
+        val champion = 236 // Lucian
 
-        assert(LeagueApi.WIN_WITHOUT_DYING_MAPPING.size == 0)
-        // assert(LeagueApi.getChampionWonWithoutDying(champion))
-        // assert(LeagueApi.WIN_WITHOUT_DYING_MAPPING.size > 0)
+        assertEquals(true, DatabaseImpl.getChallengeComplete(ChallengeMappingEnum.WIN_NO_DEATHS_SUMMONERS_RIFT, champion))
     }
 
     @Test
     fun checkWinBotGamesApi() {
-        LeagueConnection.summonerInfo = SummonerInfo(displayName = "")
+        LeagueConnection.summonerInfo = SummonerInfo(summonerId = 2549404233031175, accountID = 0)
 
-        // val champion = 23 // Tryndamere
+        val champion = 23 // Tryndamere
 
-        assert(LeagueApi.WIN_BOT_GAMES_MAPPING.size == 0)
-        // assert(LeagueApi.getChampionWinInBotGames(champion))
-        // assert(LeagueApi.WIN_BOT_GAMES_MAPPING.size > 0)
+        assertEquals(true, DatabaseImpl.getChallengeComplete(ChallengeMappingEnum.WIN_BOTS_GAME, champion))
     }
 
     @Test
     fun checkPentakillsApi() {
-        LeagueConnection.summonerInfo = SummonerInfo(displayName = "")
+        LeagueConnection.summonerInfo = SummonerInfo(summonerId = 2549404233031175, accountID = 0)
 
-        // val champion = 236 // Lucian
+        val champion = 236 // Lucian
 
-        assert(LeagueApi.PENTAKILL_MAPPING.size == 0)
-        // assert(LeagueApi.getChampionGotPentakill(champion))
-        // assert(LeagueApi.PENTAKILL_MAPPING.size > 0)
+        assertEquals(true, DatabaseImpl.getChallengeComplete(ChallengeMappingEnum.PENTA_IN_SUMMONERS_RIFT, champion))
     }
 }

@@ -1,8 +1,8 @@
 package league.models
 
+import db.DatabaseImpl
 import generated.LolStatstonesStatstoneSet
-import league.api.LeagueApi
-import league.models.enums.ChallengesMappingEnum
+import league.models.enums.ChallengeMappingEnum
 import league.models.enums.ChampionOwnershipStatus
 import league.models.enums.ChampionRole
 
@@ -18,15 +18,15 @@ data class ChampionInfo(val id: Int = -1, val name: String = "None", val ownersh
 
     val challengesMapping by lazy {
         mapOf(
-            ChallengesMappingEnum.WIN_SUMMONERS_RIFT to LeagueApi.getChampionWinInSummonersRift(id),
-            ChallengesMappingEnum.WIN_BOTS_GAME to LeagueApi.getChampionWinInBotGames(id),
-            ChallengesMappingEnum.NO_DEATHS_SUMMONERS_RIFT to LeagueApi.getChampionWonWithoutDying(id),
-            ChallengesMappingEnum.PENTA_IN_SUMMONERS_RIFT to LeagueApi.getChampionGotPentakill(id),
+            ChallengeMappingEnum.WIN_SUMMONERS_RIFT to DatabaseImpl.getChallengeComplete(ChallengeMappingEnum.WIN_SUMMONERS_RIFT, id),
+            ChallengeMappingEnum.WIN_BOTS_GAME to DatabaseImpl.getChallengeComplete(ChallengeMappingEnum.WIN_BOTS_GAME, id),
+            ChallengeMappingEnum.WIN_NO_DEATHS_SUMMONERS_RIFT to DatabaseImpl.getChallengeComplete(ChallengeMappingEnum.WIN_NO_DEATHS_SUMMONERS_RIFT, id),
+            ChallengeMappingEnum.PENTA_IN_SUMMONERS_RIFT to DatabaseImpl.getChallengeComplete(ChallengeMappingEnum.PENTA_IN_SUMMONERS_RIFT, id)
         )
     }
 
     val differentChallenges by lazy {
-        "[" + challengesMapping.toList().filter { !it.second }.joinToString("|") { ChallengesMappingEnum.mapping[it.first]!! } + "]"
+        "[" + challengesMapping.toList().filter { !it.second }.joinToString("|") { ChallengeMappingEnum.mapping[it.first]!! } + "]"
     }
 
     override fun toString(): String {

@@ -39,8 +39,10 @@ class ChallengeFragment : Fragment() {
 
                 blackLabel("${challenge.currentLevel} (${challenge.levelByThreshold}/${challenge.thresholds!!.count()})")
 
-                blackLabel("${challenge.currentValue!!.toInt().toCommaSeparatedNumber()}/${challenge.nextThreshold!!.toInt().toCommaSeparatedNumber()} (+$bracketText)") {
-                    tooltip(challenge.thresholdSummary) {
+                blackLabel(
+                    "${challenge.currentValue!!.toInt().toCommaSeparatedNumber()}/${challenge.nextThreshold!!.toInt().toCommaSeparatedNumber()} (+$bracketText)"
+                ) {
+                    tooltip(challenge.thresholdSummaryAnyTier) {
                         style {
                             font = Font.font(9.0)
                         }
@@ -49,7 +51,7 @@ class ChallengeFragment : Fragment() {
 
                 if (challenge.thresholdSummaryOneLiner.isNotEmpty()) {
                     blackLabel("(${challenge.thresholdSummaryOneLiner})") {
-                        tooltip(challenge.thresholdSummary) {
+                        tooltip(challenge.thresholdSummaryAnyTier) {
                             style {
                                 font = Font.font(9.0)
                             }
