@@ -93,6 +93,7 @@ object LeagueApi {
                         .filter { it.second?.deaths == 0 }
                         .map { it.second?.championId!! to (it.second?.deaths == 0) }
                         .distinctBy { it.first }.toList()
+                        .filter { it.second }
                         .forEach { DatabaseImpl.setChallengeComplete(ChallengeMappingEnum.WIN_NO_DEATHS_SUMMONERS_RIFT, it.first) }
                 }
 
