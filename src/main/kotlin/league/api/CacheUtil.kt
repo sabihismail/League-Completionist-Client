@@ -24,8 +24,6 @@ object CacheUtil {
 
     val CACHE_MAPPING = mutableMapOf(
         CacheType.API to CacheInfo("api"),
-        CacheType.API_JSON to CacheInfo("api_json/"),
-
         CacheType.CHAMPION to CacheInfo("champion") { LeagueCommunityDragonApi.CHAMPION_PORTRAIT_ENDPOINT },
         CacheType.CHALLENGE to CacheInfo("challenge") { LeagueCommunityDragonApi.CHALLENGE_IMAGE_ENDPOINT },
         CacheType.JSON to CacheInfo("json/")
