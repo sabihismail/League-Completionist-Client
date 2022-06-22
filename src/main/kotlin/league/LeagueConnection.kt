@@ -656,6 +656,7 @@ class LeagueConnection {
         }
 
         if (clientState == LolGameflowGameflowPhase.ENDOFGAME) {
+            updateLootTab()
             LeagueApi.updateMatchHistory()
             updateChampionMasteryInfo()
             runTftBattlepassCheck()
@@ -668,6 +669,10 @@ class LeagueConnection {
 
         clientState = gameFlowPhase
         clientStateChanged()
+    }
+
+    private fun updateLootTab() {
+        clientApi?.executePost("/lol-loot/v1/refresh")?.responseObject
     }
 
     private fun handleChampionSelectChange(champSelectSession: LolChampSelectChampSelectSession) {
