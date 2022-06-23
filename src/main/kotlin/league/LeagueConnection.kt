@@ -329,8 +329,6 @@ class LeagueConnection {
 
     @Suppress("KotlinConstantConditions")
     fun runLootCleanup() {
-        var anyChanged = false
-
         val loot = clientApi!!.executeGet("/lol-loot/v1/player-loot", Array<LolLootPlayerLoot>::class.java).responseObject ?: return
         Logging.log(loot, LogType.VERBOSE)
 
@@ -345,41 +343,51 @@ class LeagueConnection {
         val blueEssence = loot.first { it.lootId == "CURRENCY_champion" } // CURRENCY_RP
 
         val shards = loot.filter { it.type == "CHAMPION_RENTAL" }
-        anyChanged = anyChanged || craftLoot(loot, "MATERIAL_key_fragment", 3)
-        anyChanged = anyChanged || disenchantByText(loot, "Little Legends")
-        anyChanged = anyChanged || disenchantByText(loot, "Mystery Emote")
+        val functions = mutableListOf(
+            { craftLoot(loot, "MATERIAL_key_fragment", 3) },
+            { disenchantByText(loot, "Little Legends") },
+            { disenchantByText(loot, "Mystery Emote") },
+        )
         if (isMain) {
-            anyChanged = anyChanged || upgradeMasteryTokens(loot)
+            functions.addAll(mutableListOf(
+                { upgradeMasteryTokens(loot) },
 
-            anyChanged = anyChanged || craftLoot(shards, "CHAMPION_RENTAL_disenchant") { championInfo[it.storeItemId]?.level == 7 }
-            anyChanged = anyChanged || craftLoot(shards, "CHAMPION_RENTAL_disenchant") { championInfo[it.storeItemId]?.level == 6 && it.count == 2 }
-            anyChanged = anyChanged || craftLoot(shards, "CHAMPION_RENTAL_disenchant") { it.count == 3 }
-            anyChanged = anyChanged || upgradeChampionShard(shards, blueEssence) { championInfo[it.storeItemId]?.ownershipStatus == ChampionOwnershipStatus.NOT_OWNED }
+                { craftLoot(shards, "CHAMPION_RENTAL_disenchant") { championInfo[it.storeItemId]?.level == 7 } },
+                { craftLoot(shards, "CHAMPION_RENTAL_disenchant") { championInfo[it.storeItemId]?.level == 6 && it.count == 2 } },
+                { craftLoot(shards, "CHAMPION_RENTAL_disenchant") { it.count == 3 } },
+                { upgradeChampionShard(shards, blueEssence) { championInfo[it.storeItemId]?.ownershipStatus == ChampionOwnershipStatus.NOT_OWNED } },
 
-            anyChanged = anyChanged || disenchantTokenItem(loot, "Tokens expire", "Mystery Emote") // Orb
+                { disenchantTokenItem(loot, "Tokens expire", "Mystery Emote") }, // Orb
+            ))
         }
 
         if (isSmurf) {
-            anyChanged = anyChanged || disenchantByText(loot, "Champion Capsule")
-            anyChanged = anyChanged || disenchantTokenItem(loot, "Tokens expire", "Random Champion Shard")
-            anyChanged = anyChanged || disenchantByText(loot, "Random Champion Shard")
-            anyChanged = anyChanged || disenchantTokenItem(loot, "Rare crafting essence", "Random Skin Shard")
+            functions.addAll(mutableListOf(
+                { disenchantByText(loot, "Champion Capsule") },
+                { disenchantTokenItem(loot, "Tokens expire", "Random Champion Shard") },
+                { disenchantByText(loot, "Random Champion Shard") },
+                { disenchantTokenItem(loot, "Rare crafting essence", "Random Skin Shard") },
 
-            anyChanged = anyChanged || upgradeChampionShard(shards, blueEssence) { championInfo[it.storeItemId]?.roles?.contains(ChampionRole.MARKSMAN) == true &&
-                    championInfo[it.storeItemId]?.ownershipStatus == ChampionOwnershipStatus.NOT_OWNED }
+                { upgradeChampionShard(shards, blueEssence) { championInfo[it.storeItemId]?.roles?.contains(ChampionRole.MARKSMAN) == true &&
+                    championInfo[it.storeItemId]?.ownershipStatus == ChampionOwnershipStatus.NOT_OWNED } },
 
-            if (blueEssence.count > 7000) {
-                anyChanged = anyChanged || upgradeChampionShard(shards, blueEssence) { championInfo[it.storeItemId]?.roles?.contains(ChampionRole.ASSASSIN) == true &&
-                        championInfo[it.storeItemId]?.ownershipStatus == ChampionOwnershipStatus.NOT_OWNED }
-            }
+                if (blueEssence.count > 7000) {
+                    {
+                        upgradeChampionShard(shards, blueEssence) { championInfo[it.storeItemId]?.roles?.contains(ChampionRole.ASSASSIN) == true &&
+                            championInfo[it.storeItemId]?.ownershipStatus == ChampionOwnershipStatus.NOT_OWNED }
+                    }
+                } else { { false } },
 
-            if (blueEssence.count > 12000) {
-                anyChanged = anyChanged || upgradeChampionShard(shards, blueEssence) { championInfo[it.storeItemId]?.roles?.contains(ChampionRole.FIGHTER) == true &&
-                        championInfo[it.storeItemId]?.ownershipStatus == ChampionOwnershipStatus.NOT_OWNED }
-            }
+                if (blueEssence.count > 12000) {
+                    {
+                        upgradeChampionShard(shards, blueEssence) { championInfo[it.storeItemId]?.roles?.contains(ChampionRole.FIGHTER) == true &&
+                            championInfo[it.storeItemId]?.ownershipStatus == ChampionOwnershipStatus.NOT_OWNED }
+                    }
+                } else { { false } },
+            ))
         }
 
-        if (anyChanged) {
+        if (functions.firstOrNull { it.invoke() } != null) {
             runLootCleanup()
         }
     }
