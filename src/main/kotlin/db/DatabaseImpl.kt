@@ -107,7 +107,8 @@ object DatabaseImpl {
     fun getChallengeComplete(challengeType: ChallengeMappingEnum, championIdIn: Int): Boolean {
         val s = transaction {
             val result = ChallengeMappingTable.select {
-                ChallengeMappingTable.championId eq championIdIn and (ChallengeMappingTable.summonerUniqueId eq LeagueConnection.summonerInfo.uniqueId)
+                ChallengeMappingTable.championId eq championIdIn and (ChallengeMappingTable.summonerUniqueId eq LeagueConnection.summonerInfo.uniqueId and
+                        (ChallengeMappingTable.name eq challengeType.name))
             }.firstOrNull()
 
             if (result == null) {

@@ -19,7 +19,7 @@ data class ChampionInfo(val id: Int = -1, val name: String = "None", val ownersh
     val challengesMapping by lazy {
         val ignoreSet = setOf(ChallengeMappingEnum.NONE)
 
-        ChallengeMappingEnum.values().filter { ignoreSet.contains(it) }
+        ChallengeMappingEnum.values().filter { !ignoreSet.contains(it) }
             .associateWith { DatabaseImpl.getChallengeComplete(it, id) }
     }
 
