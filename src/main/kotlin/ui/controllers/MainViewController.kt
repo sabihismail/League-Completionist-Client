@@ -1,5 +1,6 @@
 package ui.controllers
 
+import db.DatabaseImpl
 import generated.LolGameflowGameflowPhase
 import javafx.collections.FXCollections
 import league.LeagueConnection
@@ -225,11 +226,23 @@ open class MainViewController : Controller() {
                         .thenByDescending { it.second.percentage }
                 )
 
+            if (upgradedMission("Perfectionist")) {
+                DatabaseImpl.setChallengeComplete(ChallengeMappingEnum.S_PLUS_DIFFERENT_CHAMPIONS, leagueConnection.currentChampion?.id ?: -1, true)
+            }
+
+            if (upgradedMission("All Random All Champions")) {
+                DatabaseImpl.setChallengeComplete(ChallengeMappingEnum.S_MINUS_DIFFERENT_CHAMPIONS_ARAM, leagueConnection.currentChampion?.id ?: -1, true)
+            }
+
             Pair(upgraded, progressed)
         } ui {
             challengesUpdatedView.challengesUpgradedProperty.set(FXCollections.observableList(it.first))
             challengesUpdatedView.challengesProgressedProperty.set(FXCollections.observableList(it.second))
         }
+    }
+
+    private fun upgradedMission(name: String): Boolean {
+        return leagueConnection.challengesUpdatedInfo.any { it.first.name == name }
     }
 
     companion object {

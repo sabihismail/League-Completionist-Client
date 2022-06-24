@@ -17,12 +17,10 @@ data class ChampionInfo(val id: Int = -1, val name: String = "None", val ownersh
     }
 
     val challengesMapping by lazy {
-        mapOf(
-            ChallengeMappingEnum.WIN_SUMMONERS_RIFT to DatabaseImpl.getChallengeComplete(ChallengeMappingEnum.WIN_SUMMONERS_RIFT, id),
-            ChallengeMappingEnum.WIN_BOTS_GAME to DatabaseImpl.getChallengeComplete(ChallengeMappingEnum.WIN_BOTS_GAME, id),
-            ChallengeMappingEnum.WIN_NO_DEATHS_SUMMONERS_RIFT to DatabaseImpl.getChallengeComplete(ChallengeMappingEnum.WIN_NO_DEATHS_SUMMONERS_RIFT, id),
-            ChallengeMappingEnum.PENTA_IN_SUMMONERS_RIFT to DatabaseImpl.getChallengeComplete(ChallengeMappingEnum.PENTA_IN_SUMMONERS_RIFT, id)
-        )
+        val ignoreSet = setOf(ChallengeMappingEnum.NONE)
+
+        ChallengeMappingEnum.values().filter { ignoreSet.contains(it) }
+            .associateWith { DatabaseImpl.getChallengeComplete(it, id) }
     }
 
     val differentChallenges by lazy {

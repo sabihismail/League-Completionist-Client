@@ -38,6 +38,7 @@ class LeagueConnection {
     var challengeInfo = mapOf<ChallengeCategory, MutableList<ChallengeInfo>>()
     var challengesUpdatedInfo = mutableListOf<Pair<ChallengeInfo, ChallengeInfo>>()
     var challengeInfoSummary = ChallengeSummary()
+    var currentChampion = championSelectInfo.teamChampions.firstOrNull { it?.isSummonerSelectedChamp == true }
 
     private var clientApiListener: ClientConnectionListener? = null
 
@@ -334,7 +335,7 @@ class LeagueConnection {
 
         val ignoredIds = listOf("CURRENCY_champion", "CHEST_champion_mastery", "MATERIAL_key_fragment", "CURRENCY_champion", "CURRENCY_RP")
         val ignoredCategories = listOf("SKIN", "WARDSKIN")
-        val singleLoot = loot.filter { ignoredIds.all { id -> it.lootId != id } }
+        @Suppress("UNUSED_VARIABLE") val singleLoot = loot.filter { ignoredIds.all { id -> it.lootId != id } }
             .filter { ignoredCategories.all { id -> it.displayCategories != id } }
             .filter { !it.localizedName.contains(" Token") }
             .filter { it.type != "CHAMPION_RENTAL" }
