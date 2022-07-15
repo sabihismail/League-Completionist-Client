@@ -228,7 +228,10 @@ class LeagueConnection {
         val response = postRequest.responseObject
 
         return if (postRequest.isOk && (response.added.isNotEmpty() || response.removed.isNotEmpty() || response.removed.isNotEmpty())) {
-            Logging.log("Crafted '${recipe.recipeName}' ($path) with params [${lootIds.joinToString(", ")}]", LogType.INFO)
+            var localizedName = LeagueCommunityDragonApi.getLootEntity("loot_name_" + recipe.recipeName.lowercase().replace("_open", "")) ?: ""
+            localizedName = if (localizedName.isEmpty()) " (${recipe.description})" else " ($localizedName)"
+
+            Logging.log("Crafted '${recipe.recipeName}$localizedName' ($path) with params [${lootIds.joinToString(", ")}]", LogType.INFO)
             true
         } else {
             Logging.log("Failed Craft", LogType.INFO)
@@ -349,6 +352,7 @@ class LeagueConnection {
             { disenchantByText(loot, "Little Legends") },
             { disenchantByText(loot, "Mystery Emote") },
         )
+
         if (isMain) {
             functions.addAll(mutableListOf(
                 { upgradeMasteryTokens(loot) },
@@ -368,6 +372,9 @@ class LeagueConnection {
                 { disenchantTokenItem(loot, "Tokens expire", "Random Champion Shard") },
                 { disenchantByText(loot, "Random Champion Shard") },
                 { disenchantTokenItem(loot, "Rare crafting essence", "Random Skin Shard") },
+
+                { craftLoot(shards, "CHAMPION_RENTAL_disenchant") { it.count == 3 &&
+                        setOf(ChampionOwnershipStatus.BOX_NOT_ATTAINED, ChampionOwnershipStatus.BOX_ATTAINED).contains(championInfo[it.storeItemId]?.ownershipStatus) } },
 
                 { upgradeChampionShard(shards, blueEssence) { championInfo[it.storeItemId]?.roles?.contains(ChampionRole.MARKSMAN) == true &&
                     championInfo[it.storeItemId]?.ownershipStatus == ChampionOwnershipStatus.NOT_OWNED } },

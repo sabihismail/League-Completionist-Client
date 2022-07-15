@@ -56,7 +56,7 @@ object CacheUtil {
                     val num = AtomicInteger(0)
                     elements.parallelStream()
                         .forEach {
-                            LeagueCommunityDragonApi.getImagePath(CacheType.CHALLENGE, it.first.toString().lowercase(), it.second)
+                            LeagueCommunityDragonApi.getImagePath(CacheType.CHALLENGE, it.first.toString().lowercase(), it.second.name.lowercase())
 
                             val n = num.incrementAndGet()
                             Logging.log("Loaded Challenge Cache Image: ${n + 1}/${elements.size}", LogType.INFO, carriageReturn = (n + 1) / elements.size)
