@@ -51,8 +51,17 @@ application {
 }
 
 tasks {
-    build {
-        dependsOn(shadowJar)
+    shadowJar {
+        doLast {
+            val file = File("config.json")
+            val json = groovy.json.JsonSlurper().parseText(file.readText()) as Map<*, *>
+            val exportDirectory = json.getOrDefault("exportDirectory", System.getProperty("user.home")) as String
+
+            copy {
+                from("build/libs/LoL-Mastery-Box-Client-1.0.0-all.jar")
+                into(exportDirectory)
+            }
+        }
     }
 }
 
