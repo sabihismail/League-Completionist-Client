@@ -233,14 +233,13 @@ class LeagueConnection {
                 println("RE")
             }
 
-            var localizedName = listOf(
+            val localizedName = listOf(
                 LeagueCommunityDragonApi.getLootEntity("loot_name_" + recipe.recipeName.lowercase().replace("_open", "")),
                 recipe.description,
 
             ).firstOrNull { !it.isNullOrEmpty() } ?: ""
-            localizedName = if (localizedName.isEmpty()) "" else " ($localizedName)"
 
-            Logging.log("Crafted '${recipe.recipeName}$localizedName' ($path) with params [${lootIds.joinToString(", ")}]", LogType.INFO)
+            Logging.log("Crafted '$localizedName (${recipe.recipeName})' ($path) with params [${lootIds.joinToString(", ")}]", LogType.INFO)
             true
         } else {
             Logging.log("Failed Craft", LogType.INFO)
@@ -250,6 +249,7 @@ class LeagueConnection {
 
     private fun disenchantTokenItem(loot: Array<LolLootPlayerLoot>, primaryElement: String, element: String): Boolean {
         val tokens = loot.firstOrNull { it.localizedRecipeSubtitle.contains(primaryElement) } ?: return false
+
         val recipes = getRecipes(tokens.lootId)
 
         val recipe = recipes.first { it.description.contains(element) }
@@ -382,7 +382,7 @@ class LeagueConnection {
                 { disenchantByText(loot, "Champion Capsule") },
                 { disenchantTokenItem(loot, "Tokens expire", "Random Champion Shard") },
                 { disenchantByText(loot, "Random Champion Shard") },
-                { disenchantTokenItem(loot, "Rare crafting essence", "Random Skin Shard") },
+                { disenchantTokenItem(loot, "Unlock new and classic content exclusively for Mythic Essence", "150 Blue Essence") },
 
                 { craftLoot(shards, "CHAMPION_RENTAL_disenchant") { it.count == 3 &&
                         setOf(ChampionOwnershipStatus.BOX_NOT_ATTAINED, ChampionOwnershipStatus.BOX_ATTAINED).contains(championInfo[it.storeItemId]?.ownershipStatus) } },
