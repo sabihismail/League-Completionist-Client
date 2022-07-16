@@ -30,9 +30,7 @@ object LeagueApi {
     fun updateMatchHistory() {
         runBlocking {
             mutex.withLock {
-                val settings = Settings.get()
-
-                DataCall.setCredentials(APICredentials(settings.riotApiKey, "", "", "", ""))
+                DataCall.setCredentials(APICredentials(Settings.INSTANCE.riotApiKey, "", "", "", ""))
                 DataCall.setCacheProvider(FileSystemCacheProvider(CacheUtil.getPath(CacheType.API)))
 
                 val lastEndDate = DatabaseImpl.getValue(GenericKeyValueKey.CHALLENGES_MATCH_HISTORY_END_DATE)

@@ -19,6 +19,7 @@ import tornadofx.*
 import util.LogType
 import util.Logging
 import util.ProcessExecutor
+import util.Settings
 import util.constants.GenericConstants.GSON
 import java.io.*
 import java.net.ConnectException
@@ -31,7 +32,7 @@ class LeagueConnection {
 
     var gameMode = GameMode.NONE
     var role = Role.ANY
-    val isSmurf get() = summonerInfo.uniqueId == 2549404233031175L
+    val isSmurf get() = summonerInfo.uniqueId == Settings.INSTANCE.smurfId
 
     var championSelectInfo = ChampionSelectInfo()
     var championInfo = mapOf<Int, ChampionInfo>()
@@ -44,7 +45,7 @@ class LeagueConnection {
 
     private var clientState = LolGameflowGameflowPhase.NONE
     private var gameId = -1L
-    private val isMain get() = summonerInfo.uniqueId == 192669723L
+    private val isMain get() = summonerInfo.uniqueId == Settings.INSTANCE.mainId
 
     private var masteryChestInfo = MasteryChestInfo()
     private var eternalsValidQueues = setOf<Int>()
@@ -228,8 +229,16 @@ class LeagueConnection {
         val response = postRequest.responseObject
 
         return if (postRequest.isOk && (response.added.isNotEmpty() || response.removed.isNotEmpty() || response.removed.isNotEmpty())) {
-            var localizedName = LeagueCommunityDragonApi.getLootEntity("loot_name_" + recipe.recipeName.lowercase().replace("_open", "")) ?: ""
-            localizedName = if (localizedName.isEmpty()) " (${recipe.description})" else " ($localizedName)"
+            if (recipe.recipeName == "CHAMPION_RENTAL_disenchant") {
+                println("RE")
+            }
+
+            var localizedName = listOf(
+                LeagueCommunityDragonApi.getLootEntity("loot_name_" + recipe.recipeName.lowercase().replace("_open", "")),
+                recipe.description,
+
+            ).firstOrNull { !it.isNullOrEmpty() } ?: ""
+            localizedName = if (localizedName.isEmpty()) "" else " ($localizedName)"
 
             Logging.log("Crafted '${recipe.recipeName}$localizedName' ($path) with params [${lootIds.joinToString(", ")}]", LogType.INFO)
             true

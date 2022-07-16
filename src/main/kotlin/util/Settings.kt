@@ -13,9 +13,11 @@ import kotlin.system.exitProcess
 
 class Settings {
     var riotApiKey = ""
+    var mainId = 0L
+    var smurfId = 0L
 
     companion object {
-        fun get(): Settings {
+        val INSTANCE: Settings by lazy {
             val configFile = Paths.get("config.json")
 
             if (!configFile.exists()) {
@@ -39,7 +41,7 @@ class Settings {
                 }
             }
 
-            return data
+            data
         }
 
         private fun invalidConfigurationData() {
