@@ -317,12 +317,14 @@ class LeagueConnection {
             val upgradeRecipe = recipes.first { recipe -> recipe.recipeName.contains("upgrade") }
 
             val cost = upgradeRecipe.slots.first { slot -> slot.lootIds.contains(blueEssence.lootId) }.quantity
-            if (blueEssence.count < cost) return@map false
+            if (blueEssence.count > cost) {
+                craftLoot(upgradeRecipe)
+                blueEssence.count -= cost
+                return@map true
+            }
 
-            craftLoot(upgradeRecipe)
-            blueEssence.count -= cost
-            return@map true
-        }.any()
+            false
+        }.any { it }
     }
 
     private fun upgradeMasteryTokens(loot: Array<LolLootPlayerLoot>): Boolean {
@@ -385,26 +387,11 @@ class LeagueConnection {
                 { craftLoot(shards, "CHAMPION_RENTAL_disenchant") { it.count == 3 &&
                         setOf(ChampionOwnershipStatus.BOX_NOT_ATTAINED, ChampionOwnershipStatus.BOX_ATTAINED).contains(championInfo[it.storeItemId]?.ownershipStatus) } },
 
-                { upgradeChampionShard(shards, blueEssence) { championInfo[it.storeItemId]?.roles?.contains(ChampionRole.MARKSMAN) == true &&
-                    championInfo[it.storeItemId]?.ownershipStatus == ChampionOwnershipStatus.NOT_OWNED } },
-
-                if (blueEssence.count > 7000) {
-                    {
-                        upgradeChampionShard(shards, blueEssence) { championInfo[it.storeItemId]?.roles?.contains(ChampionRole.ASSASSIN) == true &&
-                            championInfo[it.storeItemId]?.ownershipStatus == ChampionOwnershipStatus.NOT_OWNED }
-                    }
-                } else { { false } },
-
-                if (blueEssence.count > 12000) {
-                    {
-                        upgradeChampionShard(shards, blueEssence) { championInfo[it.storeItemId]?.roles?.contains(ChampionRole.FIGHTER) == true &&
-                            championInfo[it.storeItemId]?.ownershipStatus == ChampionOwnershipStatus.NOT_OWNED }
-                    }
-                } else { { false } },
+                { upgradeChampionShard(shards, blueEssence) { championInfo[it.storeItemId]?.ownershipStatus == ChampionOwnershipStatus.NOT_OWNED } },
             ))
         }
 
-        if (functions.firstOrNull { it.invoke() } != null) {
+        if (functions.any { it.invoke() }) {
             runLootCleanup()
         }
     }
