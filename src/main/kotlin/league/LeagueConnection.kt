@@ -229,18 +229,13 @@ class LeagueConnection {
         val response = postRequest.responseObject
 
         return if (postRequest.isOk && (response.added.isNotEmpty() || response.removed.isNotEmpty() || response.removed.isNotEmpty())) {
-            if (recipe.recipeName == "CHAMPION_RENTAL_disenchant") {
-                println("RE")
-            }
-
             val localizedName = listOf(
-                LeagueCommunityDragonApi.getLootEntity("loot_name_" + recipe.recipeName.lowercase().replace("_open", "")),
-                recipe.description,
-                championInfo.getOrDefault((recipe.slots.flatMap { it.lootIds }.firstOrNull() ?: "").split('_').last().toInt(), ChampionInfo()).name
-                    .replace("None", ""),
-            ).firstOrNull { !it.isNullOrEmpty() } ?: ""
+                { LeagueCommunityDragonApi.getLootEntity("loot_name_" + recipe.recipeName.lowercase().replace("_open", "")) },
+                { recipe.description },
+                { championInfo[recipe.slots.flatMap { it.lootIds }.first().split('_').last().toInt()]?.name },
+            ).firstOrNull { !it().isNullOrEmpty() } ?: { "" }
 
-            Logging.log("Crafted '$localizedName (${recipe.recipeName})' ($path) with params [${lootIds.joinToString(", ")}]", LogType.INFO)
+            Logging.log("Crafted '${localizedName()} (${recipe.recipeName})' ($path) with params [${lootIds.joinToString(", ")}]", LogType.INFO)
             true
         } else {
             Logging.log("Failed Craft", LogType.INFO)
@@ -345,7 +340,7 @@ class LeagueConnection {
             .any()
     }
 
-    private fun upgradeEternals(loot: Array<LolLootPlayerLoot>): Boolean {
+    private fun upgradeOrDisenchantEternals(loot: Array<LolLootPlayerLoot>): Boolean {
         return loot.filter { it.type == "STATSTONE_SHARD" }.map {
             val recipes = getRecipes(it.lootId)
 
@@ -380,7 +375,7 @@ class LeagueConnection {
             { craftLoot(loot, "MATERIAL_key_fragment", 3) },
             { disenchantByText(loot, "Little Legends") },
             { disenchantByText(loot, "Mystery Emote") },
-            { upgradeEternals(loot) }
+            { upgradeOrDisenchantEternals(loot) }
         )
 
         if (isMain) {
