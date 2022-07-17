@@ -3,6 +3,7 @@ package ui.views
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleListProperty
 import javafx.beans.property.SimpleObjectProperty
+import javafx.beans.property.SimpleStringProperty
 import javafx.collections.FXCollections
 import javafx.geometry.Pos
 import league.models.ChampionInfo
@@ -21,19 +22,19 @@ class NormalGridView: View() {
     private val allChampions = SimpleListProperty<ChampionInfo>()
     private val championListProperty = SimpleListProperty<ChampionInfo>()
     private val eternalsOnlyProperty = SimpleBooleanProperty(false)
+    private val championSearchProperty = SimpleStringProperty("")
 
     fun setChampions(lst: List<ChampionInfo>) {
         allChampions.value = FXCollections.observableList(lst)
 
-        handleEternalsOnlyProperty(eternalsOnlyProperty.value)
+        setActiveChampions()
     }
 
-    private fun handleEternalsOnlyProperty(value: Boolean) {
-        if (value) {
-            championListProperty.value = FXCollections.observableList(allChampions.value.filter { championInfo -> championInfo.eternal != null })
-        } else {
-            championListProperty.value = FXCollections.observableList(allChampions.value.toList())
-        }
+    private fun setActiveChampions() {
+        championListProperty.value = FXCollections.observableList(
+            allChampions.value.filter { !eternalsOnlyProperty.value || it.eternal != null }
+                .filter { it.nameLower.contains(championSearchProperty.value.lowercase()) }
+        )
     }
 
     override val root = borderpane {
@@ -63,6 +64,15 @@ class NormalGridView: View() {
                     find<ChampionFragment>(mapOf(ChampionFragment::champion to it)).root
                 }
             }
+
+            textfield(championSearchProperty) {
+                paddingRight = 16
+                paddingBottom = 4
+
+                textProperty().addListener { _, _, _ ->
+                    setActiveChampions()
+                }
+            }
         }
 
         bottom = borderpane {
@@ -90,7 +100,7 @@ class NormalGridView: View() {
                     }
 
                     checkbox("Eternals Only", eternalsOnlyProperty).apply {
-                        eternalsOnlyProperty.onChange { handleEternalsOnlyProperty(it) }
+                        eternalsOnlyProperty.onChange { setActiveChampions() }
                     }
                 }
             }

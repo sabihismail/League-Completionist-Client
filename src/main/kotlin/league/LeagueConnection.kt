@@ -236,7 +236,8 @@ class LeagueConnection {
             val localizedName = listOf(
                 LeagueCommunityDragonApi.getLootEntity("loot_name_" + recipe.recipeName.lowercase().replace("_open", "")),
                 recipe.description,
-
+                championInfo.getOrDefault((recipe.slots.flatMap { it.lootIds }.firstOrNull() ?: "").split('_').last().toInt(), ChampionInfo()).name
+                    .replace("None", ""),
             ).firstOrNull { !it.isNullOrEmpty() } ?: ""
 
             Logging.log("Crafted '$localizedName (${recipe.recipeName})' ($path) with params [${lootIds.joinToString(", ")}]", LogType.INFO)
@@ -312,7 +313,9 @@ class LeagueConnection {
     }
 
     private fun upgradeChampionShard(loot: List<LolLootPlayerLoot>, blueEssence: LolLootPlayerLoot, filter: (LolLootPlayerLoot) -> Boolean): Boolean {
-        return loot.filter { filter(it) }.map {
+        /*return loot.sortedWith(
+            compareBy { it. }
+        )*/ return loot.filter { filter(it) }.map {
             val recipes = getRecipes(it.lootId)
             val upgradeRecipe = recipes.first { recipe -> recipe.recipeName.contains("upgrade") }
 
@@ -342,6 +345,21 @@ class LeagueConnection {
             .any()
     }
 
+    private fun upgradeEternals(loot: Array<LolLootPlayerLoot>): Boolean {
+        return loot.filter { it.type == "STATSTONE_SHARD" }.map {
+            val recipes = getRecipes(it.lootId)
+
+            val recipe = if (championInfo.values.first { championInfo -> championInfo.name == it.localizedName.split(' ').first() }.eternal == null) {
+                recipes.first { recipe -> recipe.recipeName.lowercase().contains("upgrade") }
+            } else {
+                recipes.first { recipe -> recipe.recipeName.lowercase().contains("disenchant") }
+            }
+
+            craftLoot(recipe)
+            true
+        }.any { it }
+    }
+
     @Suppress("KotlinConstantConditions")
     fun runLootCleanup() {
         val loot = clientApi!!.executeGet("/lol-loot/v1/player-loot", Array<LolLootPlayerLoot>::class.java).responseObject ?: return
@@ -362,6 +380,7 @@ class LeagueConnection {
             { craftLoot(loot, "MATERIAL_key_fragment", 3) },
             { disenchantByText(loot, "Little Legends") },
             { disenchantByText(loot, "Mystery Emote") },
+            { upgradeEternals(loot) }
         )
 
         if (isMain) {
