@@ -134,7 +134,7 @@ class ChallengesView : View("LoL Challenges") {
         return "Top " + "%.2f".format(percentage) + "% World"
     }
 
-    private fun getChallengeString(level: ChallengeLevel, key: String, current: Long, s: String = " - "): String {
+    private fun getChallengeString(level: ChallengeLevel, key: String, current: Long, s: String = " - ", includeTotal: Boolean = false): String {
         val maxPoints = LeagueCommunityDragonApi.getChallenge(key, ChallengeLevel.values()[level.ordinal + 1])
         val minPoints = LeagueCommunityDragonApi.getChallenge(key, ChallengeLevel.values()[level.ordinal])
 
@@ -143,7 +143,7 @@ class ChallengesView : View("LoL Challenges") {
 
         val currentPercentage = "%.2f".format(currentPoints.toDouble().div(maxPointsCurrentLevel) * 100) + "%"
 
-        return "$level$s$currentPercentage ($currentPoints/$maxPointsCurrentLevel)"
+        return "$level$s$currentPercentage ($currentPoints/$maxPointsCurrentLevel)" + (if (includeTotal) " ($minPoints/$maxPoints)" else "")
     }
 
     override val root = vbox {
@@ -155,7 +155,7 @@ class ChallengesView : View("LoL Challenges") {
             spacing = 0.0
 
             label(challengesSummaryProperty.select {
-                getChallengeString(it.overallChallengeLevel!!, TOTAL_CHALLENGE_POINTS_KEY, it.totalChallengeScore!!).toProperty()
+                getChallengeString(it.overallChallengeLevel!!, TOTAL_CHALLENGE_POINTS_KEY, it.totalChallengeScore!!, includeTotal = true).toProperty()
             }) {
                 textFill = Color.WHITE
                 font = Font.font(Font.getDefault().family, FontWeight.BOLD, HEADER_FONT_SIZE + 2.0)

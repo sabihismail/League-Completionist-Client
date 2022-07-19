@@ -315,6 +315,9 @@ class LeagueConnection {
             val upgradeRecipe = recipes.first { recipe -> recipe.recipeName.contains("upgrade") }
 
             val cost = upgradeRecipe.slots.first { slot -> slot.lootIds.contains(blueEssence.lootId) }.quantity
+            if (cost > 4000) return@map false
+
+            // Return if the shard is the new champ (not worth the price)
             if (blueEssence.count > cost) {
                 craftLoot(upgradeRecipe)
                 blueEssence.count -= cost
