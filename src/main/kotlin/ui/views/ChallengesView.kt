@@ -143,7 +143,7 @@ class ChallengesView : View("LoL Challenges") {
 
         val currentPercentage = "%.2f".format(currentPoints.toDouble().div(maxPointsCurrentLevel) * 100) + "%"
 
-        return "$level$s$currentPercentage ($currentPoints/$maxPointsCurrentLevel)" + (if (includeTotal) " ($minPoints/$maxPoints)" else "")
+        return "$level$s$currentPercentage ($currentPoints/$maxPointsCurrentLevel)" + (if (includeTotal) " (${minPoints + currentPoints}/$maxPoints)" else "")
     }
 
     override val root = vbox {
