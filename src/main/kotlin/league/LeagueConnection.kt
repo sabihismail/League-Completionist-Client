@@ -14,6 +14,7 @@ import league.models.enums.*
 import league.models.enums.Role
 import league.models.json.ChallengeInfo
 import league.models.json.ChallengeSummary
+import league.models.league.LolChampionsCollectionsChampionImpl
 import league.util.LeagueConnectionUtil
 import tornadofx.*
 import util.LogType
@@ -232,7 +233,7 @@ class LeagueConnection {
             val localizedName = listOf(
                 { LeagueCommunityDragonApi.getLootEntity("loot_name_" + recipe.recipeName.lowercase().replace("_open", "")) },
                 { recipe.description },
-                { championInfo[recipe.slots.flatMap { it.lootIds }.first().split('_').last().toInt()]?.name },
+                { championInfo[recipe.slots.flatMap { it.lootIds }.first().split('_').last().toIntOrNull() ?: 1]?.name },
             ).firstOrNull { !it().isNullOrEmpty() } ?: { "" }
 
             Logging.log("Crafted '${localizedName()} (${recipe.recipeName})' ($path) with params [${lootIds.joinToString(", ")}]", LogType.INFO)
@@ -415,7 +416,7 @@ class LeagueConnection {
 
     fun updateChampionMasteryInfo() {
         val champions = clientApi?.executeGet("/lol-champions/v1/inventories/${summonerInfo.summonerId}/champions",
-            Array<LolChampionsCollectionsChampion>::class.java)?.responseObject ?: return
+            Array<LolChampionsCollectionsChampionImpl>::class.java)?.responseObject ?: return
         Logging.log(champions, LogType.VERBOSE)
 
         val championMasteryList = clientApi!!.executeGet("/lol-collections/v1/inventories/${summonerInfo.summonerId}/champion-mastery",
@@ -436,8 +437,8 @@ class LeagueConnection {
                 var tokens = 0
 
                 lateinit var championOwnershipStatus: ChampionOwnershipStatus
-                if (!it.ownership.owned) {
-                    championOwnershipStatus = if (it.ownership.rental.rented) {
+                if (it.ownership?.owned == false) {
+                    championOwnershipStatus = if (it.ownership?.rental?.rented == true) {
                         ChampionOwnershipStatus.RENTAL
                     } else if (it.freeToPlay) {
                         ChampionOwnershipStatus.FREE_TO_PLAY
