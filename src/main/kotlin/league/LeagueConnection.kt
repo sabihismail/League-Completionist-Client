@@ -233,13 +233,13 @@ class LeagueConnection {
             val localizedName = listOf(
                 { LeagueCommunityDragonApi.getLootEntity("loot_name_" + recipe.recipeName.lowercase().replace("_open", "")) },
                 { recipe.description },
-                { championInfo[recipe.slots.flatMap { it.lootIds }.first().split('_').last().toIntOrNull() ?: 1]?.name },
+                { championInfo[lootIds.first { it.contains("CHAMPION_RENTAL") }.split('_').last().toIntOrNull() ?: 1]?.name }
             ).firstOrNull { !it().isNullOrEmpty() } ?: { "" }
 
             Logging.log("Crafted '${localizedName()} (${recipe.recipeName})' ($path) with params [${lootIds.joinToString(", ")}]", LogType.INFO)
             true
         } else {
-            Logging.log("Failed Craft", LogType.INFO)
+            Logging.log("Failed Craft: '${recipe.recipeName}' ($path) with params [${lootIds.joinToString(", ")}]", LogType.INFO)
             false
         }
     }
@@ -329,7 +329,7 @@ class LeagueConnection {
         }.any { it }
     }
 
-    private fun upgradeMasteryTokens(loot: Array<LolLootPlayerLoot>): Boolean {
+    private fun upgradeMasteryTokens(loot: Array<LolLootPlayerLoot>, onlyShard: Boolean = false): Boolean {
         val shards = loot.filter { it.type == "CHAMPION_RENTAL" }
         val tokens = loot.filter { it.type == "CHAMPION_TOKEN" }
 
@@ -337,9 +337,12 @@ class LeagueConnection {
             tokens.filter { it.count == k && championInfo[it.refId.toInt()]?.level == v }
                 .map {
                     val txt = if (shards.any { shard -> shard.storeItemId == it.refId.toInt() && shard.count >= 1 }) "shard" else "essence"
+                    if (txt == "essence" && onlyShard) return@map null
+
                     getRecipes(it.lootId).first { recipe -> recipe.recipeName.contains(txt) }
                 }
             }
+            .filterNotNull()
             .map { craftLoot(it) }
             .any()
     }
@@ -359,7 +362,6 @@ class LeagueConnection {
         }.any { it }
     }
 
-    @Suppress("KotlinConstantConditions")
     fun runLootCleanup() {
         val loot = clientApi!!.executeGet("/lol-loot/v1/player-loot", Array<LolLootPlayerLoot>::class.java).responseObject ?: return
         Logging.log(loot, LogType.VERBOSE)
@@ -397,6 +399,8 @@ class LeagueConnection {
 
         if (isSmurf) {
             functions.addAll(mutableListOf(
+                { upgradeMasteryTokens(loot, onlyShard = true) },
+
                 { disenchantByText(loot, "Champion Capsule") },
                 { disenchantTokenItem(loot, "Tokens expire", "Random Champion Shard") },
                 { disenchantByText(loot, "Random Champion Shard") },
