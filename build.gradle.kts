@@ -12,7 +12,7 @@ tasks.test {
 }
 
 plugins {
-    kotlin("jvm") version "1.7.0"
+    kotlin("jvm") version "1.7.10"
     kotlin("plugin.serialization") version "1.7.0"
     id("com.github.johnrengelman.shadow") version "7.1.2"
     application
@@ -24,19 +24,19 @@ repositories {
 }
 
 dependencies {
-    implementation("com.github.stelar7", "R4J", "2.1.18")
+    implementation("com.github.stelar7", "R4J", "2.1.22")
     implementation("com.github.stirante", "lol-client-java-api", "1.2.5")
     implementation("no.tornado", "tornadofx", "1.7.20")
     implementation("org.apache.commons", "commons-lang3", "3.12.0")
-    implementation("org.junit.jupiter", "junit-jupiter", "5.8.2")
+    implementation("org.junit.jupiter", "junit-jupiter", "5.9.0")
 
-    val exposedVersion = "0.38.2"
+    val exposedVersion = "0.39.2"
     implementation("org.jetbrains.exposed", "exposed-core", exposedVersion)
     implementation("org.jetbrains.exposed", "exposed-dao", exposedVersion)
     implementation("org.jetbrains.exposed", "exposed-jdbc", exposedVersion)
     implementation("org.jetbrains.exposed", "exposed-java-time", exposedVersion)
 
-    implementation("org.xerial", "sqlite-jdbc", "3.36.0.3")
+    implementation("org.xerial", "sqlite-jdbc", "3.39.2.0")
 
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
