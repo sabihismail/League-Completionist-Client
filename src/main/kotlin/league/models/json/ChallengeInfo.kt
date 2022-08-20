@@ -45,11 +45,7 @@ class ChallengeInfo {
     var category: ChallengeCategory? = null
     var currentLevel: ChallengeLevel? = null
 
-    val allThresholds by lazy {
-        thresholds!!.toList().sortedBy { it.first }
-    }
-
-    val thresholdSummaryLst by lazy {
+    private val thresholdSummaryLst by lazy {
         try {
             allThresholds.filter { it.first > nextLevel!! }
         } catch (_: Exception) {
@@ -57,13 +53,13 @@ class ChallengeInfo {
         }
     }
 
-    val thresholdSummaryMap by lazy {
-        thresholdSummaryLst.associateBy { it.first to it.second }
-    }
-
     private val thresholdSummary by lazy {
         thresholdSummaryLst.filter { it.first <= ChallengeLevel.MASTER }
             .joinToString(THRESHOLD_SEPARATOR) { it.second.value!!.toLong().toCommaSeparatedNumber() }
+    }
+
+    val allThresholds by lazy {
+        thresholds!!.toList().sortedBy { it.first }
     }
 
     val thresholdSummaryAnyTier by lazy {
