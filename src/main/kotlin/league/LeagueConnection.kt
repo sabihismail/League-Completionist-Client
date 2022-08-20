@@ -392,7 +392,7 @@ class LeagueConnection {
                 { craftLoot(shards, "CHAMPION_RENTAL_disenchant") { championInfo[it.storeItemId]?.level == 7 } },
                 { craftLoot(shards, "CHAMPION_RENTAL_disenchant") { championInfo[it.storeItemId]?.level == 6 && it.count == 2 } },
                 { craftLoot(shards, "CHAMPION_RENTAL_disenchant") { it.count == 3 } },
-                { upgradeChampionShard(shards, blueEssence) { championInfo[it.storeItemId]?.ownershipStatus == ChampionOwnershipStatus.NOT_OWNED } },
+                { upgradeChampionShard(shards, blueEssence) { ChampionOwnershipStatus.UNOWNED_SET.contains(championInfo[it.storeItemId]?.ownershipStatus) } },
 
                 { disenchantTokenItem(loot, "Tokens expire", "Mystery Emote") }, // Orb
             ))
@@ -410,7 +410,7 @@ class LeagueConnection {
                 { craftLoot(shards, "CHAMPION_RENTAL_disenchant") { it.count == 3 &&
                         setOf(ChampionOwnershipStatus.BOX_NOT_ATTAINED, ChampionOwnershipStatus.BOX_ATTAINED).contains(championInfo[it.storeItemId]?.ownershipStatus) } },
 
-                { upgradeChampionShard(shards, blueEssence) { championInfo[it.storeItemId]?.ownershipStatus == ChampionOwnershipStatus.NOT_OWNED } },
+                { upgradeChampionShard(shards, blueEssence) { ChampionOwnershipStatus.UNOWNED_SET.contains(championInfo[it.storeItemId]?.ownershipStatus) } },
             ))
         }
 
