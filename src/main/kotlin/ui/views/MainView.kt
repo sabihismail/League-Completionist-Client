@@ -6,6 +6,7 @@ import DEBUG_FAKE_UI_DATA_UPDATED_CHALLENGES
 import generated.LolGameflowGameflowPhase
 import javafx.beans.property.SimpleObjectProperty
 import javafx.geometry.Pos
+import javafx.scene.control.TextInputDialog
 import javafx.scene.text.Font
 import league.models.MasteryChestInfo
 import league.models.SummonerInfo
@@ -134,6 +135,17 @@ class MainView: View("LoL Mastery Box Client") {
                         }
                     }
 
+                    button("View Levels").apply {
+                        enableWhen { summonerProperty.select { (it.status == SummonerStatus.LOGGED_IN_AUTHORIZED).toProperty() } }
+                        action {
+                            controller.leagueConnection.updateChallengesInfo()
+                            controller.updatedChallengeLevelsView()
+
+                            val stage = find<ChallengesLevelView>().openWindow(owner = null)
+                            ViewUtil.moveToScreen(stage)
+                        }
+                    }
+
                     button("View Last Game's Challenges").apply {
                         enableWhen { summonerProperty.select { (it.status == SummonerStatus.LOGGED_IN_AUTHORIZED).toProperty() } }
                         action {
@@ -142,6 +154,20 @@ class MainView: View("LoL Mastery Box Client") {
 
                             val stage = find<ChallengesUpdatedView>().openWindow(owner = null)
                             ViewUtil.moveToScreen(stage)
+                        }
+                    }
+
+                    button("Execute Endpoint").apply {
+                        enableWhen { summonerProperty.select { (it.status == SummonerStatus.LOGGED_IN_AUTHORIZED).toProperty() } }
+                        action {
+                            val dialog = TextInputDialog()
+                            dialog.title = "Input Command"
+                            dialog.headerText = "Input Command"
+
+                            val result = dialog.showAndWait()
+                            if (result.isPresent) {
+                                controller.leagueConnection.executeCommand(result.get())
+                            }
                         }
                     }
 

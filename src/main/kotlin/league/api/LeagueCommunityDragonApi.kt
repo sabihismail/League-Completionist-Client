@@ -7,7 +7,10 @@ import league.models.enums.CacheType
 import league.models.enums.ChallengeLevel
 import league.models.enums.ChampionOwnershipStatus
 import league.models.enums.Role
-import league.models.json.*
+import league.models.json.ApiChallengeResponse
+import league.models.json.ApiEternalsResponse
+import league.models.json.ApiQueueInfoResponse
+import league.models.json.RoleMapping
 import util.LogType
 import util.Logging
 import util.StringUtil
@@ -135,8 +138,8 @@ object LeagueCommunityDragonApi {
         return blend
     }
 
-    fun getChallengeImageEffect(challengeInfo: ChallengeInfo): Effect? {
-        if (challengeInfo.currentLevel != ChallengeLevel.NONE) return null
+    fun getChallengeImageEffect(currentLevel: ChallengeLevel?): Effect? {
+        if (currentLevel != ChallengeLevel.NONE) return null
 
         return ColorAdjust(0.0, -1.0, -0.7, -0.1)
     }

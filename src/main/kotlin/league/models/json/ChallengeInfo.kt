@@ -45,15 +45,23 @@ class ChallengeInfo {
     var category: ChallengeCategory? = null
     var currentLevel: ChallengeLevel? = null
 
-    private val thresholdSummaryLst by lazy {
+    val allThresholds by lazy {
+        thresholds!!.toList().sortedBy { it.first }
+    }
+
+    val thresholdSummaryLst by lazy {
         try {
-            thresholds!!.toList().sortedBy { it.first }.filter { it.first > nextLevel!! }
+            allThresholds.filter { it.first > nextLevel!! }
         } catch (_: Exception) {
             listOf()
         }
     }
 
-    val thresholdSummary by lazy {
+    val thresholdSummaryMap by lazy {
+        thresholdSummaryLst.associateBy { it.first to it.second }
+    }
+
+    private val thresholdSummary by lazy {
         thresholdSummaryLst.filter { it.first <= ChallengeLevel.MASTER }
             .joinToString(THRESHOLD_SEPARATOR) { it.second.value!!.toLong().toCommaSeparatedNumber() }
     }

@@ -4,6 +4,7 @@ import db.DatabaseImpl
 import generated.LolGameflowGameflowPhase
 import javafx.collections.FXCollections
 import league.LeagueConnection
+import league.models.ChallengeLevelInfo
 import league.models.enums.*
 import league.models.json.ChallengeInfo
 import tornadofx.Controller
@@ -20,6 +21,7 @@ open class MainViewController : Controller() {
     private val aramView: AramGridView by inject()
     private val normalView: NormalGridView by inject()
     private val challengesView: ChallengesView by inject()
+    private val challengesLevelView: ChallengesLevelView by inject()
     private val challengesUpdatedView: ChallengesUpdatedView by inject()
 
     private var activeView = ActiveView.NORMAL
@@ -205,6 +207,22 @@ open class MainViewController : Controller() {
             leagueConnection.challengeInfo.keys.sortedBy { it }
         } ui {
             challengesView.setChallenges(leagueConnection.challengeInfoSummary, leagueConnection.challengeInfo, it)
+        }
+    }
+
+    fun updatedChallengeLevelsView() {
+        runAsync {
+            leagueConnection.challengeInfo.flatMap {
+                it.value.map { x ->
+                    x.init()
+                    val rewardValue = x.allThresholds.associate { y -> y.first to y.second }[x.rewardLevel]?.value ?: 0.0
+
+                    ChallengeLevelInfo(x.id ?: 0L, x.description ?: "", x.rewardLevel, x.rewardTitle, rewardValue,
+                        x.currentLevel ?: ChallengeLevel.NONE, x.currentLevelImage, x.currentValue ?: 0.0)
+                } }
+                .filter { it.rewardLevel != ChallengeLevel.NONE }
+        } ui {
+            challengesLevelView.setChallenges(it)
         }
     }
 

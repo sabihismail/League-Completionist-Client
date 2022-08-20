@@ -22,6 +22,7 @@ import util.Logging
 import util.ProcessExecutor
 import util.Settings
 import util.constants.GenericConstants.GSON
+import util.constants.GenericConstants.GSON_PRETTY
 import java.io.*
 import java.net.ConnectException
 import java.util.*
@@ -526,6 +527,14 @@ class LeagueConnection {
 
         challengeInfo = sections
         challengeInfoSummary = clientApi!!.executeGet("/lol-challenges/v1/summary-player-data/local-player", ChallengeSummary::class.java).responseObject
+    }
+
+    fun executeCommand(path: String) {
+        val obj = clientApi?.executeGet(path, Any::class.java)?.responseObject
+
+        if (obj != null) {
+            Logging.log(GSON_PRETTY.toJson(obj), LogType.INFO)
+        }
     }
 
     fun onSummonerChange(callable: (SummonerInfo) -> Unit) {
