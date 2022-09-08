@@ -10,8 +10,7 @@ enum class ChallengeMappingEnum {
     WIN_BOTS_GAME,
 
     S_PLUS_DIFFERENT_CHAMPIONS,
-    S_MINUS_DIFFERENT_CHAMPIONS_ARAM,
-    ;
+    S_MINUS_DIFFERENT_CHAMPIONS_ARAM;
 
     companion object {
         val mapping = mapOf(
