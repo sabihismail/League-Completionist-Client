@@ -66,37 +66,53 @@ object StringUtil {
         return if (regex.matches(text)) regex.find(text)!!.groups[group]!!.value + " " else default
     }
 
-    fun extractJSON(s: String, trim_until_str: String? = null): String {
+    fun extractJSON(s: String, trimUntilStr: String? = null, elementLocation: Int = 0): String {
         var str = s
+        val finalJsonValues = mutableListOf<String>()
+        var start = 0
+        while (start >= 0) {
+            if (!trimUntilStr.isNullOrBlank()) {
+                val trimIndex = str.indexOf(trimUntilStr)
+                if (trimIndex == -1) break
 
-        if (!trim_until_str.isNullOrBlank()) {
-            str = str.substring(str.indexOf(trim_until_str))
-        }
-
-        var count = 1
-        val start = str.indexOf('{')
-        var i = start + 1
-        while (count > 0) {
-            if (str[i] == '{') {
-                count++
-            } else if (str[i] == '}') {
-                count--
+                str = str.substring(trimIndex)
             }
 
-            i++
+            start = str.indexOf('{')
+            if (start == -1) break
+
+            var count = 1
+            var i = start + 1
+            while (count > 0) {
+                if (str[i] == '{') {
+                    count++
+                } else if (str[i] == '}') {
+                    count--
+                }
+
+                i++
+            }
+
+            val finalStr = str.substring(start, i)
+            if (finalStr != "{}") {
+                finalJsonValues.add(finalStr)
+            }
+
+            str = str.substring(i)
         }
 
-        return str.substring(start, i)
+        val index = if (elementLocation == -1) finalJsonValues.size - 1 else elementLocation
+        return finalJsonValues[index]
     }
 
-    inline fun <reified T> extractJSONFromString(s: String, trimUntilStr: String? = null): T {
-        val jsonStr = extractJSON(s, trimUntilStr)
+    inline fun <reified T> extractJSONFromString(s: String, trimUntilStr: String? = null, elementLocation: Int = 0): T {
+        val jsonStr = extractJSON(s, trimUntilStr=trimUntilStr, elementLocation=elementLocation)
 
         return JSON_FORMAT.decodeFromString(jsonStr)
     }
 
-    inline fun <reified T> extractJSONMapFromString(s: String, trimUntilStr: String? = null): HashMap<String, T> {
-        val jsonStr = extractJSON(s, trimUntilStr)
+    inline fun <reified T> extractJSONMapFromString(s: String, trimUntilStr: String? = null, elementLocation: Int = 0): HashMap<String, T> {
+        val jsonStr = extractJSON(s, trimUntilStr=trimUntilStr, elementLocation=elementLocation)
         val json = JSON_FORMAT.parseToJsonElement(jsonStr)
 
         val hashMap = hashMapOf<String, T>()

@@ -730,7 +730,7 @@ class LeagueConnection {
 
         val selectedChamp = champSelectSession.myTeam.find { it.summonerId == summonerInfo.summonerId }!!
 
-        val benchedChampions = champSelectSession.benchChampionIds.map { championInfo[it]!! }
+        val benchedChampions = champSelectSession.benchChampionIds?.map { championInfo[it]!! }
         val teamChampions = champSelectSession.myTeam.sortedBy { it.cellId }
             .map {
                 if (championInfo.contains(it.championId)) {
@@ -746,7 +746,7 @@ class LeagueConnection {
 
         val assignedRole = Role.fromString(selectedChamp.assignedPosition)
 
-        championSelectInfo = ChampionSelectInfo(teamChampions, benchedChampions, assignedRole)
+        championSelectInfo = ChampionSelectInfo(teamChampions, benchedChampions ?: listOf(), assignedRole)
         championSelectChanged()
     }
 
