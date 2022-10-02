@@ -245,6 +245,7 @@ class LeagueConnection {
         }
     }
 
+    @Suppress("SameParameterValue")
     private fun disenchantTokenItem(loot: Array<LolLootPlayerLoot>, primaryElement: String, element: String): Boolean {
         val tokens = loot.firstOrNull { it.localizedRecipeSubtitle.contains(primaryElement) } ?: return false
 
@@ -405,7 +406,7 @@ class LeagueConnection {
                 { disenchantByText(loot, "Champion Capsule") },
                 { disenchantTokenItem(loot, "Tokens expire", "Random Champion Shard") },
                 { disenchantByText(loot, "Random Champion Shard") },
-                { disenchantTokenItem(loot, "Unlock new and classic content exclusively for Mythic Essence", "150 Blue Essence") },
+                // { disenchantTokenItem(loot, "Unlock new and classic content exclusively for Mythic Essence", "150 Blue Essence") },
 
                 { craftLoot(shards, "CHAMPION_RENTAL_disenchant") { it.count == 3 &&
                         setOf(ChampionOwnershipStatus.BOX_NOT_ATTAINED, ChampionOwnershipStatus.BOX_ATTAINED).contains(championInfo[it.storeItemId]?.ownershipStatus) } },
