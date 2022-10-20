@@ -14,8 +14,10 @@ import league.models.enums.*
 import league.models.enums.Role
 import league.models.json.ChallengeInfo
 import league.models.json.ChallengeSummary
+import league.models.league.LolChampSelectChampSelectSessionImpl
 import league.models.league.LolChampionsCollectionsChampionImpl
 import league.util.LeagueConnectionUtil
+import org.apache.commons.lang3.reflect.FieldUtils
 import tornadofx.*
 import util.LogType
 import util.Logging
@@ -62,23 +64,26 @@ class LeagueConnection {
     private var isConnected = false
 
     private val eventListenerMapping = mapOf(
-        "/lol-champ-select/v1/session.*".toRegex() to { data: Any ->
-            handleChampionSelectChange(data as LolChampSelectChampSelectSession)
+        "/lol-champ-select/v1/session.*".toRegex() to { event: ClientWebSocket.Event ->
+            val dataJson = FieldUtils.readField(event, "dataJson", true) as com.stirante.lolclient.libs.com.google.gson.JsonObject
+            val data = GSON.fromJson(dataJson, LolChampSelectChampSelectSessionImpl::class.java)
+
+            handleChampionSelectChange(data)
         },
-        "/lol-gameflow/v1/gameflow-phase.*".toRegex() to { data ->
-            handleClientStateChange(data as LolGameflowGameflowPhase)
+        "/lol-gameflow/v1/gameflow-phase.*".toRegex() to { event ->
+            handleClientStateChange(event.data as LolGameflowGameflowPhase)
         },
-        "/lol-login/v1/session.*".toRegex() to { data ->
-            handleSignOnStateChange(data as LolLoginLoginSession)
+        "/lol-login/v1/session.*".toRegex() to { event ->
+            handleSignOnStateChange(event.data as LolLoginLoginSession)
         },
-        "/lol-collections/v1/inventories/chest-eligibility.*".toRegex() to { data ->
-            handleMasteryChestChange(data as LolCollectionsCollectionsChestEligibility)
+        "/lol-collections/v1/inventories/chest-eligibility.*".toRegex() to { event ->
+            handleMasteryChestChange(event.data as LolCollectionsCollectionsChestEligibility)
         },
         "/lol-loot/v1/loot-grants.*".toRegex() to {
             runLootCleanup()
         },
-        "/lol-challenges/v1/my-updated-challenges/.*".toRegex() to { data ->
-            handleChallengesChange((data as Array<*>).map {
+        "/lol-challenges/v1/my-updated-challenges/.*".toRegex() to { event ->
+            handleChallengesChange((event.data as Array<*>).map {
                 val obj = GSON.toJson(it)
                 GSON.fromJson(obj, ChallengeInfo::class.java)
             })
@@ -210,7 +215,7 @@ class LeagueConnection {
 
         when (clientState) {
             LolGameflowGameflowPhase.CHAMPSELECT -> {
-                val championSelectSession = clientApi!!.executeGet("/lol-champ-select/v1/session", LolChampSelectChampSelectSession::class.java).responseObject
+                val championSelectSession = clientApi!!.executeGet("/lol-champ-select/v1/session", LolChampSelectChampSelectSessionImpl::class.java).responseObject
                 handleChampionSelectChange(championSelectSession)
             }
             else -> return
@@ -404,7 +409,7 @@ class LeagueConnection {
                 { upgradeMasteryTokens(loot, onlyShard = true) },
 
                 { disenchantByText(loot, "Champion Capsule") },
-                { disenchantTokenItem(loot, "Tokens expire", "Random Champion Shard") },
+                // { disenchantTokenItem(loot, "Tokens expire", "Random Champion Shard") },
                 { disenchantByText(loot, "Random Champion Shard") },
                 // { disenchantTokenItem(loot, "Unlock new and classic content exclusively for Mythic Essence", "150 Blue Essence") },
 
@@ -594,7 +599,7 @@ class LeagueConnection {
                             return
                         }
 
-                        eventListenerMapping[mappedRegex]?.invoke(event.data)
+                        eventListenerMapping[mappedRegex]?.invoke(event)
                     }
 
                     override fun onClose(code: Int, reason: String?) {
@@ -719,7 +724,7 @@ class LeagueConnection {
         clientApi?.executePost("/lol-loot/v1/refresh")?.responseObject
     }
 
-    private fun handleChampionSelectChange(champSelectSession: LolChampSelectChampSelectSession) {
+    private fun handleChampionSelectChange(champSelectSession: LolChampSelectChampSelectSessionImpl) {
         Logging.log(champSelectSession, LogType.DEBUG)
 
         if (gameMode == GameMode.NONE) return
@@ -731,7 +736,7 @@ class LeagueConnection {
 
         val selectedChamp = champSelectSession.myTeam.find { it.summonerId == summonerInfo.summonerId }!!
 
-        val benchedChampions = champSelectSession.benchChampionIds?.map { championInfo[it]!! }
+        val benchedChampions = champSelectSession.benchChampions?.map { championInfo[it.championId]!! }
         val teamChampions = champSelectSession.myTeam.sortedBy { it.cellId }
             .map {
                 if (championInfo.contains(it.championId)) {
