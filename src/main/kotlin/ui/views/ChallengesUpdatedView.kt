@@ -17,6 +17,7 @@ import util.constants.ViewConstants.IMAGE_WIDTH
 class ChallengesUpdatedView : View("LoL Challenges - Updated") {
     val challengesProgressedProperty = SimpleListProperty<Pair<ChallengeInfo, ChallengeInfo>>()
     val challengesUpgradedProperty = SimpleListProperty<Pair<ChallengeInfo, ChallengeInfo>>()
+    val challengesCompletedProperty = SimpleListProperty<Pair<ChallengeInfo, ChallengeInfo>>()
 
     private fun getBracketTest(it: Pair<ChallengeInfo, ChallengeInfo>): String {
         return "${it.second.pointsDifference}) (+${(it.second - it.first)}"
@@ -24,7 +25,12 @@ class ChallengesUpdatedView : View("LoL Challenges - Updated") {
 
     override val root = borderpane {
         prefWidth = WINDOW_WIDTH
-        prefHeight = IMAGE_WIDTH * ROWS + IMAGE_SPACING_WIDTH * (ROWS + 2) + 4.0 + (DEFAULT_SPACING * 4) + (LABEL_HEIGHT * 2)
+        prefHeight = IMAGE_WIDTH * ROWS_COUNT_UPGRADED +
+                IMAGE_SPACING_WIDTH * (ROWS_COUNT_UPGRADED + 2) +
+                IMAGE_WIDTH * ROWS_COUNT_COMPLETED +
+                IMAGE_SPACING_WIDTH * (ROWS_COUNT_COMPLETED + 2) +
+                (DEFAULT_SPACING * 2 * 3) +
+                (LABEL_HEIGHT * 3) + 4.0
 
         center = scrollpane(fitToWidth = true, fitToHeight = true) {
             vbarPolicy = ScrollPane.ScrollBarPolicy.NEVER
@@ -33,9 +39,11 @@ class ChallengesUpdatedView : View("LoL Challenges - Updated") {
                 fitToParentWidth()
 
                 constraintsForRow(0).prefHeight = LABEL_HEIGHT
-                constraintsForRow(1).prefHeight = IMAGE_WIDTH * (ROWS - 1) + IMAGE_SPACING_WIDTH * (ROWS + 2 - 1) + 4.0
+                constraintsForRow(1).prefHeight = IMAGE_WIDTH * (ROWS_COUNT_UPGRADED - 1) + IMAGE_SPACING_WIDTH * (ROWS_COUNT_UPGRADED + 2 - 1) + 4.0
                 constraintsForRow(2).prefHeight = LABEL_HEIGHT
                 constraintsForRow(3).prefHeight = IMAGE_WIDTH * 1 + IMAGE_SPACING_WIDTH * (1 + 2) + 4.0
+                constraintsForRow(4).prefHeight = LABEL_HEIGHT
+                constraintsForRow(5).prefHeight = IMAGE_WIDTH * (ROWS_COUNT_COMPLETED - 1) + IMAGE_SPACING_WIDTH * (ROWS_COUNT_COMPLETED + 2 - 1) + 4.0
 
                 constraintsForColumn(0).prefWidth = WINDOW_WIDTH
 
@@ -59,13 +67,17 @@ class ChallengesUpdatedView : View("LoL Challenges - Updated") {
 
                 row {
                     fitToParentWidth()
-                    blackLabelObs(challengesUpgradedProperty.select { "Upgraded - (+${it.sumOf { fragPair -> 
-                        if (fragPair.first.currentLevel != fragPair.second.currentLevel) {
-                            fragPair.first.pointsDifference
-                        } else {
-                            0
-                        }
-                    }})".toProperty() }, fontSize = 14.0)
+                    blackLabelObs(challengesUpgradedProperty.select {
+                        "Upgraded - (+${
+                            it.sumOf { fragPair ->
+                                if (fragPair.first.currentLevel != fragPair.second.currentLevel) {
+                                    fragPair.first.pointsDifference
+                                } else {
+                                    0
+                                }
+                            }
+                        })".toProperty()
+                    }, fontSize = 14.0)
                 }
                 row {
                     fitToParentWidth()
@@ -81,13 +93,32 @@ class ChallengesUpdatedView : View("LoL Challenges - Updated") {
                         }
                     }
                 }
+
+                row {
+                    fitToParentWidth()
+                    blackLabel("Completed", fontSize = 14.0)
+                }
+                row {
+                    fitToParentWidth()
+                    datagrid(challengesCompletedProperty) {
+                        cellWidth = CHALLENGE_IMAGE_WIDTH
+                        cellHeight = CHALLENGE_IMAGE_WIDTH
+
+                        cellFormat {
+                            graphic = find<ChallengeFragment>(
+                                mapOf(ChallengeFragment::challenge to it.second, ChallengeFragment::bracketText to getBracketTest(it))
+                            ).root
+                        }
+                    }
+                }
             }
         }
     }
 
     companion object {
         private const val ELEMENTS_PER_ROW = 8
-        const val ROWS = 7
+        const val ROWS_COUNT_UPGRADED = 5
+        const val ROWS_COUNT_COMPLETED = 3
         const val WINDOW_WIDTH = IMAGE_WIDTH * ELEMENTS_PER_ROW + IMAGE_SPACING_WIDTH * (ELEMENTS_PER_ROW + 2) + 4.0
 
         const val LABEL_HEIGHT = 30.0

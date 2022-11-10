@@ -11,6 +11,7 @@ import tornadofx.Controller
 import tornadofx.runLater
 import ui.views.*
 import ui.views.ChallengesView.Companion.CRINGE_MISSIONS
+import ui.views.containers.UpgradedChallengesContainer
 import ui.views.fragments.ChampionFragment
 
 
@@ -23,6 +24,7 @@ open class MainViewController : Controller() {
     private val challengesView: ChallengesView by inject()
     private val challengesLevelView: ChallengesLevelView by inject()
     private val challengesUpdatedView: ChallengesUpdatedView by inject()
+    private val debugView: DebugView by inject()
 
     private var activeView = ActiveView.NORMAL
     private var manualRoleSelect = false
@@ -138,6 +140,12 @@ open class MainViewController : Controller() {
                 view.gameModeProperty.set(leagueConnection.gameMode)
             }
         }
+
+        leagueConnection.onLcuEvent { url ->
+            runLater {
+                debugView.endpointListStr.set(debugView.endpointListStr.get() + url + "\n")
+            }
+        }
     }
 
     private fun updateCurrentChampion() {
@@ -228,22 +236,6 @@ open class MainViewController : Controller() {
 
     fun updateChallengesUpdatedView() {
         runAsync {
-            val upgraded = leagueConnection.challengesUpdatedInfo.filter { it.first.currentLevel != it.second.currentLevel }
-                .sortedWith(
-                    compareByDescending<Pair<ChallengeInfo, ChallengeInfo>> { it.second.category != ChallengeCategory.LEGACY }
-                        .thenByDescending { it.second.currentLevel }
-                        .thenByDescending { it.second.percentage }
-                )
-
-            val progressed = leagueConnection.challengesUpdatedInfo.filter { it.first.currentLevel == it.second.currentLevel }
-                .sortedWith(
-                    compareByDescending<Pair<ChallengeInfo, ChallengeInfo>> { !CRINGE_MISSIONS.any { x -> it.second.description!!.contains(x) } }
-                        .thenByDescending { it.second.category != ChallengeCategory.LEGACY }
-                        .thenByDescending { it.first.pointsDifference > 0 }
-                        .thenByDescending { it.second.currentLevel }
-                        .thenByDescending { it.second.percentage }
-                )
-
             if (upgradedMission("Perfectionist")) {
                 DatabaseImpl.setChallengeComplete(ChallengeMappingEnum.S_PLUS_DIFFERENT_CHAMPIONS, leagueConnection.currentChampion?.id ?: -1, true)
             }
@@ -252,10 +244,31 @@ open class MainViewController : Controller() {
                 DatabaseImpl.setChallengeComplete(ChallengeMappingEnum.S_MINUS_DIFFERENT_CHAMPIONS_ARAM, leagueConnection.currentChampion?.id ?: -1, true)
             }
 
-            Pair(upgraded, progressed)
+            val upgraded = leagueConnection.challengesUpdatedInfo.filter { it.first.currentLevel != it.second.currentLevel }
+                .sortedWith(
+                    compareByDescending<Pair<ChallengeInfo, ChallengeInfo>> { it.second.category != ChallengeCategory.LEGACY }
+                        .thenByDescending { it.second.currentLevel }
+                        .thenByDescending { it.second.percentage }
+                )
+
+            val compareBy = compareByDescending<Pair<ChallengeInfo, ChallengeInfo>> { !CRINGE_MISSIONS.any { x -> it.second.description!!.contains(x) } }
+                    .thenByDescending { it.second.category != ChallengeCategory.LEGACY }
+                    .thenByDescending { it.first.pointsDifference > 0 }
+                    .thenByDescending { it.second.currentLevel }
+                    .thenByDescending { it.second.percentage }
+            val progressed = leagueConnection.challengesUpdatedInfo.filter { it.first.currentLevel == it.second.currentLevel }
+                .filter { it.first.currentLevel!! <= ChallengeLevel.DIAMOND }
+                .sortedWith(compareBy)
+
+            val completed = leagueConnection.challengesUpdatedInfo.filter { it.first.currentLevel == it.second.currentLevel }
+                .filter { it.first.currentLevel!! > ChallengeLevel.DIAMOND }
+                .sortedWith(compareBy)
+
+            UpgradedChallengesContainer(upgraded, progressed, completed)
         } ui {
-            challengesUpdatedView.challengesUpgradedProperty.set(FXCollections.observableList(it.first))
-            challengesUpdatedView.challengesProgressedProperty.set(FXCollections.observableList(it.second))
+            challengesUpdatedView.challengesUpgradedProperty.set(FXCollections.observableList(it.upgraded))
+            challengesUpdatedView.challengesProgressedProperty.set(FXCollections.observableList(it.progressed))
+            challengesUpdatedView.challengesCompletedProperty.set(FXCollections.observableList(it.completed))
         }
     }
 

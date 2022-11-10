@@ -60,6 +60,7 @@ class LeagueConnection {
     private val onClientStateChangeList = ArrayList<(LolGameflowGameflowPhase) -> Unit>()
     private val onChallengesChangedList = ArrayList<() -> Unit>()
     private val onLoggedInList = ArrayList<() -> Unit>()
+    private val onLcuEventList = ArrayList<(String) -> Unit>()
 
     private var isConnected = false
 
@@ -250,7 +251,7 @@ class LeagueConnection {
         }
     }
 
-    @Suppress("SameParameterValue")
+    @Suppress("SameParameterValue", "unused")
     private fun disenchantTokenItem(loot: Array<LolLootPlayerLoot>, primaryElement: String, element: String): Boolean {
         val tokens = loot.firstOrNull { it.localizedRecipeSubtitle.contains(primaryElement) } ?: return false
 
@@ -316,16 +317,12 @@ class LeagueConnection {
     }
 
     private fun upgradeChampionShard(loot: List<LolLootPlayerLoot>, blueEssence: LolLootPlayerLoot, filter: (LolLootPlayerLoot) -> Boolean): Boolean {
-        /*return loot.sortedWith(
-            compareBy { it. }
-        )*/ return loot.filter { filter(it) }.map {
+        return loot.filter { filter(it) }.map {
             val recipes = getRecipes(it.lootId)
             val upgradeRecipe = recipes.first { recipe -> recipe.recipeName.contains("upgrade") }
 
             val cost = upgradeRecipe.slots.first { slot -> slot.lootIds.contains(blueEssence.lootId) }.quantity
-            if (cost > 4000) return@map false
 
-            // Return if the shard is the new champ (not worth the price)
             if (blueEssence.count > cost) {
                 craftLoot(upgradeRecipe)
                 blueEssence.count -= cost
@@ -400,23 +397,26 @@ class LeagueConnection {
                 { craftLoot(shards, "CHAMPION_RENTAL_disenchant") { it.count == 3 } },
                 { upgradeChampionShard(shards, blueEssence) { ChampionOwnershipStatus.UNOWNED_SET.contains(championInfo[it.storeItemId]?.ownershipStatus) } },
 
-                { disenchantTokenItem(loot, "Tokens expire", "Mystery Emote") }, // Orb
+                // { disenchantTokenItem(loot, "Tokens expire", "Mystery Emote") }, // Orb
             ))
         }
 
         if (isSmurf) {
             functions.addAll(mutableListOf(
-                { upgradeMasteryTokens(loot, onlyShard = true) },
+                { upgradeMasteryTokens(loot) },
 
-                { disenchantByText(loot, "Champion Capsule") },
-                // { disenchantTokenItem(loot, "Tokens expire", "Random Champion Shard") },
-                { disenchantByText(loot, "Random Champion Shard") },
-                // { disenchantTokenItem(loot, "Unlock new and classic content exclusively for Mythic Essence", "150 Blue Essence") },
+                // { disenchantByText(loot, "Champion Capsule") },
+                // { disenchantByText(loot, "Random Champion Shard") },
 
+                { craftLoot(shards, "CHAMPION_RENTAL_disenchant") { championInfo[it.storeItemId]?.level == 7 } },
+                { craftLoot(shards, "CHAMPION_RENTAL_disenchant") { championInfo[it.storeItemId]?.level == 6 && it.count == 2 } },
                 { craftLoot(shards, "CHAMPION_RENTAL_disenchant") { it.count == 3 &&
-                        setOf(ChampionOwnershipStatus.BOX_NOT_ATTAINED, ChampionOwnershipStatus.BOX_ATTAINED).contains(championInfo[it.storeItemId]?.ownershipStatus) } },
+                        !ChampionOwnershipStatus.UNOWNED_SET.contains(championInfo[it.storeItemId]?.ownershipStatus) } },
 
                 { upgradeChampionShard(shards, blueEssence) { ChampionOwnershipStatus.UNOWNED_SET.contains(championInfo[it.storeItemId]?.ownershipStatus) } },
+
+                // { disenchantTokenItem(loot, "Tokens expire", "Random Champion Shard") },
+                // { disenchantTokenItem(loot, "Unlock new and classic content exclusively for Mythic Essence", "150 Blue Essence") },
             ))
         }
 
@@ -567,6 +567,10 @@ class LeagueConnection {
         onLoggedInList.add(callable)
     }
 
+    fun onLcuEvent(callable: (String) -> Unit) {
+        onLcuEventList.add(callable)
+    }
+
     private fun setupClientAPI() {
         clientApi = ClientApi()
 
@@ -596,6 +600,7 @@ class LeagueConnection {
                             "/patcher/v1/products/league_of_legends")
                         if (mappedRegex == null && !bad.any { event.uri.contains(it) }) {
                             Logging.log("", LogType.VERBOSE, "ClientAPI WebSocket: " + event.uri + " - " + event.eventType)
+                            clientEventChanged(event.uri)
                             return
                         }
 
@@ -838,6 +843,12 @@ class LeagueConnection {
 
     private fun loggedIn() {
         onLoggedInList.forEach { it() }
+    }
+
+    private fun clientEventChanged(url: String?) {
+        if (url.isNullOrEmpty()) return
+
+        onLcuEventList.forEach { it(url) }
     }
 
     companion object {
