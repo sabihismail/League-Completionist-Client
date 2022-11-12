@@ -16,12 +16,16 @@ class DebugView: View() {
 
     override val root = borderpane {
         minHeight = 1000.0
-        minWidth = 900.0
+        minWidth = 1200.0
 
         center = hbox {
             listview(events) {
+                prefWidth = 500.0
+
                 cellFormat {
                     text = it.uri
+
+                    prefWidth = 500.0
                 }
 
                 onUserSelect(1) {
@@ -36,7 +40,9 @@ class DebugView: View() {
                 }
             }
 
-            textarea(currentSelection)
+            textarea(currentSelection) {
+                prefWidth = 700.0
+            }
         }
     }
 }

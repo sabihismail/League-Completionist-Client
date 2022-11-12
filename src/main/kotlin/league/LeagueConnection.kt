@@ -597,7 +597,8 @@ class LeagueConnection {
 
                         val mappedRegex = eventListenerMapping.keys.firstOrNull { event.uri.matches(it) }
                         val bad = listOf("/lol-hovercard", "/lol-chat", "/lol-game-client-chat", "/riot-messaging-service", "/lol-patch/v1/products/league_of_legends",
-                            "/patcher/v1/products/league_of_legends", "/lol-settings", "/data-store", "/lol-premade-voice", "/lol-matchmaking/v1/search")
+                            "/patcher/v1/products/league_of_legends", "/lol-settings", "/data-store", "/lol-premade-voice", "/lol-matchmaking/v1/search",
+                            "/lol-loadouts/v1/loadouts/scope/champion", "/lol-suggested-players/v1/suggested-player")
                         if (mappedRegex == null && !bad.any { event.uri.contains(it) }) {
                             Logging.log("", LogType.VERBOSE, "ClientAPI WebSocket: " + event.uri + " - " + event.eventType)
                             clientEventChanged(event)
