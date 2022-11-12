@@ -14,6 +14,8 @@ import league.models.enums.*
 import league.models.enums.Role
 import league.models.json.ChallengeInfo
 import league.models.json.ChallengeSummary
+import league.models.json.LolEventShopCategoriesOffer
+import league.models.json.LolEventShopInfo
 import league.models.league.LolChampSelectChampSelectSessionImpl
 import league.models.league.LolChampionsCollectionsChampionImpl
 import league.util.LeagueConnectionUtil
@@ -88,6 +90,12 @@ class LeagueConnection {
                 val obj = GSON.toJson(it)
                 GSON.fromJson(obj, ChallengeInfo::class.java)
             })
+        },
+        "/lol-event-shop/v1/info".toRegex() to { event ->
+            val dataJson = FieldUtils.readField(event, "dataJson", true) as com.stirante.lolclient.libs.com.google.gson.JsonObject
+            val data = GSON.fromJson(dataJson, LolEventShopInfo::class.java)
+
+            handleEventShop(data)
         },
     )
 
@@ -593,12 +601,13 @@ class LeagueConnection {
                 socket = clientApi?.openWebSocket()
                 socket?.setSocketListener(object : ClientWebSocket.SocketListener {
                     override fun onEvent(event: ClientWebSocket.Event?) {
-                        if (event == null || event.uri == null || event.data == null) return
+                        if (event == null || event.uri == null) return
 
                         val mappedRegex = eventListenerMapping.keys.firstOrNull { event.uri.matches(it) }
                         val bad = listOf("/lol-hovercard", "/lol-chat", "/lol-game-client-chat", "/riot-messaging-service", "/lol-patch/v1/products/league_of_legends",
                             "/patcher/v1/products/league_of_legends", "/lol-settings", "/data-store", "/lol-premade-voice", "/lol-matchmaking/v1/search",
-                            "/lol-loadouts/v1/loadouts/scope/champion", "/lol-suggested-players/v1/suggested-player")
+                            "/lol-loadouts/v1/loadouts/scope/champion", "/lol-suggested-players/v1/suggested-player", "/lol-matchmaking/v1/ready-check",
+                            "/lol-clash", "/lol-champ-select/v1/sfx-notifications", )
                         if (mappedRegex == null && !bad.any { event.uri.contains(it) }) {
                             Logging.log("", LogType.VERBOSE, "ClientAPI WebSocket: " + event.uri + " - " + event.eventType)
                             clientEventChanged(event)
@@ -629,6 +638,27 @@ class LeagueConnection {
         }
 
         clientApi?.addClientConnectionListener(clientApiListener)
+    }
+
+    private fun getEventShop(): Array<LolEventShopCategoriesOffer> {
+        return clientApi?.executeGet("/lol-event-shop/v1/categories-offers", Array<LolEventShopCategoriesOffer>::class.java)?.responseObject ?: arrayOf()
+    }
+
+    private fun handleEventShop(event: LolEventShopInfo) {
+        val shop = getEventShop()
+
+        if (isSmurf) {
+            val orb = shop.first { it.localizedTitle.lowercase().contains(" orb") }
+
+            if (event.currentTokenBalance > orb.price) {
+                return
+
+                val newEvent = LolEventShopInfo(event.currentTokenBalance - orb.price)
+                handleEventShop(newEvent)
+            }
+        } else if (isMain) {
+            print("Main")
+        }
     }
 
     private fun handleChallengesChange(challengeInfoList: List<ChallengeInfo>) {
