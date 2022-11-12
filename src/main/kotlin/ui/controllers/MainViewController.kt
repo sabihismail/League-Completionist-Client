@@ -141,9 +141,13 @@ open class MainViewController : Controller() {
             }
         }
 
-        leagueConnection.onLcuEvent { url ->
-            runLater {
-                debugView.endpointListStr.set(debugView.endpointListStr.get() + url + "\n")
+        leagueConnection.onLcuEvent { event ->
+            runAsync {
+                val newValue = debugView.events.value ?: return@runAsync listOf(event)
+
+                newValue.toMutableList().apply { add(event) }
+            } ui {
+                debugView.events.set(FXCollections.observableList(it))
             }
         }
     }

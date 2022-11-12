@@ -60,7 +60,7 @@ class LeagueConnection {
     private val onClientStateChangeList = ArrayList<(LolGameflowGameflowPhase) -> Unit>()
     private val onChallengesChangedList = ArrayList<() -> Unit>()
     private val onLoggedInList = ArrayList<() -> Unit>()
-    private val onLcuEventList = ArrayList<(String) -> Unit>()
+    private val onLcuEventList = ArrayList<(ClientWebSocket.Event) -> Unit>()
 
     private var isConnected = false
 
@@ -567,7 +567,7 @@ class LeagueConnection {
         onLoggedInList.add(callable)
     }
 
-    fun onLcuEvent(callable: (String) -> Unit) {
+    fun onLcuEvent(callable: (ClientWebSocket.Event) -> Unit) {
         onLcuEventList.add(callable)
     }
 
@@ -597,10 +597,10 @@ class LeagueConnection {
 
                         val mappedRegex = eventListenerMapping.keys.firstOrNull { event.uri.matches(it) }
                         val bad = listOf("/lol-hovercard", "/lol-chat", "/lol-game-client-chat", "/riot-messaging-service", "/lol-patch/v1/products/league_of_legends",
-                            "/patcher/v1/products/league_of_legends")
+                            "/patcher/v1/products/league_of_legends", "/lol-settings", "/data-store", "/lol-premade-voice", "/lol-matchmaking/v1/search")
                         if (mappedRegex == null && !bad.any { event.uri.contains(it) }) {
                             Logging.log("", LogType.VERBOSE, "ClientAPI WebSocket: " + event.uri + " - " + event.eventType)
-                            clientEventChanged(event.uri)
+                            clientEventChanged(event)
                             return
                         }
 
@@ -845,10 +845,10 @@ class LeagueConnection {
         onLoggedInList.forEach { it() }
     }
 
-    private fun clientEventChanged(url: String?) {
-        if (url.isNullOrEmpty()) return
+    private fun clientEventChanged(event: ClientWebSocket.Event?) {
+        if (event == null || event.uri.isNullOrEmpty()) return
 
-        onLcuEventList.forEach { it(url) }
+        onLcuEventList.forEach { it(event) }
     }
 
     companion object {
