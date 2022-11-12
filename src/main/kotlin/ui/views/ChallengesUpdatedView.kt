@@ -16,8 +16,8 @@ import util.constants.ViewConstants.IMAGE_WIDTH
 
 class ChallengesUpdatedView : View("LoL Challenges - Updated") {
     val challengesProgressedProperty = SimpleListProperty<Pair<ChallengeInfo, ChallengeInfo>>()
-    val challengesUpgradedProperty = SimpleListProperty<Pair<ChallengeInfo, ChallengeInfo>>()
     val challengesCompletedProperty = SimpleListProperty<Pair<ChallengeInfo, ChallengeInfo>>()
+    val challengesUpgradedProperty = SimpleListProperty<Pair<ChallengeInfo, ChallengeInfo>>()
 
     private fun getBracketTest(it: Pair<ChallengeInfo, ChallengeInfo>): String {
         return "${it.second.pointsDifference}) (+${(it.second - it.first)}"
@@ -27,8 +27,8 @@ class ChallengesUpdatedView : View("LoL Challenges - Updated") {
         prefWidth = WINDOW_WIDTH
         prefHeight = IMAGE_WIDTH * ROWS_COUNT_UPGRADED +
                 IMAGE_SPACING_WIDTH * (ROWS_COUNT_UPGRADED + 2) +
-                IMAGE_WIDTH * ROWS_COUNT_COMPLETED +
                 IMAGE_SPACING_WIDTH * (ROWS_COUNT_COMPLETED + 2) +
+                IMAGE_WIDTH * ROWS_COUNT_COMPLETED +
                 (DEFAULT_SPACING * 2 * 3) +
                 (LABEL_HEIGHT * 3) + 4.0
 
@@ -41,9 +41,9 @@ class ChallengesUpdatedView : View("LoL Challenges - Updated") {
                 constraintsForRow(0).prefHeight = LABEL_HEIGHT
                 constraintsForRow(1).prefHeight = IMAGE_WIDTH * (ROWS_COUNT_UPGRADED - 1) + IMAGE_SPACING_WIDTH * (ROWS_COUNT_UPGRADED + 2 - 1) + 4.0
                 constraintsForRow(2).prefHeight = LABEL_HEIGHT
-                constraintsForRow(3).prefHeight = IMAGE_WIDTH * 1 + IMAGE_SPACING_WIDTH * (1 + 2) + 4.0
+                constraintsForRow(3).prefHeight = IMAGE_WIDTH * (ROWS_COUNT_COMPLETED - 1) + IMAGE_SPACING_WIDTH * (ROWS_COUNT_COMPLETED + 2 - 1) + 4.0
                 constraintsForRow(4).prefHeight = LABEL_HEIGHT
-                constraintsForRow(5).prefHeight = IMAGE_WIDTH * (ROWS_COUNT_COMPLETED - 1) + IMAGE_SPACING_WIDTH * (ROWS_COUNT_COMPLETED + 2 - 1) + 4.0
+                constraintsForRow(5).prefHeight = IMAGE_WIDTH * 1 + IMAGE_SPACING_WIDTH * (1 + 2) + 4.0
 
                 constraintsForColumn(0).prefWidth = WINDOW_WIDTH
 
@@ -54,6 +54,24 @@ class ChallengesUpdatedView : View("LoL Challenges - Updated") {
                 row {
                     fitToParentWidth()
                     datagrid(challengesProgressedProperty) {
+                        cellWidth = CHALLENGE_IMAGE_WIDTH
+                        cellHeight = CHALLENGE_IMAGE_WIDTH
+
+                        cellFormat {
+                            graphic = find<ChallengeFragment>(
+                                mapOf(ChallengeFragment::challenge to it.second, ChallengeFragment::bracketText to getBracketTest(it))
+                            ).root
+                        }
+                    }
+                }
+
+                row {
+                    fitToParentWidth()
+                    blackLabel("Completed", fontSize = 14.0)
+                }
+                row {
+                    fitToParentWidth()
+                    datagrid(challengesCompletedProperty) {
                         cellWidth = CHALLENGE_IMAGE_WIDTH
                         cellHeight = CHALLENGE_IMAGE_WIDTH
 
@@ -85,24 +103,6 @@ class ChallengesUpdatedView : View("LoL Challenges - Updated") {
                         cellWidth = CHALLENGE_IMAGE_WIDTH
                         cellHeight = CHALLENGE_IMAGE_WIDTH
                         maxRows = 1
-
-                        cellFormat {
-                            graphic = find<ChallengeFragment>(
-                                mapOf(ChallengeFragment::challenge to it.second, ChallengeFragment::bracketText to getBracketTest(it))
-                            ).root
-                        }
-                    }
-                }
-
-                row {
-                    fitToParentWidth()
-                    blackLabel("Completed", fontSize = 14.0)
-                }
-                row {
-                    fitToParentWidth()
-                    datagrid(challengesCompletedProperty) {
-                        cellWidth = CHALLENGE_IMAGE_WIDTH
-                        cellHeight = CHALLENGE_IMAGE_WIDTH
 
                         cellFormat {
                             graphic = find<ChallengeFragment>(

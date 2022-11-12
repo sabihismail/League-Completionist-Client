@@ -24,24 +24,24 @@ repositories {
 }
 
 dependencies {
-    implementation("com.github.stelar7", "R4J", "2.2.1")
+    implementation("com.github.stelar7", "R4J", "2.2.3")
     implementation("com.github.stirante", "lol-client-java-api", "1.2.5")
     implementation("no.tornado", "tornadofx", "1.7.20")
     implementation("org.apache.commons", "commons-lang3", "3.12.0")
     implementation("org.junit.jupiter", "junit-jupiter", "5.9.1")
 
-    val exposedVersion = "0.39.2"
+    val exposedVersion = "0.40.1"
     implementation("org.jetbrains.exposed", "exposed-core", exposedVersion)
     implementation("org.jetbrains.exposed", "exposed-dao", exposedVersion)
     implementation("org.jetbrains.exposed", "exposed-jdbc", exposedVersion)
     implementation("org.jetbrains.exposed", "exposed-java-time", exposedVersion)
 
-    implementation("org.xerial", "sqlite-jdbc", "3.39.3.0")
+    implementation("org.xerial", "sqlite-jdbc", "3.39.4.0")
 
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
 
-    implementation("org.jetbrains.kotlinx", "kotlinx-serialization-json", "1.3.3")
+    implementation("org.jetbrains.kotlinx", "kotlinx-serialization-json", "1.4.1")
 
     testImplementation(kotlin("test"))
 }
