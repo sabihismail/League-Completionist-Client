@@ -594,6 +594,7 @@ class LeagueConnection {
                 updateChampionMasteryInfo()
                 runLootCleanup()
                 checkTftBattlepassRewardsAvailable()
+                checkEventShopRewardsAvailable()
 
                 socket = clientApi?.openWebSocket()
                 socket?.setSocketListener(object : ClientWebSocket.SocketListener {
@@ -648,7 +649,6 @@ class LeagueConnection {
 
     private fun getEventShop(): Array<LolEventShopCategoriesOffer> {
         return clientApi?.executeGet("/lol-event-shop/v1/categories-offers", Array<LolEventShopCategoriesOffer>::class.java)?.responseObject ?: arrayOf()
-        // /
     }
 
     private fun handleEventShop(event: LolEventShopInfo) {
