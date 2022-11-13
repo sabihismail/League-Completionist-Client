@@ -12,10 +12,7 @@ import league.api.LeagueCommunityDragonApi
 import league.models.*
 import league.models.enums.*
 import league.models.enums.Role
-import league.models.json.ChallengeInfo
-import league.models.json.ChallengeSummary
-import league.models.json.LolEventShopCategoriesOffer
-import league.models.json.LolEventShopInfo
+import league.models.json.*
 import league.models.league.LolChampSelectChampSelectSessionImpl
 import league.models.league.LolChampionsCollectionsChampionImpl
 import league.util.LeagueConnectionUtil
@@ -494,7 +491,7 @@ class LeagueConnection {
         championInfo = masteryPairing.associateBy({ it.id }, { it })
     }
 
-    private fun runTftBattlepassCheck() {
+    private fun checkTftBattlepassRewardsAvailable() {
         val battlepass = clientApi!!.executeGet("/lol-tft/v2/tft/battlepass", LolMissionsTftPaidBattlepass::class.java).responseObject
         val missions = battlepass.milestones.filter { !it.isPaid && it.state == "REWARDABLE" }
         val completedMissions = missions.map {
@@ -596,7 +593,7 @@ class LeagueConnection {
 
                 updateChampionMasteryInfo()
                 runLootCleanup()
-                runTftBattlepassCheck()
+                checkTftBattlepassRewardsAvailable()
 
                 socket = clientApi?.openWebSocket()
                 socket?.setSocketListener(object : ClientWebSocket.SocketListener {
@@ -607,7 +604,7 @@ class LeagueConnection {
                         val bad = listOf("/lol-hovercard", "/lol-chat", "/lol-game-client-chat", "/riot-messaging-service", "/lol-patch/v1/products/league_of_legends",
                             "/patcher/v1/products/league_of_legends", "/lol-settings", "/data-store", "/lol-premade-voice", "/lol-matchmaking/v1/search",
                             "/lol-loadouts/v1/loadouts/scope/champion", "/lol-suggested-players/v1/suggested-player", "/lol-matchmaking/v1/ready-check",
-                            "/lol-clash", "/lol-champ-select/v1/sfx-notifications", )
+                            "/lol-clash", "/lol-champ-select/v1/sfx-notifications", "/lol-regalia/v2/summoners/", "/lol-league-session/v1/league-session-token")
                         if (mappedRegex == null && !bad.any { event.uri.contains(it) }) {
                             Logging.log("", LogType.VERBOSE, "ClientAPI WebSocket: " + event.uri + " - " + event.eventType)
                             clientEventChanged(event)
@@ -640,8 +637,18 @@ class LeagueConnection {
         clientApi?.addClientConnectionListener(clientApiListener)
     }
 
+    private fun checkEventShopRewardsAvailable() {
+        val data = clientApi?.executeGet("/lol-event-shop/v1/unclaimed-rewards", LolEventShopUnclaimedRewards::class.java)?.responseObject
+            ?: LolEventShopUnclaimedRewards(0, 0)
+
+        if (data.rewardsCount > 0) {
+            clientApi?.executePost("/lol-event-shop/v1/claim-select-all")?.responseObject
+        }
+    }
+
     private fun getEventShop(): Array<LolEventShopCategoriesOffer> {
         return clientApi?.executeGet("/lol-event-shop/v1/categories-offers", Array<LolEventShopCategoriesOffer>::class.java)?.responseObject ?: arrayOf()
+        // /
     }
 
     private fun handleEventShop(event: LolEventShopInfo) {
@@ -744,7 +751,8 @@ class LeagueConnection {
             updateLootTab()
             LeagueApi.updateMatchHistory()
             updateChampionMasteryInfo()
-            runTftBattlepassCheck()
+            checkTftBattlepassRewardsAvailable()
+            checkEventShopRewardsAvailable()
         }
 
         runLootCleanup()
