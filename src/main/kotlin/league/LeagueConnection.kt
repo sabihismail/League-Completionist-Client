@@ -371,6 +371,11 @@ class LeagueConnection {
         }.any { it }
     }
 
+    fun runEventShopCleanup() {
+        val data = clientApi?.executeGet("/lol-event-shop/v1/info", LolEventShopInfo::class.java)?.responseObject ?: LolEventShopInfo(0)
+        handleEventShop(data)
+    }
+
     fun runLootCleanup() {
         val loot = clientApi!!.executeGet("/lol-loot/v1/player-loot", Array<LolLootPlayerLoot>::class.java).responseObject ?: return
         Logging.log(loot, LogType.VERBOSE)
@@ -593,8 +598,9 @@ class LeagueConnection {
 
                 updateChampionMasteryInfo()
                 runLootCleanup()
-                checkTftBattlepassRewardsAvailable()
                 checkEventShopRewardsAvailable()
+                runEventShopCleanup()
+                checkTftBattlepassRewardsAvailable()
 
                 socket = clientApi?.openWebSocket()
                 socket?.setSocketListener(object : ClientWebSocket.SocketListener {
@@ -644,26 +650,32 @@ class LeagueConnection {
             ?: LolEventShopUnclaimedRewards(0, 0)
 
         if (data.rewardsCount > 0) {
-            clientApi?.executePost("/lol-event-shop/v1/claim-select-all")?.responseObject
+            val status = clientApi?.executePost("/lol-event-shop/v1/claim-select-bonus-iteration")?.statusCode
+
+            if (status != 204) {
+                println("Failed endpoint.")
+            }
         }
     }
 
-    private fun getEventShop(): Array<LolEventShopCategoriesOffer> {
-        return clientApi?.executeGet("/lol-event-shop/v1/categories-offers", Array<LolEventShopCategoriesOffer>::class.java)?.responseObject ?: arrayOf()
+    private fun getEventShop(): List<LolEventShopCategoriesOfferItem> {
+        val response = clientApi?.executeGet("/lol-event-shop/v1/categories-offers", Array<LolEventShopCategoriesOffer>::class.java)?.responseObject ?: arrayOf()
+        return response.flatMap { it.offers }
     }
 
     private fun handleEventShop(event: LolEventShopInfo) {
         val shop = getEventShop()
-        return
 
         if (isSmurf) {
-            val orb = shop.first { it.localizedTitle.lowercase().contains(" orb") }
+            val orb = shop.first { it.localizedTitle.lowercase().contains("10 blue") }
 
             if (event.currentTokenBalance > orb.price) {
-                return
+                val purchase = clientApi?.executePost("/lol-event-shop/v1/purchase-offer", LolEventShopPurchaseOfferRequest(orb.id))
 
-                val newEvent = LolEventShopInfo(event.currentTokenBalance - orb.price)
-                handleEventShop(newEvent)
+                if (purchase?.statusCode == 200) {
+                    val newEvent = LolEventShopInfo(event.currentTokenBalance - orb.price)
+                    handleEventShop(newEvent)
+                }
             }
         } else if (isMain) {
             print("Main")
@@ -757,7 +769,8 @@ class LeagueConnection {
             checkEventShopRewardsAvailable()
         }
 
-        runLootCleanup()
+        checkEventShopRewardsAvailable()
+        runEventShopCleanup()
         if (!isSmurf) {
             role = championSelectInfo.assignedRole
         }
