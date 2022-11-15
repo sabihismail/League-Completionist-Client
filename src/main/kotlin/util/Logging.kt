@@ -21,10 +21,14 @@ object Logging {
         log(s, logType, header = headerValue, ignorableDuplicate = ignorableDuplicate)
     }
 
-    fun log(str: String, logType: LogType, header: String? = null, ignorableDuplicate: Boolean = false, carriageReturn: Int = -1) {
+    fun log(str: String, logType: LogType, header: String? = null, ignorableDuplicate: Boolean = false, carriageReturn: Int = -1, messageType: LogMessageType? = null) {
         if (logType < LOG_MODE) return
         
         val s = StringBuilder()
+        if (messageType != null) {
+            s.append("[${messageType.name}] ")
+        }
+
         if (!header.isNullOrBlank()) {
             s.append("$header: ")
         }

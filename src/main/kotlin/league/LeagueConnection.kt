@@ -18,10 +18,7 @@ import league.models.league.LolChampionsCollectionsChampionImpl
 import league.util.LeagueConnectionUtil
 import org.apache.commons.lang3.reflect.FieldUtils
 import tornadofx.*
-import util.LogType
-import util.Logging
-import util.ProcessExecutor
-import util.Settings
+import util.*
 import util.constants.GenericConstants.GSON
 import util.constants.GenericConstants.GSON_PRETTY
 import java.io.*
@@ -654,6 +651,8 @@ class LeagueConnection {
 
             if (status != 204) {
                 println("Failed endpoint.")
+            } else {
+                Logging.log("Claimed all tokens (${data.rewardsCount})", LogType.INFO,  messageType = LogMessageType.EVENT_SHOP)
             }
         }
     }
@@ -673,7 +672,8 @@ class LeagueConnection {
                 val finalBalance = event.currentTokenBalance - orb.price
 
                 val purchase = clientApi?.executePost("/lol-event-shop/v1/purchase-offer", LolEventShopPurchaseOfferRequest(orb.id))
-                Logging.log("[Lol Event Shop] Purchased ${orb.localizedTitle} for ${orb.price}, remaining balance: $finalBalance", LogType.INFO)
+                Logging.log("Purchased ${orb.localizedTitle} for ${orb.price}, remaining balance: $finalBalance", LogType.INFO,
+                    messageType = LogMessageType.EVENT_SHOP)
 
                 if (purchase?.statusCode == 200) {
                     val newEvent = LolEventShopInfo(finalBalance)
