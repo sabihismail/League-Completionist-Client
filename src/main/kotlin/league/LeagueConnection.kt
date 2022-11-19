@@ -497,14 +497,14 @@ class LeagueConnection {
         val battlepass = clientApi!!.executeGet("/lol-tft/v2/tft/battlepass", LolMissionsTftPaidBattlepass::class.java).responseObject
         val missions = battlepass.milestones.filter { !it.isPaid && it.state == "REWARDABLE" }
         val completedMissions = missions.map {
-            //val missionPut = clientApi?.executePut("/lol-missions/v1/player/" + it.missionId, null)?.responseObject
+            val missionPut = clientApi?.executePut("/lol-missions/v1/player/" + it.missionId, null)?.responseObject
 
-            //println(missionPut)
+            println(missionPut)
             false
         }
 
         if (completedMissions.any()) {
-            runLootCleanup()
+            checkTftBattlepassRewardsAvailable()
         }
     }
 

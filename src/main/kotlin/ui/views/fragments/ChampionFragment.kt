@@ -12,6 +12,7 @@ import util.constants.ViewConstants.IMAGE_WIDTH
 class ChampionFragment : Fragment() {
     val champion: ChampionInfo by param(ChampionInfo())
     val showTokens: Boolean by param(true)
+    val showEternals: Boolean by param(true)
     val showYou: Boolean by param(false)
 
     override val root = stackpane {
@@ -50,7 +51,7 @@ class ChampionFragment : Fragment() {
                 }
             }
 
-            if (champion.eternal != null) {
+            if (champion.eternal != null && showEternals) {
                 bottom = find<EternalsFragment>(mapOf(EternalsFragment::eternal to champion.eternal.toProperty(), EternalsFragment::fontSizeIn to 9.0)).root
             }
         }
