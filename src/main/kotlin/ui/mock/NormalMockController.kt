@@ -1,7 +1,5 @@
 package ui.mock
 
-import generated.LolStatstonesStatstone
-import generated.LolStatstonesStatstoneSet
 import javafx.collections.FXCollections
 import league.models.ChampionInfo
 import league.models.ChampionSelectInfo
@@ -54,32 +52,7 @@ class NormalMockController : MainViewController() {
             2 to ChampionInfo(2, "Yuumi", ChampionOwnershipStatus.BOX_ATTAINED, 626271, 0, 1, level = 5),
             4 to ChampionInfo(4, "Fiora", ChampionOwnershipStatus.FREE_TO_PLAY, 15256120, 0, 1, level = 7),
             39 to ChampionInfo(39, "Irelia", ChampionOwnershipStatus.BOX_NOT_ATTAINED, 1626110, 0, 1, level = 2, isSummonerSelectedChamp = true,
-                eternal = LolStatstonesStatstoneSet().apply {
-                    name = "Series 1"
-                    statstones = listOf(
-                        LolStatstonesStatstone().apply {
-                            completionValue = 0.042100001126527786
-                            description = "Damage mitigated with Defiant Dance (W)"
-                            formattedMilestoneLevel = "11"
-                            formattedValue = "150,421"
-                            nextMilestone = "160,000"
-                        },
-                        LolStatstonesStatstone().apply {
-                            completionValue = 0.42406249046325684
-                            description = "Total resets of Bladesurge (Q)"
-                            formattedMilestoneLevel = "4"
-                            formattedValue = "6,657"
-                            nextMilestone = "8,500"
-                        },
-                        LolStatstonesStatstone().apply {
-                            completionValue = 0.0
-                            description = "Multiple (2+) enemy champions hit with Vanguard's Edge (R)"
-                            formattedMilestoneLevel = "15"
-                            formattedValue = "200"
-                            nextMilestone = "210"
-                        }
-                    )
-                }
+                hasEternal = false
             ),
             8 to ChampionInfo(8, "Volibear", ChampionOwnershipStatus.BOX_NOT_ATTAINED, 522110, 0, 1, level = 0),
         )

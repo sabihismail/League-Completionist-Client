@@ -32,7 +32,7 @@ class NormalGridView: View() {
 
     private fun setActiveChampions() {
         championListProperty.value = FXCollections.observableList(
-            allChampions.value.filter { !eternalsOnlyProperty.value || it.eternal != null }
+            allChampions.value.filter { !eternalsOnlyProperty.value || it.hasEternal }
                 .filter { it.nameLower.contains(championSearchProperty.value.lowercase()) }
         )
     }

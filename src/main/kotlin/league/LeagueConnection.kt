@@ -132,7 +132,7 @@ class LeagueConnection {
                     .thenByDescending { it.tokens }
                     .thenByDescending { it.currentMasteryPoints }
                     .thenByDescending { it.ownershipStatus }
-                    .thenByDescending { it.eternal != null }
+                    .thenByDescending { !it.hasEternal }
                     .thenByDescending { it.name }
             )
 
@@ -354,10 +354,11 @@ class LeagueConnection {
     }
 
     private fun upgradeOrDisenchantEternals(loot: Array<LolLootPlayerLoot>): Boolean {
+        return false
         return loot.filter { it.type == "STATSTONE_SHARD" }.map {
             val recipes = getRecipes(it.lootId)
 
-            val recipe = if (championInfo.values.first { championInfo -> championInfo.name == it.localizedName.split(' ').first() }.eternal == null) {
+            val recipe = if (!championInfo.values.first { championInfo -> championInfo.name == it.localizedName.split(' ').first() }.hasEternal) {
                 recipes.first { recipe -> recipe.recipeName.lowercase().contains("upgrade") }
             } else {
                 recipes.first { recipe -> recipe.recipeName.lowercase().contains("disenchant") }
@@ -432,7 +433,7 @@ class LeagueConnection {
         }
     }
 
-    fun updateChampionMasteryInfo() {
+    private fun updateChampionMasteryInfo() {
         val champions = clientApi?.executeGet("/lol-champions/v1/inventories/${summonerInfo.summonerId}/champions",
             Array<LolChampionsCollectionsChampionImpl>::class.java)?.responseObject ?: return
         Logging.log(champions, LogType.VERBOSE)
@@ -443,8 +444,12 @@ class LeagueConnection {
 
         val eternalSummary = clientApi!!.executeGet("/lol-statstones/v2/player-summary-self", Array<LolStatstonesChampionStatstoneSummary>::class.java)
                 .responseObject
-                .associate { it.championId to (it.sets.first { set -> set.name != "Starter Series" }.stonesOwned > 0) }
         Logging.log(eternalSummary, LogType.VERBOSE)
+
+        val championIdToHasEternal = eternalSummary.associate {
+            it.championId to (it.sets.filter { set -> set.name != "Starter Series" }.sumOf { set -> set.stonesOwned } > 0)
+        }
+        Logging.log(championIdToHasEternal, LogType.VERBOSE)
 
         val masteryPairing = champions.filter { it.id != -1 }
             .map {
@@ -479,15 +484,9 @@ class LeagueConnection {
                     }
                 }
 
-                var eternal: LolStatstonesStatstoneSet? = null
-                if (eternalSummary[it.id] == true) {
-                    eternal = clientApi!!.executeGet("/lol-statstones/v2/player-statstones-self/${it.id}", Array<LolStatstonesStatstoneSet>::class.java)
-                        .responseObject
-                        .first { set -> set.name != "Starter Series" && set.stonesOwned > 0 }
-                }
-
                 ChampionInfo(it.id, it.name, championOwnershipStatus, championPoints, currentMasteryPoints, nextLevelMasteryPoints, championLevel, tokens,
-                    eternal=eternal, roles=it.roles.map { role -> ChampionRole.fromString(role) }.toSet())
+                    hasEternal=championIdToHasEternal.getOrDefault(it.id, false), roles=it.roles.map { role -> ChampionRole.fromString(role) }.toSet(),
+                    clientApi = clientApi)
             }
 
         championInfo = masteryPairing.associateBy({ it.id }, { it })
@@ -593,7 +592,6 @@ class LeagueConnection {
                     if (!success) return
                 }
 
-                updateChampionMasteryInfo()
                 runLootCleanup()
                 checkEventShopRewardsAvailable()
                 runEventShopCleanup()
