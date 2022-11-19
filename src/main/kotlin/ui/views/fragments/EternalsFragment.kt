@@ -1,8 +1,6 @@
 package ui.views.fragments
 
 import generated.LolStatstonesStatstone
-import generated.LolStatstonesStatstoneSet
-import javafx.beans.property.SimpleObjectProperty
 import javafx.geometry.Pos
 import javafx.scene.text.Font
 import league.api.LeagueCommunityDragonApi
@@ -13,7 +11,7 @@ import util.constants.GenericConstants.ETERNALS_DESCRIPTION_REGEX
 import java.text.NumberFormat
 
 class EternalsFragment : Fragment() {
-    val eternal: SimpleObjectProperty<LolStatstonesStatstoneSet>? by param()
+    val eternal: List<LolStatstonesStatstone> by param()
     val fontSizeIn: Double by param()
 
     override var root = stackpane {
@@ -21,16 +19,14 @@ class EternalsFragment : Fragment() {
     }
 
     init {
-        if (eternal != null) {
-            set(eternal!!)
+        if (eternal.isEmpty()) {
+            set(eternal)
         }
     }
 
-    fun set(newEternal: SimpleObjectProperty<LolStatstonesStatstoneSet>) {
-        if (newEternal.value == null) return
-
+    fun set(newEternal: List<LolStatstonesStatstone>) {
         val vBox = vbox {
-            newEternal.value.statstones.forEach {
+            newEternal.forEach {
                 val regex = StringUtil.getSafeRegex(ETERNALS_DESCRIPTION_REGEX, it.description)
                 blackLabel(regex + "Lvl ${it.formattedMilestoneLevel} - ${it.formattedValue}/${it.nextMilestone}", fontSize = fontSizeIn, isWrapText = false) {
                     tooltip("${it.description} (${getEternalsThreshold(it)})") {

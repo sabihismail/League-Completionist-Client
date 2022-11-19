@@ -1,7 +1,6 @@
 package league
 
 import com.stirante.lolclient.*
-import com.stirante.lolclient.libs.com.google.gson.internal.LinkedTreeMap
 import com.stirante.lolclient.libs.org.apache.http.HttpException
 import com.stirante.lolclient.libs.org.apache.http.conn.HttpHostConnectException
 import db.DatabaseImpl
@@ -486,7 +485,7 @@ class LeagueConnection {
 
                 ChampionInfo(it.id, it.name, championOwnershipStatus, championPoints, currentMasteryPoints, nextLevelMasteryPoints, championLevel, tokens,
                     hasEternal=championIdToHasEternal.getOrDefault(it.id, false), roles=it.roles.map { role -> ChampionRole.fromString(role) }.toSet(),
-                    clientApi = clientApi)
+                    clientApi=clientApi)
             }
 
         championInfo = masteryPairing.associateBy({ it.id }, { it })
@@ -745,11 +744,8 @@ class LeagueConnection {
                 Logging.log(gameFlow, LogType.DEBUG)
 
                 if (championSelectInfo.teamChampions.isEmpty()) {
-                    val players = gameFlow.gameData.teamOne + gameFlow.gameData.teamTwo
-                    val me = players.map { it as LinkedTreeMap<*, *> }.first { it["summonerName"] as String == summonerInfo.displayName }
-                    val championJson = gameFlow.gameData.playerChampionSelections.map { it as LinkedTreeMap<*, *> }.
-                        first { it["summonerInternalName"] == me["summonerInternalName"] }
-                    val champion = championInfo[(championJson["championId"] as Double).toInt()].apply { this!!.isSummonerSelectedChamp = true }
+                    val championId = LeagueApi.getCurrentGameChampionId()
+                    val champion = championInfo[championId].apply { this?.isSummonerSelectedChamp = true }
 
                     championSelectInfo = ChampionSelectInfo(listOf(champion), listOf(), Role.ANY)
                 }
@@ -799,7 +795,9 @@ class LeagueConnection {
         val benchedChampions = champSelectSession.benchChampions?.map { championInfo[it.championId]!! }
         val teamChampions = champSelectSession.myTeam.sortedBy { it.cellId }
             .map {
-                if (championInfo.contains(it.championId)) {
+                if (it.championId <= 0 && it.championPickIntent > 0) {
+                    championInfo[it.championPickIntent]
+                } else if (championInfo.contains(it.championId)) {
                     championInfo[it.championId]
                 } else {
                     null
@@ -807,7 +805,7 @@ class LeagueConnection {
             }
 
         teamChampions.filterNotNull().forEach {
-            it.isSummonerSelectedChamp = it.id == selectedChamp.championId
+            it.isSummonerSelectedChamp = it.id == selectedChamp.championId || it.id == selectedChamp.championPickIntent
         }
 
         val assignedRole = Role.fromString(selectedChamp.assignedPosition)

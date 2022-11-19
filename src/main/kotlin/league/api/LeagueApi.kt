@@ -27,6 +27,12 @@ import java.time.ZonedDateTime
 object LeagueApi {
     private val mutex = Mutex()
 
+    fun getCurrentGameChampionId(): Int {
+        val summoner = Summoner.byName(LeagueConnection.summonerInfo.region, LeagueConnection.summonerInfo.displayName)
+
+        return summoner.currentGame.participants.first { it.summonerId == summoner.summonerId }.championId
+    }
+
     fun updateMatchHistory() {
         runBlocking {
             mutex.withLock {

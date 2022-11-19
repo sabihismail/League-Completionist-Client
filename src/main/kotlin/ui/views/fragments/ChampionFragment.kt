@@ -52,7 +52,7 @@ class ChampionFragment : Fragment() {
             }
 
             if (champion.hasEternal && showEternals) {
-                bottom = find<EternalsFragment>(mapOf(EternalsFragment::eternal to champion.getEternals().toProperty(), EternalsFragment::fontSizeIn to 9.0)).root
+                bottom = find<EternalsFragment>(mapOf(EternalsFragment::eternal to champion.getEternals(), EternalsFragment::fontSizeIn to 9.0)).root
             }
         }
     }

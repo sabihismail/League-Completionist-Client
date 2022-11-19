@@ -33,8 +33,9 @@ data class ChampionInfo(val id: Int = -1, val name: String = "None", val ownersh
         "[" + challengesMapping.toList().filter { !it.second }.joinToString("|") { ChallengeMappingEnum.mapping[it.first]!! } + "]"
     }
 
-    fun getEternals(): List<LolStatstonesStatstoneSet>? {
-        return clientApi?.executeGet("/lol-statstones/v2/player-statstones-self/${id}", Array<LolStatstonesStatstoneSet>::class.java)?.responseObject?.filter { set -> set.name != "Starter Series" && set.stonesOwned > 0 }
+    fun getEternals(): List<LolStatstonesStatstoneSet> {
+        return clientApi?.executeGet("/lol-statstones/v2/player-statstones-self/${id}", Array<LolStatstonesStatstoneSet>::class.java)?.responseObject
+            ?.filter { set -> set.name != "Starter Series" && set.stonesOwned > 0 } ?: listOf()
     }
 
     override fun toString(): String {

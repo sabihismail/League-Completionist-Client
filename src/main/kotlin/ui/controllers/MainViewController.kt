@@ -159,13 +159,13 @@ open class MainViewController : Controller() {
         runAsync {
             leagueConnection.championSelectInfo.teamChampions.firstOrNull { championInfo -> championInfo?.isSummonerSelectedChamp == true }
         } ui {
-            if (it != null) {
-                val newFragment = view.find<ChampionFragment>(mapOf(ChampionFragment::champion to it))
-                view.currentChampionView.replaceWith(newFragment)
-                view.currentChampionView = newFragment
+            if (it == null) return@ui
 
-                championFragmentSet = true
-            }
+            val newFragment = view.find<ChampionFragment>(mapOf(ChampionFragment::champion to it, ChampionFragment::showEternals to true))
+            view.currentChampionView.replaceWith(newFragment)
+            view.currentChampionView = newFragment
+
+            championFragmentSet = true
         }
     }
 
