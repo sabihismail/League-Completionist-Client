@@ -2,6 +2,7 @@ package league.models
 
 import com.stirante.lolclient.ClientApi
 import db.DatabaseImpl
+import generated.LolStatstonesStatstone
 import generated.LolStatstonesStatstoneSet
 import league.models.enums.ChallengeMappingEnum
 import league.models.enums.ChampionOwnershipStatus
@@ -33,9 +34,14 @@ data class ChampionInfo(val id: Int = -1, val name: String = "None", val ownersh
         "[" + challengesMapping.toList().filter { !it.second }.joinToString("|") { ChallengeMappingEnum.mapping[it.first]!! } + "]"
     }
 
-    fun getEternals(): List<LolStatstonesStatstoneSet> {
-        return clientApi?.executeGet("/lol-statstones/v2/player-statstones-self/${id}", Array<LolStatstonesStatstoneSet>::class.java)?.responseObject
-            ?.filter { set -> set.name != "Starter Series" && set.stonesOwned > 0 } ?: listOf()
+    fun getEternals(showEternals: Boolean): List<LolStatstonesStatstone> {
+        return if (hasEternal && showEternals) {
+            clientApi?.executeGet("/lol-statstones/v2/player-statstones-self/${id}", Array<LolStatstonesStatstoneSet>::class.java)?.responseObject
+                ?.filter { set -> set.name != "Starter Series" && set.stonesOwned > 0 }
+                ?.flatMap { set -> set.statstones }?: listOf()
+        } else {
+            listOf()
+        }
     }
 
     override fun toString(): String {

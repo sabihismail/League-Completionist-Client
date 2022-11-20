@@ -19,7 +19,7 @@ class EternalsFragment : Fragment() {
     }
 
     init {
-        if (eternal.isEmpty()) {
+        if (eternal.isNotEmpty()) {
             set(eternal)
         }
     }

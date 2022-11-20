@@ -10,7 +10,7 @@ import ui.views.util.blackLabel
 import util.constants.ViewConstants.IMAGE_WIDTH
 
 class ChampionFragment : Fragment() {
-    val champion: ChampionInfo by param(ChampionInfo())
+    val champion: ChampionInfo by param(ChampionInfo(name = "None"))
     val showTokens: Boolean by param(true)
     val showEternals: Boolean by param(true)
     val showYou: Boolean by param(false)
@@ -51,9 +51,7 @@ class ChampionFragment : Fragment() {
                 }
             }
 
-            if (champion.hasEternal && showEternals) {
-                bottom = find<EternalsFragment>(mapOf(EternalsFragment::eternal to champion.getEternals(), EternalsFragment::fontSizeIn to 9.0)).root
-            }
+            bottom = find<EternalsFragment>(mapOf(EternalsFragment::eternal to champion.getEternals(showEternals), EternalsFragment::fontSizeIn to 9.0)).root
         }
     }
 }

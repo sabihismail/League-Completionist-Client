@@ -61,7 +61,7 @@ class NormalGridView: View() {
                 cellHeight = IMAGE_WIDTH
 
                 cellCache {
-                    find<ChampionFragment>(mapOf(ChampionFragment::champion to it, ChampionFragment::showEternals to false)).root
+                    find<ChampionFragment>(mapOf(ChampionFragment::champion to it)).root
                 }
             }
 
