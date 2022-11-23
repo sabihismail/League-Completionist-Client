@@ -494,15 +494,12 @@ class LeagueConnection {
     private fun checkTftBattlepassRewardsAvailable() {
         val battlepass = clientApi!!.executeGet("/lol-tft/v2/tft/battlepass", LolMissionsTftPaidBattlepass::class.java).responseObject
         val missions = battlepass.milestones.filter { !it.isPaid && it.state == "REWARDABLE" }
-        val completedMissions = missions.map {
-            val missionPut = clientApi?.executePut("/lol-missions/v1/player/" + it.missionId, null)?.responseObject
+
+        missions.forEach {
+            val rewardGroups = LolMissionsRewardGroupsSelection().apply { rewardGroups = it.rewards.map { reward -> reward.rewardGroup } }
+            val missionPut = clientApi?.executePut("/lol-missions/v1/player/" + it.missionId, rewardGroups)
 
             println(missionPut)
-            false
-        }
-
-        if (completedMissions.any()) {
-            checkTftBattlepassRewardsAvailable()
         }
     }
 
@@ -661,6 +658,9 @@ class LeagueConnection {
 
     private fun handleEventShop(event: LolEventShopInfo) {
         val shop = getEventShop()
+
+        // Shop is not on right now
+        if (shop.isEmpty()) return
 
         if (isSmurf) {
             val orb = shop.first { it.localizedTitle.lowercase().contains(" orb") }

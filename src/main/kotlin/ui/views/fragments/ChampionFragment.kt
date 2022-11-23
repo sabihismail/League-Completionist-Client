@@ -48,6 +48,8 @@ class ChampionFragment : Fragment() {
                     blackLabel(champion.differentChallenges, fontSize = 9.0) {
                         isVisible = champion.differentChallenges != "[]"
                     }
+
+                    blackLabel("${champion.roles?.sortedBy { it.name }?.joinToString(", ") { it.name.lowercase() }}", fontSize = 9.6)
                 }
             }
 

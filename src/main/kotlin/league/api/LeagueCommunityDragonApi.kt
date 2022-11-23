@@ -141,7 +141,7 @@ object LeagueCommunityDragonApi {
     fun getChallengeImageEffect(currentLevel: ChallengeLevel?): Effect? {
         if (currentLevel != ChallengeLevel.NONE) return null
 
-        return ColorAdjust(0.0, -1.0, -0.7, -0.1)
+        return ColorAdjust(0.0, -0.5, -0.5, -0.1)
     }
 
     private fun populateQueueMapping() {
