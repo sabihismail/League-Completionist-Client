@@ -499,7 +499,9 @@ class LeagueConnection {
             val rewardGroups = LolMissionsRewardGroupsSelection().apply { rewardGroups = it.rewards.map { reward -> reward.rewardGroup } }
             val missionPut = clientApi?.executePut("/lol-missions/v1/player/" + it.missionId, rewardGroups)
 
-            println(missionPut)
+            if (missionPut?.isOk != true) {
+                println(missionPut)
+            }
         }
     }
 
