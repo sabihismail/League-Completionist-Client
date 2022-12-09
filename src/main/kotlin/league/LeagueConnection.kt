@@ -665,13 +665,13 @@ class LeagueConnection {
         if (shop.isEmpty()) return
 
         if (isSmurf) {
-            val orb = shop.first { it.localizedTitle.lowercase().contains(" orb") }
+            val item = shop.first { it.localizedTitle.lowercase().contains(" emote") }
 
-            if (event.currentTokenBalance > orb.price) {
-                val finalBalance = event.currentTokenBalance - orb.price
+            if (event.currentTokenBalance > item.price) {
+                val finalBalance = event.currentTokenBalance - item.price
 
-                val purchase = clientApi?.executePost("/lol-event-shop/v1/purchase-offer", LolEventShopPurchaseOfferRequest(orb.id))
-                Logging.log("Purchased ${orb.localizedTitle} for ${orb.price}, remaining balance: $finalBalance", LogType.INFO,
+                val purchase = clientApi?.executePost("/lol-event-shop/v1/purchase-offer", LolEventShopPurchaseOfferRequest(item.id))
+                Logging.log("Purchased ${item.localizedTitle} for ${item.price}, remaining balance: $finalBalance", LogType.INFO,
                     messageType = LogMessageType.EVENT_SHOP)
 
                 if (purchase?.statusCode == 200) {
