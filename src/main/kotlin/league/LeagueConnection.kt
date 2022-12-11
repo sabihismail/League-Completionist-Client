@@ -412,9 +412,6 @@ class LeagueConnection {
             functions.addAll(mutableListOf(
                 { upgradeMasteryTokens(loot) },
 
-                // { disenchantByText(loot, "Champion Capsule") },
-                // { disenchantByText(loot, "Random Champion Shard") },
-
                 { craftLoot(shards, "CHAMPION_RENTAL_disenchant") { championInfo[it.storeItemId]?.level == 7 } },
                 { craftLoot(shards, "CHAMPION_RENTAL_disenchant") { championInfo[it.storeItemId]?.level == 6 && it.count == 2 } },
                 { craftLoot(shards, "CHAMPION_RENTAL_disenchant") { it.count == 3 &&
@@ -422,9 +419,16 @@ class LeagueConnection {
 
                 { upgradeChampionShard(shards, blueEssence) { ChampionOwnershipStatus.UNOWNED_SET.contains(championInfo[it.storeItemId]?.ownershipStatus) } },
 
-                // { disenchantTokenItem(loot, "Tokens expire", "Random Champion Shard") },
-                // { disenchantTokenItem(loot, "Unlock new and classic content exclusively for Mythic Essence", "150 Blue Essence") },
+                { disenchantTokenItem(loot, "Unlock new and classic content exclusively for Mythic Essence", "Random Skin Shard") },
             ))
+
+            // If we have any unowned champions
+            if (championInfo.map { it.value.ownershipStatus }.any { ChampionOwnershipStatus.UNOWNED_SET.contains(it) }) {
+                functions.addAll(mutableListOf(
+                    { disenchantByText(loot, "Champion Capsule") },
+                    { disenchantByText(loot, "Random Champion Shard") },
+                ))
+            }
         }
 
         if (functions.any { it.invoke() }) {
@@ -643,7 +647,7 @@ class LeagueConnection {
             ?: LolEventShopUnclaimedRewards(0, 0)
 
         if (data.rewardsCount > 0) {
-            val claimSelectBonusIteration = clientApi?.executePost("/lol-event-shop/v1/claim-select-bonus-iteration")
+            val claimSelectBonusIteration = clientApi?.executePost("/lol-event-shop/v1/claim-select-all")
 
             if (claimSelectBonusIteration?.statusCode != 204) {
                 println("Failed endpoint.")
