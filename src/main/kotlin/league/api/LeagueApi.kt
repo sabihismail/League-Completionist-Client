@@ -55,11 +55,15 @@ object LeagueApi {
 
                 if (matchesLst.isNotEmpty()) {
                     var counter = 0
-                    val matches = matchesLst.map { matchId ->
+                    val matches = matchesLst.mapNotNull { matchId ->
                         counter++
 
                         Logging.log("Loaded Match: ${counter}/${matchesLst.size}", LogType.INFO, carriageReturn = counter / matchesLst.size)
-                        matchBuilder.withId(matchId).match
+                        try {
+                            matchBuilder.withId(matchId).match
+                        } catch (_: Exception) {
+                            null
+                        }
                     }
 
                     val participantList = matches.map { it to it.participants?.firstOrNull { participant -> participant.summonerId == summoner.summonerId } }
