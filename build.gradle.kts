@@ -24,13 +24,13 @@ repositories {
 }
 
 dependencies {
-    implementation("com.github.stelar7", "R4J", "2.2.3")
+    implementation("com.github.stelar7", "R4J", "2.2.5")
     implementation("com.github.stirante", "lol-client-java-api", "1.2.5")
     implementation("no.tornado", "tornadofx", "1.7.20")
     implementation("org.apache.commons", "commons-lang3", "3.12.0")
     implementation("org.junit.jupiter", "junit-jupiter", "5.9.1")
 
-    val exposedVersion = "0.40.1"
+    val exposedVersion = "0.41.1"
     implementation("org.jetbrains.exposed", "exposed-core", exposedVersion)
     implementation("org.jetbrains.exposed", "exposed-dao", exposedVersion)
     implementation("org.jetbrains.exposed", "exposed-jdbc", exposedVersion)
