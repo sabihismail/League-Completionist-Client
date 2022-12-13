@@ -273,8 +273,8 @@ open class MainViewController : Controller() {
             val progressedSet = progressed.map { it.second.name }.toSet()
             val completedSet = completed.map { it.second.name }.toSet()
             val allSet = leagueConnection.challengesUpdatedInfo.map { it.second.name }.toSet()
-            assert(upgradedSet.intersect(progressedSet).isNotEmpty() || progressedSet.intersect(completedSet).isNotEmpty() ||
-                    completedSet.intersect(upgradedSet).isNotEmpty() || allSet != upgradedSet.union(progressedSet.union(completedSet))) {
+            if (listOf(upgradedSet.intersect(progressedSet), progressedSet.intersect(completedSet), completedSet.intersect(upgradedSet)).any { it.isNotEmpty() } ||
+                allSet != upgradedSet.union(progressedSet.union(completedSet))) {
                 println("Set failure")
             }
 
