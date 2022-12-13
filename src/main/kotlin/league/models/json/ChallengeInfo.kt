@@ -49,6 +49,10 @@ class ChallengeInfo {
         thresholds!!.toList().sortedBy { it.first }
     }
 
+    val maxThreshold by lazy {
+        allThresholds.last().first
+    }
+
     private val thresholdSummaryLst by lazy {
         try {
             allThresholds.filter { it.first > nextLevel!! }
