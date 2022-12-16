@@ -6,6 +6,7 @@ import league.models.enums.ChallengeLevel
 import league.models.enums.ChallengeThresholdRewardCategory
 import league.models.enums.GameMode
 import util.KotlinExtensionUtil.toCommaSeparatedNumber
+import kotlin.math.abs
 
 
 @Serializable
@@ -121,7 +122,7 @@ class ChallengeInfo {
         }
     }
 
-    val pointsDifference by lazy { nextLevelPoints - previousLevelPoints }
+    val pointsDifference by lazy { abs(nextLevelPoints - previousLevelPoints) }
 
     fun init() {
         initGameMode()
