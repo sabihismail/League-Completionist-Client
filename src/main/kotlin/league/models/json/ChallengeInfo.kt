@@ -25,7 +25,7 @@ class ChallengeInfo {
     var currentValue: Double? = null
     var descriptionShort: String? = null
     var gameModes: List<String>? = null
-    var hasLeaderboard: Boolean? = null
+    var hasLeaderboard: Boolean = false
     var iconPath: String? = null
     var isApex: Boolean? = null
     var isCapstone: Boolean? = null
@@ -52,6 +52,10 @@ class ChallengeInfo {
 
     val maxThreshold by lazy {
         allThresholds.last().first
+    }
+
+    val maxThresholdReached by lazy {
+        maxThreshold == currentLevel
     }
 
     private val thresholdSummaryLst by lazy {

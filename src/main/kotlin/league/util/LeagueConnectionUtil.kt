@@ -1,18 +1,24 @@
 package league.util
 
+import com.stirante.lolclient.ClientApi
 import com.stirante.lolclient.ProcessWatcher
-import com.stirante.lolclient.libs.org.apache.http.client.methods.HttpGet
-import com.stirante.lolclient.libs.org.apache.http.conn.ssl.SSLConnectionSocketFactory
-import com.stirante.lolclient.libs.org.apache.http.impl.client.CloseableHttpClient
-import com.stirante.lolclient.libs.org.apache.http.impl.client.HttpClients
-import com.stirante.lolclient.libs.org.apache.http.util.EntityUtils
-import com.stirante.lolclient.utils.SSLUtil
+import org.apache.hc.client5.http.classic.methods.HttpGet
+import org.apache.hc.client5.http.config.RequestConfig
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient
+import org.apache.hc.client5.http.impl.classic.HttpClients
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder
+import org.apache.hc.client5.http.io.HttpClientConnectionManager
+import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactory
+import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactoryBuilder
+import org.apache.hc.core5.http.io.entity.EntityUtils
+import org.apache.hc.core5.ssl.SSLContexts
+import org.apache.hc.core5.util.Timeout
 import java.io.*
 import java.net.URI
 import java.util.*
 import java.util.function.Consumer
 import java.util.regex.Pattern
-import javax.net.ssl.HostnameVerifier
+import javax.net.ssl.SSLContext
 
 object LeagueConnectionUtil {
     private val INSTALL_DIR = Pattern.compile(".+\"--install-directory=([^\"]+)\".+")
@@ -67,14 +73,13 @@ object LeagueConnectionUtil {
                     logConsumer.accept("Executing test request")
 
                     val client = createHttpClient()
-                    val method = HttpGet()
-                    method.uri = URI("https://127.0.0.1:$port/system/v1/builds")
+                    val method = HttpGet(URI("https://127.0.0.1:$port/system/v1/builds"))
                     method.addHeader("Authorization", "Basic $token")
                     method.addHeader("Accept", "*/*")
                     client.execute(method).use { response ->
-                        val b = response.statusLine.statusCode == 200
+                        val b = response.code == 200
                         if (!b) {
-                            logConsumer.accept("Status code: " + response.statusLine.statusCode)
+                            logConsumer.accept("Status code: " + response.code)
                         } else {
                             val t = dumpStream(response.entity.content)
                             EntityUtils.consume(response.entity)
@@ -87,8 +92,26 @@ object LeagueConnectionUtil {
     }
 
     private fun createHttpClient(): CloseableHttpClient {
+        val requestConfig = RequestConfig.custom()
+            .setConnectTimeout(Timeout.ofMilliseconds(5000))
+            .setResponseTimeout(Timeout.ofMilliseconds(5000))
+            .build()
+
+        val sslContext: SSLContext = SSLContexts.custom()
+            .loadTrustMaterial(ClientApi::class.java.getResource("/riotgames.jks"), "nopass".toCharArray())
+            .build()
+
+        val sslSocketFactory: SSLConnectionSocketFactory = SSLConnectionSocketFactoryBuilder.create()
+            .setSslContext(sslContext)
+            .build()
+
+        val cm: HttpClientConnectionManager = PoolingHttpClientConnectionManagerBuilder.create()
+            .setSSLSocketFactory(sslSocketFactory)
+            .build()
+
         return HttpClients.custom()
-            .setSSLSocketFactory(SSLConnectionSocketFactory(SSLUtil.getSocketFactory(), null as HostnameVerifier?))
+            .setConnectionManager(cm)
+            .setDefaultRequestConfig(requestConfig)
             .build()
     }
 

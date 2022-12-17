@@ -25,7 +25,7 @@ repositories {
 
 dependencies {
     implementation("com.github.stelar7", "R4J", "2.2.5")
-    implementation("com.github.stirante", "lol-client-java-api", "1.2.5")
+    implementation("com.github.stirante", "lol-client-java-api", "-SNAPSHOT")
     implementation("no.tornado", "tornadofx", "1.7.20")
     implementation("org.apache.commons", "commons-lang3", "3.12.0")
     implementation("org.junit.jupiter", "junit-jupiter", "5.9.1")

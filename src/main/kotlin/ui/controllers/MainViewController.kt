@@ -262,17 +262,17 @@ open class MainViewController : Controller() {
                     .thenByDescending { it.second.currentLevel }
                     .thenByDescending { it.second.percentage }
             val progressed = leagueConnection.challengesUpdatedInfo.filter { it.first.currentLevel == it.second.currentLevel }
-                .filter { it.first.currentLevel!! <= ChallengeLevel.DIAMOND && it.second.maxThreshold != it.second.currentLevel }
+                .filter { it.first.currentLevel!! <= ChallengeLevel.DIAMOND && !it.second.maxThresholdReached }
                 .sortedWith(compareBy)
 
             val completed = leagueConnection.challengesUpdatedInfo.filter { it.first.currentLevel == it.second.currentLevel }
-                .filter { it.first.currentLevel!! > ChallengeLevel.DIAMOND || it.second.maxThreshold == it.second.currentLevel }
+                .filter { it.first.currentLevel!! > ChallengeLevel.DIAMOND || (!it.second.maxThresholdReached || it.second.hasLeaderboard) }
                 .sortedWith(compareBy)
 
             val upgradedSet = upgraded.map { it.second.name }.toSet()
             val progressedSet = progressed.map { it.second.name }.toSet()
             val completedSet = completed.map { it.second.name }.toSet()
-            val allSet = leagueConnection.challengesUpdatedInfo.map { it.second.name }.toSet()
+            val allSet = leagueConnection.challengesUpdatedInfo.filter { !it.second.maxThresholdReached || it.second.hasLeaderboard }.map { it.second.name }.toSet()
             if (listOf(upgradedSet.intersect(progressedSet), progressedSet.intersect(completedSet), completedSet.intersect(upgradedSet)).any { it.isNotEmpty() } ||
                 allSet != upgradedSet.union(progressedSet.union(completedSet))) {
                 println("Set failure")

@@ -1,6 +1,6 @@
 package league.models.enums
 
-import com.stirante.lolclient.libs.com.google.gson.annotations.SerializedName
+import com.google.gson.annotations.SerializedName
 
 @Suppress("unused", "UNUSED_PARAMETER")
 enum class ChallengeLevel(i: Int) {

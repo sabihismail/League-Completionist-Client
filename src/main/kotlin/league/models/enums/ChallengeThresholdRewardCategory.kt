@@ -1,6 +1,6 @@
 package league.models.enums
 
-import com.stirante.lolclient.libs.com.google.gson.annotations.SerializedName
+import com.google.gson.annotations.SerializedName
 
 @Suppress("unused")
 enum class ChallengeThresholdRewardCategory {

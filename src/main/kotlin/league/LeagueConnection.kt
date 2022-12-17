@@ -1,8 +1,7 @@
 package league
 
+import com.google.gson.JsonObject
 import com.stirante.lolclient.*
-import com.stirante.lolclient.libs.org.apache.http.HttpException
-import com.stirante.lolclient.libs.org.apache.http.conn.HttpHostConnectException
 import db.DatabaseImpl
 import generated.*
 import league.api.CacheUtil
@@ -15,7 +14,10 @@ import league.models.json.*
 import league.models.league.LolChampSelectChampSelectSessionImpl
 import league.models.league.LolChampionsCollectionsChampionImpl
 import league.util.LeagueConnectionUtil
+import org.apache.commons.lang3.StringUtils
 import org.apache.commons.lang3.reflect.FieldUtils
+import org.apache.hc.client5.http.HttpHostConnectException
+import org.apache.hc.core5.http.HttpException
 import tornadofx.*
 import util.*
 import util.constants.GenericConstants.GSON
@@ -61,7 +63,7 @@ class LeagueConnection {
 
     private val eventListenerMapping = mapOf(
         "/lol-champ-select/v1/session.*".toRegex() to { event: ClientWebSocket.Event ->
-            val dataJson = FieldUtils.readField(event, "dataJson", true) as com.stirante.lolclient.libs.com.google.gson.JsonObject
+            val dataJson = FieldUtils.readField(event, "dataJson", true) as JsonObject
             val data = GSON.fromJson(dataJson, LolChampSelectChampSelectSessionImpl::class.java)
 
             handleChampionSelectChange(data)
@@ -85,7 +87,7 @@ class LeagueConnection {
             })
         },
         "/lol-event-shop/v1/info".toRegex() to { event ->
-            val dataJson = FieldUtils.readField(event, "dataJson", true) as com.stirante.lolclient.libs.com.google.gson.JsonObject
+            val dataJson = FieldUtils.readField(event, "dataJson", true) as JsonObject
             val data = GSON.fromJson(dataJson, LolEventShopInfo::class.java)
 
             handleEventShop(data)
@@ -99,17 +101,16 @@ class LeagueConnection {
             while (true) {
                 console = ProcessExecutor(PowershellProcessWatcher.EXECUTABLE, "--end-marker--")
                 console.addFinalOutputListener { s: String ->
-                    val isAlive = s.contains("LeagueClientUx.exe") && s.contains("--install-directory=")
+                    val isAlive = StringUtils.countMatches(s,"LeagueClientUx.exe") > 1
 
-                    if (isConnected != isAlive) {
-                        isConnected = isAlive
+                    if (isConnected == isAlive) return@addFinalOutputListener
+                    isConnected = isAlive
 
-                        Logging.log(if (isConnected) "Client Process Detected" else "Client Process Vanished", LogType.INFO)
-                        if (isConnected) {
-                            startClientAPI()
-                        } else {
-                            stopClientAPI()
-                        }
+                    Logging.log(if (isConnected) "Client Process Detected" else "Client Process Vanished", LogType.INFO)
+                    if (isConnected) {
+                        startClientAPI()
+                    } else {
+                        stopClientAPI()
                     }
                 }
                 console.writeCommand(PowershellProcessWatcher.COMMAND)

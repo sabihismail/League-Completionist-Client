@@ -1,6 +1,6 @@
 package league.api
 
-import com.stirante.lolclient.libs.com.google.gson.reflect.TypeToken
+import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock

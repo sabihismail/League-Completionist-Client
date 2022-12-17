@@ -1,8 +1,8 @@
 package ui.views
 
+import com.google.gson.JsonArray
+import com.google.gson.JsonObject
 import com.stirante.lolclient.ClientWebSocket
-import com.stirante.lolclient.libs.com.google.gson.JsonArray
-import com.stirante.lolclient.libs.com.google.gson.JsonObject
 import javafx.beans.property.SimpleListProperty
 import javafx.beans.property.SimpleStringProperty
 import org.apache.commons.lang3.reflect.FieldUtils

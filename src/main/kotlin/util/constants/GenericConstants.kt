@@ -1,7 +1,7 @@
 package util.constants
 
-import com.stirante.lolclient.libs.com.google.gson.Gson
-import com.stirante.lolclient.libs.com.google.gson.GsonBuilder
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 
 object GenericConstants {
     const val DISTANCE_CONSTANT = 152
