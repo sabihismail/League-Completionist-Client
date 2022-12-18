@@ -266,16 +266,17 @@ open class MainViewController : Controller() {
                 .sortedWith(compareBy)
 
             val completed = leagueConnection.challengesUpdatedInfo.filter { it.first.currentLevel == it.second.currentLevel }
-                .filter { it.first.currentLevel!! > ChallengeLevel.DIAMOND || (!it.second.maxThresholdReached || it.second.hasLeaderboard) }
+                .filter { it.first.currentLevel!! > ChallengeLevel.DIAMOND || it.second.maxThresholdReached }
                 .sortedWith(compareBy)
 
-            val upgradedSet = upgraded.map { it.second.name }.toSet()
-            val progressedSet = progressed.map { it.second.name }.toSet()
-            val completedSet = completed.map { it.second.name }.toSet()
-            val allSet = leagueConnection.challengesUpdatedInfo.filter { !it.second.maxThresholdReached || it.second.hasLeaderboard }.map { it.second.name }.toSet()
-            if (listOf(upgradedSet.intersect(progressedSet), progressedSet.intersect(completedSet), completedSet.intersect(upgradedSet)).any { it.isNotEmpty() } ||
-                allSet != upgradedSet.union(progressedSet.union(completedSet))) {
-                println("Set failure")
+            val upgradedSet = upgraded.map { it.second.description }.toSet()
+            val progressedSet = progressed.map { it.second.description }.toSet()
+            val completedSet = completed.map { it.second.description }.toSet()
+            val allSet = leagueConnection.challengesUpdatedInfo.filter { !it.second.maxThresholdReached || it.second.hasLeaderboard }.map { it.second.description }
+                .toSet()
+            val intersections = listOf(upgradedSet.intersect(progressedSet), progressedSet.intersect(completedSet), completedSet.intersect(upgradedSet))
+            if (intersections.any { it.isNotEmpty() } || allSet != upgradedSet.union(progressedSet.union(completedSet))) {
+                println("Set failure: ${intersections.first { it.isNotEmpty() }.joinToString("\n")}")
             }
 
             UpgradedChallengesContainer(upgraded, progressed, completed)

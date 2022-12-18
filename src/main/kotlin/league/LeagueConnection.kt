@@ -268,8 +268,8 @@ class LeagueConnection {
         return mapped.any()
     }
 
-    private fun craftLoot(lootElement: LolLootPlayerLoot?, recipeName: String?) {
-        if (lootElement == null) return
+    private fun craftLoot(lootElement: LolLootPlayerLoot?, recipeName: String?): Boolean {
+        if (lootElement == null) return false
 
         val recipes = getRecipes(lootElement.lootId).toList()
         val recipe = if (!recipeName.isNullOrEmpty()) {
@@ -278,7 +278,7 @@ class LeagueConnection {
             recipes.firstOrNull()
         }
 
-        craftLoot(recipe)
+        return craftLoot(recipe)
     }
 
     @Suppress("SameParameterValue")
@@ -293,10 +293,7 @@ class LeagueConnection {
     private fun craftLoot(loot: Array<LolLootPlayerLoot>, lootId: String, count: Int): Boolean {
         return loot.filter { it.lootId == lootId }
             .filter { it.count >= count }
-            .map {
-                craftLoot(it, recipeName = null)
-                true
-            }
+            .map { craftLoot(it, recipeName = null) }
             .any()
     }
 
