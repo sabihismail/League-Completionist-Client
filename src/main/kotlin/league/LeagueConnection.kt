@@ -667,10 +667,12 @@ class LeagueConnection {
         // Shop is not on right now
         if (shop.isEmpty()) return
 
+        var canPurchase = false
         if (isSmurf) {
             val item = shop.first { it.localizedTitle.lowercase().contains(" emote") }
 
-            if (event.currentTokenBalance > item.price) {
+            canPurchase = event.currentTokenBalance > item.price
+            if (canPurchase) {
                 val finalBalance = event.currentTokenBalance - item.price
 
                 val purchase = clientApi?.executePost("/lol-event-shop/v1/purchase-offer", LolEventShopPurchaseOfferRequest(item.id))
@@ -683,7 +685,11 @@ class LeagueConnection {
                 }
             }
         } else if (isMain) {
-            print("Main")
+            Logging.log("Main not supported", LogType.INFO, messageType = LogMessageType.EVENT_SHOP)
+        }
+
+        if (canPurchase) {
+            runLootCleanup()
         }
     }
 
