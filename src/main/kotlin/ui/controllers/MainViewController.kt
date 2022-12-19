@@ -256,23 +256,25 @@ open class MainViewController : Controller() {
                         .thenByDescending { it.second.percentage }
                 )
 
-            val compareBy = compareByDescending<Pair<ChallengeInfo, ChallengeInfo>> { !CRINGE_MISSIONS.any { x -> it.second.description!!.contains(x) } }
+            val compareBy = compareByDescending<Pair<ChallengeInfo, ChallengeInfo>> { !CRINGE_MISSIONS.any { x -> it.second.name!!.contains(x) } }
                     .thenByDescending { it.second.category != ChallengeCategory.LEGACY }
                     .thenByDescending { it.first.pointsDifference > 0 }
                     .thenByDescending { it.second.currentLevel }
                     .thenByDescending { it.second.percentage }
             val progressed = leagueConnection.challengesUpdatedInfo.filter { it.first.currentLevel == it.second.currentLevel }
-                .filter { it.first.currentLevel!! <= ChallengeLevel.DIAMOND && !it.second.maxThresholdReached }
+                .filter { it.first.currentLevel!! <= ChallengeLevel.DIAMOND && !it.first.maxThresholdReached }
                 .sortedWith(compareBy)
 
             val completed = leagueConnection.challengesUpdatedInfo.filter { it.first.currentLevel == it.second.currentLevel }
-                .filter { it.first.currentLevel!! > ChallengeLevel.DIAMOND || it.second.maxThresholdReached }
+                .filter { it.first.currentLevel!! > ChallengeLevel.DIAMOND || it.first.maxThresholdReached }
                 .sortedWith(compareBy)
 
             val upgradedSet = upgraded.map { it.second.description }.toSet()
             val progressedSet = progressed.map { it.second.description }.toSet()
             val completedSet = completed.map { it.second.description }.toSet()
-            val allSet = leagueConnection.challengesUpdatedInfo.filter { !it.second.maxThresholdReached || it.second.hasLeaderboard }.map { it.second.description }
+            val allSet = leagueConnection.challengesUpdatedInfo
+                .filter { it.first.currentLevel != it.second.currentLevel || (!it.first.maxThresholdReached || it.first.hasLeaderboard) }
+                .map { it.first.description }
                 .toSet()
             val intersections = listOf(upgradedSet.intersect(progressedSet), progressedSet.intersect(completedSet), completedSet.intersect(upgradedSet))
             if (intersections.any { it.isNotEmpty() } || allSet != upgradedSet.union(progressedSet.union(completedSet))) {

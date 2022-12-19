@@ -645,12 +645,13 @@ class LeagueConnection {
             ?: LolEventShopUnclaimedRewards(0, 0)
 
         if (data.rewardsCount > 0) {
-            val claimSelectBonusIteration = clientApi?.executePost("/lol-event-shop/v1/claim-select-all")
+            val claimSelectAll = clientApi?.executePost("/lol-event-shop/v1/claim-select-all")
+            val claimSelectBonusIteration = clientApi?.executePost("/lol-event-shop/v1/claim-select-bonus-iteration")
 
-            if (claimSelectBonusIteration?.statusCode != 204) {
-                println("Failed endpoint.")
-            } else {
+            if (claimSelectAll?.statusCode == 204 && claimSelectBonusIteration?.statusCode == 204) {
                 Logging.log("Claimed all tokens (${data.rewardsCount})", LogType.INFO,  messageType = LogMessageType.EVENT_SHOP)
+            } else {
+                println("Failed endpoint.")
             }
         }
     }
