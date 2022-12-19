@@ -667,7 +667,7 @@ class LeagueConnection {
         // Shop is not on right now
         if (shop.isEmpty()) return
 
-        var canPurchase = false
+        val canPurchase: Boolean
         if (isSmurf) {
             val item = shop.first { it.localizedTitle.lowercase().contains(" emote") }
 
