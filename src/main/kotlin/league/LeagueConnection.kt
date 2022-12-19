@@ -672,25 +672,22 @@ class LeagueConnection {
             val item = shop.first { it.localizedTitle.lowercase().contains(" emote") }
 
             canPurchase = event.currentTokenBalance > item.price
-            if (canPurchase) {
-                val finalBalance = event.currentTokenBalance - item.price
+            if (!canPurchase) return
 
-                val purchase = clientApi?.executePost("/lol-event-shop/v1/purchase-offer", LolEventShopPurchaseOfferRequest(item.id))
-                Logging.log("Purchased ${item.localizedTitle} for ${item.price}, remaining balance: $finalBalance", LogType.INFO,
-                    messageType = LogMessageType.EVENT_SHOP)
+            val finalBalance = event.currentTokenBalance - item.price
 
-                if (purchase?.statusCode == 200) {
-                    val newEvent = LolEventShopInfo(finalBalance)
-                    handleEventShop(newEvent)
-                }
+            val purchase = clientApi?.executePost("/lol-event-shop/v1/purchase-offer", LolEventShopPurchaseOfferRequest(item.id))
+            Logging.log("Purchased ${item.localizedTitle} for ${item.price}, remaining balance: $finalBalance", LogType.INFO, messageType = LogMessageType.EVENT_SHOP)
+
+            if (purchase?.statusCode == 200) {
+                val newEvent = LolEventShopInfo(finalBalance)
+                handleEventShop(newEvent)
             }
         } else if (isMain) {
             Logging.log("Main not supported", LogType.INFO, messageType = LogMessageType.EVENT_SHOP)
         }
 
-        if (canPurchase) {
-            runLootCleanup()
-        }
+        runLootCleanup()
     }
 
     private fun handleChallengesChange(challengeInfoList: List<ChallengeInfo>) {
