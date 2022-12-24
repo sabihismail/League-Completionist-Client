@@ -266,19 +266,30 @@ open class MainViewController : Controller() {
                 .sortedWith(compareBy)
 
             val completed = leagueConnection.challengesUpdatedInfo.filter { it.first.currentLevel == it.second.currentLevel }
-                .filter { it.first.currentLevel!! > ChallengeLevel.DIAMOND || it.first.maxThresholdReached }
+                .filter { it.first.currentLevel!! > ChallengeLevel.DIAMOND || (!it.first.maxThresholdReached && it.second.maxThresholdReached) }
                 .sortedWith(compareBy)
 
-            val upgradedSet = upgraded.map { it.second.description }.toSet()
-            val progressedSet = progressed.map { it.second.description }.toSet()
-            val completedSet = completed.map { it.second.description }.toSet()
+            val upgradedSet = upgraded.map { it.second.description }.toHashSet()
+            val progressedSet = progressed.map { it.second.description }.toHashSet()
+            val completedSet = completed.map { it.second.description }.toHashSet()
             val allSet = leagueConnection.challengesUpdatedInfo
                 .filter { it.first.currentLevel != it.second.currentLevel || (!it.first.maxThresholdReached || it.first.hasLeaderboard) }
                 .map { it.first.description }
-                .toSet()
+                .toHashSet()
             val intersections = listOf(upgradedSet.intersect(progressedSet), progressedSet.intersect(completedSet), completedSet.intersect(upgradedSet))
-            if (intersections.any { it.isNotEmpty() } || allSet != upgradedSet.union(progressedSet.union(completedSet))) {
-                println("Set failure: ${intersections.first { it.isNotEmpty() }.joinToString("\n")}")
+            if (intersections.any { it.isNotEmpty() }) {
+                println("Set failure 1: ${intersections.first { it.isNotEmpty() }.joinToString("\n")}")
+            }
+
+            val combined = upgradedSet.union(progressedSet.union(completedSet))
+            if (allSet != combined) {
+                val difference = combined.subtract(allSet).plus(allSet.subtract(combined))
+                val d = combined.subtract(allSet)
+                val a = allSet.subtract(combined)
+
+                println("Set failure 2: ${difference.joinToString("\n")}")
+                println(d.joinToString("\n"))
+                println(a.joinToString("\n"))
             }
 
             UpgradedChallengesContainer(upgraded, progressed, completed)

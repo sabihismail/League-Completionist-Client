@@ -11,7 +11,7 @@ import league.models.enums.ChampionRole
 data class ChampionInfo(val id: Int = -1, val name: String = "None", val ownershipStatus: ChampionOwnershipStatus = ChampionOwnershipStatus.NOT_OWNED,
                         val masteryPoints: Int = 1, val currentMasteryPoints: Int = 1, val nextLevelMasteryPoints: Int = 2, val level: Int = 0, val tokens: Int = 0,
                         var isSummonerSelectedChamp: Boolean = false, var hasEternal: Boolean = false, var roles: Set<ChampionRole>? = null,
-                        val clientApi: ClientApi? = null) {
+                        var idealChampionToMasterEntry: Int = -1, val clientApi: ClientApi? = null) {
     val nameLower by lazy {
         name.lowercase()
     }
@@ -46,7 +46,8 @@ data class ChampionInfo(val id: Int = -1, val name: String = "None", val ownersh
 
     override fun toString(): String {
         return "ChampionInfo(id=$id, name='$name', ownershipStatus=$ownershipStatus, masteryPoints=$masteryPoints, currentMasteryPoints=$currentMasteryPoints, " +
-                "nextLevelMasteryPoints=$nextLevelMasteryPoints, level=$level, tokens=$tokens, isSummonerSelectedChamp=$isSummonerSelectedChamp, " +
-                "hasEternal=$hasEternal, roles=$roles, percentageUntilNextLevel='$percentageUntilNextLevel')"
+                "nextLevelMasteryPoints=$nextLevelMasteryPoints, level=$level, tokens=$tokens, isSummonerSelectedChamp=$isSummonerSelectedChamp, hasEternal=$hasEternal, " +
+                "roles=$roles, idealChampionToMasterEntry=$idealChampionToMasterEntry, clientApi=$clientApi, nameLower='$nameLower', " +
+                "percentageUntilNextLevel='$percentageUntilNextLevel', challengesMapping=$challengesMapping, differentChallenges='$differentChallenges')"
     }
 }

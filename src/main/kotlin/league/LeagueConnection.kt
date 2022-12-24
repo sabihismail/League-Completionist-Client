@@ -812,8 +812,25 @@ class LeagueConnection {
                 }
             }
 
-        teamChampions.filterNotNull().forEach {
-            it.isSummonerSelectedChamp = it.id == selectedChamp.championId || it.id == selectedChamp.championPickIntent
+        // Set ideal champion to master based on mastery points and role size
+        if (gameMode == GameMode.ARAM) {
+            val idealChampions = listOf(teamChampions, benchedChampions)
+                .flatMap { lst -> lst?.filter { it?.level!! < 7 }?.map { it } ?: listOf() }
+                .sortedWith(
+                    compareByDescending<ChampionInfo?> { it?.masteryPoints }
+                        .thenByDescending { it?.roles?.size }
+                )
+                .mapIndexed { index, championInfo -> championInfo?.id to (index + 1) }
+                .toMap()
+
+            teamChampions.filterNotNull().forEach {
+                it.isSummonerSelectedChamp = it.id == selectedChamp.championId || it.id == selectedChamp.championPickIntent
+                it.idealChampionToMasterEntry = idealChampions[it.id]!!
+            }
+
+            benchedChampions?.forEach {
+                it.idealChampionToMasterEntry = idealChampions[it.id]!!
+            }
         }
 
         val assignedRole = Role.fromString(selectedChamp.assignedPosition)

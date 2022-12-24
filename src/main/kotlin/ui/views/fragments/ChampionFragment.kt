@@ -43,13 +43,18 @@ class ChampionFragment : Fragment() {
                     else
                         champion.percentageUntilNextLevel
 
-                    blackLabel("Lvl ${champion.level}$extraInfoStr", fontSize = 9.6)
-
-                    blackLabel(champion.differentChallenges, fontSize = 9.0) {
-                        isVisible = champion.differentChallenges != "[]"
+                    var text = "Lvl ${champion.level}$extraInfoStr"
+                    if (champion.idealChampionToMasterEntry != -1) {
+                        text += " (Rec: ${champion.idealChampionToMasterEntry})"
                     }
 
-                    blackLabel("${champion.roles?.sortedBy { it.name }?.joinToString(", ") { it.name.lowercase() }}", fontSize = 9.6)
+                    blackLabel(text, fontSize = 9.0)
+
+                    if (champion.differentChallenges != "[]") {
+                        blackLabel(champion.differentChallenges, fontSize = 9.0)
+                    }
+
+                    blackLabel("${champion.roles?.sortedBy { it.name }?.joinToString(", ") { it.name.lowercase() }}", fontSize = 9.0)
                 }
             }
 
