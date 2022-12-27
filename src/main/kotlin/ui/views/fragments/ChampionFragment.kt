@@ -35,11 +35,7 @@ class ChampionFragment : Fragment() {
 
                 vbox {
                     val extraInfoStr = if (showTokens && setOf(5, 6).any { champion.level == it })
-                        " (T: " + when (champion.level) {
-                            6 -> "${champion.tokens}/3"
-                            5 -> "${champion.tokens}/2"
-                            else -> ""
-                        } + ")"
+                        " (T: ${champion.tokens}/${champion.level / 2})"
                     else
                         champion.percentageUntilNextLevel
 
@@ -48,13 +44,13 @@ class ChampionFragment : Fragment() {
                         text += " (Rec: ${champion.idealChampionToMasterEntry})"
                     }
 
-                    blackLabel(text, fontSize = 9.0)
+                    blackLabel(text, fontSize = 9.6)
+
+                    blackLabel("${champion.roles?.sortedBy { it.name }?.joinToString(", ") { it.name.lowercase() }}", fontSize = 9.6)
 
                     if (champion.differentChallenges != "[]") {
                         blackLabel(champion.differentChallenges, fontSize = 9.0)
                     }
-
-                    blackLabel("${champion.roles?.sortedBy { it.name }?.joinToString(", ") { it.name.lowercase() }}", fontSize = 9.0)
                 }
             }
 
