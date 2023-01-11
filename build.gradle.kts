@@ -25,12 +25,12 @@ repositories {
 }
 
 dependencies {
-    implementation("com.github.stelar7", "R4J", "2.2.5")
+    implementation("com.github.stelar7", "R4J", "2.2.7")
     implementation("com.github.stirante", "lol-client-java-api", "-SNAPSHOT")
     // implementation("com.stirante", "lol-client-java-api", "1.2.8-SNAPSHOT")
     implementation("no.tornado", "tornadofx", "1.7.20")
     implementation("org.apache.commons", "commons-lang3", "3.12.0")
-    implementation("org.junit.jupiter", "junit-jupiter", "5.9.1")
+    implementation("org.junit.jupiter", "junit-jupiter", "5.9.2")
 
     val exposedVersion = "0.41.1"
     implementation("org.jetbrains.exposed", "exposed-core", exposedVersion)
@@ -38,7 +38,7 @@ dependencies {
     implementation("org.jetbrains.exposed", "exposed-jdbc", exposedVersion)
     implementation("org.jetbrains.exposed", "exposed-java-time", exposedVersion)
 
-    implementation("org.xerial", "sqlite-jdbc", "3.39.4.0")
+    implementation("org.xerial", "sqlite-jdbc", "3.40.0.0")
 
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
