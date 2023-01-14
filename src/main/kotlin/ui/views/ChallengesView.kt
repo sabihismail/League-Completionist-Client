@@ -17,10 +17,10 @@ import league.models.json.ChallengeInfo
 import league.models.json.ChallengeSummary
 import tornadofx.*
 import ui.views.fragments.ChallengeFragment
+import util.constants.GenericConstants
 import util.constants.ViewConstants.CHALLENGE_IMAGE_WIDTH
 import util.constants.ViewConstants.DEFAULT_SPACING
 import util.constants.ViewConstants.SCROLLBAR_HEIGHT
-
 
 class ChallengesView : View("LoL Challenges") {
     val currentGameModeProperty = SimpleObjectProperty(GameMode.ANY)
@@ -40,6 +40,7 @@ class ChallengesView : View("LoL Challenges") {
     private val hideMultiTierChallengesProperty = SimpleBooleanProperty(false)
     private val hideCollectionProperty = SimpleBooleanProperty(false)
     private val hideLegacyProperty = SimpleBooleanProperty(true)
+    private val hideNonSeasonChallengesProperty = SimpleBooleanProperty(false)
     private val currentSearchTextProperty = SimpleStringProperty("")
 
     private lateinit var verticalRow: ScrollPane
@@ -67,6 +68,8 @@ class ChallengesView : View("LoL Challenges") {
                 ChallengeFilter(hideNonWinChallengesProperty.get()) { challengeInfo -> challengeInfo.description!!.lowercase().contains("win") },
 
                 ChallengeFilter(hideMultiTierChallengesProperty.get()) { challengeInfo -> challengeInfo.thresholds!!.count() == 1 },
+
+                ChallengeFilter(hideNonSeasonChallengesProperty.get()) { challengeInfo -> challengeInfo.name?.contains(GenericConstants.YEAR) == true },
 
                 ChallengeFilter(true) { challengeInfo ->
                     if (challengeInfo.category == ChallengeCategory.COLLECTION) return@ChallengeFilter true
@@ -120,6 +123,7 @@ class ChallengesView : View("LoL Challenges") {
             hideMultiTierChallengesProperty,
             hideCollectionProperty,
             hideLegacyProperty,
+            hideNonSeasonChallengesProperty,
             currentGameModeProperty,
             currentSearchTextProperty,
         ).forEach {
@@ -148,8 +152,8 @@ class ChallengesView : View("LoL Challenges") {
 
     override val root = vbox {
         alignment = Pos.CENTER
-        minWidth = 1080.0
-        maxWidth = 1080.0
+        minWidth = 1380.0
+        maxWidth = 1380.0
 
         hbox {
             spacing = 0.0
@@ -252,6 +256,7 @@ class ChallengesView : View("LoL Challenges") {
                 checkbox("Hide Non-Title", hideNonTitleChallengesProperty)
                 checkbox("Hide Win", hideWinChallengesProperty)
                 checkbox("Hide Non-Win", hideNonWinChallengesProperty)
+                checkbox("Hide Non-Season", hideNonSeasonChallengesProperty)
                 checkbox("Hide Multi-tier", hideMultiTierChallengesProperty)
                 checkbox("Hide Collection", hideCollectionProperty)
                 checkbox("Hide Legacy", hideLegacyProperty)

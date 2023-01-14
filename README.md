@@ -4,6 +4,9 @@ Just a small application to let you view mastery chest and mastery token
 availability information in a simple, real-time menu. It is intended to 
 be run alongside the LoL client.
 
+### How to Build a Jar
+- Run `./gradle :shadowJar` or use IntelliJ's gradle plugin and look for `shadow/shadowJar`
+
 ### Supported Modes
 - ARAM
   - Mastery Chest &check;

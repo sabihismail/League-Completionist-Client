@@ -27,7 +27,7 @@ class ChallengeFragment : Fragment() {
             }
         }
 
-        blackLabel(challenge.description!!)
+        blackLabel(challenge.descriptiveDescription)
 
         stackpane {
             vbox {

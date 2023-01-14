@@ -269,12 +269,12 @@ open class MainViewController : Controller() {
                 .filter { it.first.currentLevel!! > ChallengeLevel.DIAMOND || (!it.first.maxThresholdReached && it.second.maxThresholdReached) }
                 .sortedWith(compareBy)
 
-            val upgradedSet = upgraded.map { it.second.description }.toHashSet()
-            val progressedSet = progressed.map { it.second.description }.toHashSet()
-            val completedSet = completed.map { it.second.description }.toHashSet()
+            val upgradedSet = upgraded.map { it.second.description + "." + it.second.name }.toHashSet()
+            val progressedSet = progressed.map { it.second.description + "." + it.second.name }.toHashSet()
+            val completedSet = completed.map { it.second.description + "." + it.second.name }.toHashSet()
             val allSet = leagueConnection.challengesUpdatedInfo
                 .filter { it.first.currentLevel != it.second.currentLevel || (!it.first.maxThresholdReached || it.first.hasLeaderboard) }
-                .map { it.first.description }
+                .map { it.first.description + "." + it.second.name }
                 .toHashSet()
             val intersections = listOf(upgradedSet.intersect(progressedSet), progressedSet.intersect(completedSet), completedSet.intersect(upgradedSet))
             if (intersections.any { it.isNotEmpty() }) {

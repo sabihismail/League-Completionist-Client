@@ -6,6 +6,7 @@ import league.models.enums.ChallengeLevel
 import league.models.enums.ChallengeThresholdRewardCategory
 import league.models.enums.GameMode
 import util.KotlinExtensionUtil.toCommaSeparatedNumber
+import util.constants.GenericConstants
 import kotlin.math.abs
 
 
@@ -128,6 +129,9 @@ class ChallengeInfo {
 
     val pointsDifference by lazy { abs(nextLevelPoints - previousLevelPoints) }
 
+    val descriptiveDescription by lazy {
+        description + if (name?.contains(GenericConstants.YEAR) == false) "" else " (${GenericConstants.YEAR})"
+    }
     fun init() {
         initGameMode()
         initRewardTitle()
