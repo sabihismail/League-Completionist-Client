@@ -266,7 +266,7 @@ open class MainViewController : Controller() {
                 .sortedWith(compareBy)
 
             val completed = leagueConnection.challengesUpdatedInfo.filter { it.first.currentLevel == it.second.currentLevel }
-                .filter { it.first.currentLevel!! > ChallengeLevel.DIAMOND || (!it.first.maxThresholdReached && it.second.maxThresholdReached) }
+                .filter { it.first.currentLevel!! > ChallengeLevel.DIAMOND && (!it.first.maxThresholdReached || it.first.hasLeaderboard) }
                 .sortedWith(compareBy)
 
             val upgradedSet = upgraded.map { it.second.descriptiveDescription }.toHashSet()
