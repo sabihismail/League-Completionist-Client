@@ -132,7 +132,7 @@ class LeagueConnection {
                     .thenByDescending { it.tokens }
                     .thenByDescending { it.currentMasteryPoints }
                     .thenByDescending { it.ownershipStatus }
-                    .thenByDescending { !it.hasEternal }
+                    .thenByDescending { it.eternalInfo.any() }
                     .thenByDescending { it.name }
             )
 
@@ -230,7 +230,7 @@ class LeagueConnection {
             .responseObject!!
     }
 
-    private fun craftLoot(recipe: LolLootRecipeWithMilestones?): Boolean {
+    private fun craftLoot(recipe: LolLootRecipeWithMilestones?, extraText: String? = null): Boolean {
         if (recipe == null) return false
 
         val path = "/lol-loot/v1/recipes/${recipe.recipeName}/craft"
@@ -245,7 +245,11 @@ class LeagueConnection {
                 { championInfo[lootIds.first { it.contains("CHAMPION_RENTAL") }.split('_').last().toIntOrNull() ?: 1]?.name }
             ).firstOrNull { !it().isNullOrEmpty() } ?: { "" }
 
-            Logging.log("Crafted '${localizedName()} (${recipe.recipeName})' ($path) with params [${lootIds.joinToString(", ")}]", LogType.INFO)
+            var nameText = localizedName()
+            if (extraText != null) {
+                nameText = "$extraText - $nameText"
+            }
+            Logging.log("Crafted '${nameText} (${recipe.recipeName})' ($path) with params [${lootIds.joinToString(", ")}]", LogType.INFO)
             true
         } else {
             Logging.log("Failed Craft: '${recipe.recipeName}' ($path) with params [${lootIds.joinToString(", ")}]", LogType.INFO)
@@ -351,17 +355,19 @@ class LeagueConnection {
     }
 
     private fun upgradeOrDisenchantEternals(loot: Array<LolLootPlayerLoot>): Boolean {
-        return false
         return loot.filter { it.type == "STATSTONE_SHARD" }.map {
             val recipes = getRecipes(it.lootId)
 
-            val recipe = if (!championInfo.values.first { championInfo -> championInfo.name == it.localizedName.split(' ').first() }.hasEternal) {
+            val info = it.localizedName.split(' ')
+            val champion = info.first()
+            val series = info.last().toInt()
+            val recipe = if (championInfo.values.first { championInfo -> championInfo.name == champion }.eternalInfo[series] == false) {
                 recipes.first { recipe -> recipe.recipeName.lowercase().contains("upgrade") }
             } else {
                 recipes.first { recipe -> recipe.recipeName.lowercase().contains("disenchant") }
             }
 
-            craftLoot(recipe)
+            craftLoot(recipe, extraText = it.localizedName)
             true
         }.any { it }
     }
@@ -448,7 +454,9 @@ class LeagueConnection {
         Logging.log(eternalSummary, LogType.VERBOSE)
 
         val championIdToHasEternal = eternalSummary.associate {
-            it.championId to (it.sets.filter { set -> set.name != "Starter Series" }.sumOf { set -> set.stonesOwned } > 0)
+            it.championId to it.sets.filter { set -> set.name != "Starter Series" }
+                .filter { set -> set.stonesOwned > 0 }
+                .associate { setSummary -> setSummary.name.split(" ").last().toInt() to (setSummary.stonesOwned > 0) }
         }
         Logging.log(championIdToHasEternal, LogType.VERBOSE)
 
@@ -486,7 +494,7 @@ class LeagueConnection {
                 }
 
                 ChampionInfo(it.id, it.name, championOwnershipStatus, championPoints, currentMasteryPoints, nextLevelMasteryPoints, championLevel, tokens,
-                    hasEternal=championIdToHasEternal.getOrDefault(it.id, false), roles=it.roles.map { role -> ChampionRole.fromString(role) }.toSet(),
+                    eternalInfo=championIdToHasEternal.getOrDefault(it.id, mapOf()), roles=it.roles.map { role -> ChampionRole.fromString(role) }.toSet(),
                     clientApi=clientApi)
             }
 

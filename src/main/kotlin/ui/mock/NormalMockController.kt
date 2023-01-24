@@ -52,7 +52,7 @@ class NormalMockController : MainViewController() {
             2 to ChampionInfo(2, "Yuumi", ChampionOwnershipStatus.BOX_ATTAINED, 626271, 0, 1, level = 5),
             4 to ChampionInfo(4, "Fiora", ChampionOwnershipStatus.FREE_TO_PLAY, 15256120, 0, 1, level = 7),
             39 to ChampionInfo(39, "Irelia", ChampionOwnershipStatus.BOX_NOT_ATTAINED, 1626110, 0, 1, level = 2, isSummonerSelectedChamp = true,
-                hasEternal = false
+                eternalInfo = mapOf()
             ),
             8 to ChampionInfo(8, "Volibear", ChampionOwnershipStatus.BOX_NOT_ATTAINED, 522110, 0, 1, level = 0),
         )

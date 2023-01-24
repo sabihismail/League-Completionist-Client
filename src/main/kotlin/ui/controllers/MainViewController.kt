@@ -158,7 +158,7 @@ open class MainViewController : Controller() {
 
         runAsync {
             leagueConnection.championSelectInfo.teamChampions.firstOrNull { championInfo -> championInfo?.isSummonerSelectedChamp == true }
-                ?.apply { hasEternal = leagueConnection.championInfo[id]?.hasEternal == true }
+                ?.apply { eternalInfo = leagueConnection.championInfo[id]?.eternalInfo!! }
         } ui {
             if (it == null) return@ui
 
