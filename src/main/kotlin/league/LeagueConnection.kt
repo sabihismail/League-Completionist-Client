@@ -833,11 +833,11 @@ class LeagueConnection {
 
             teamChampions.filterNotNull().forEach {
                 it.isSummonerSelectedChamp = it.id == selectedChamp.championId || it.id == selectedChamp.championPickIntent
-                it.idealChampionToMasterEntry = idealChampions[it.id]!!
+                it.idealChampionToMasterEntry = idealChampions.getOrDefault(it.id, -1)
             }
 
             benchedChampions?.forEach {
-                it.idealChampionToMasterEntry = idealChampions[it.id]!!
+                it.idealChampionToMasterEntry = idealChampions.getOrDefault(it.id, -1)
             }
         }
 
