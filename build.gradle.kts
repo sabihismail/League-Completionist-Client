@@ -12,8 +12,8 @@ tasks.test {
 }
 
 plugins {
-    kotlin("jvm") version "1.7.10"
-    kotlin("plugin.serialization") version "1.7.0"
+    kotlin("jvm") version "1.8.0"
+    kotlin("plugin.serialization") version "1.8.0"
     id("com.github.johnrengelman.shadow") version "7.1.2"
     application
 }
@@ -25,7 +25,7 @@ repositories {
 }
 
 dependencies {
-    implementation("com.github.stelar7", "R4J", "2.2.7")
+    implementation("com.github.stelar7", "R4J", "2.2.9")
     implementation("com.github.stirante", "lol-client-java-api", "-SNAPSHOT")
     // implementation("com.stirante", "lol-client-java-api", "1.2.8-SNAPSHOT")
     implementation("no.tornado", "tornadofx", "1.7.20")
