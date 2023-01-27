@@ -823,7 +823,7 @@ class LeagueConnection {
         // Set ideal champion to master based on mastery points and role size
         if (gameMode == GameMode.ARAM) {
             val idealChampions = listOf(teamChampions, benchedChampions)
-                .flatMap { lst -> lst?.filter { it?.level!! < 7 }?.map { it } ?: listOf() }
+                .flatMap { lst -> lst?.filter { it?.level!! < 5 }?.map { it } ?: listOf() }
                 .sortedWith(
                     compareByDescending<ChampionInfo?> { it?.masteryPoints }
                         .thenByDescending { it?.roles?.size }
