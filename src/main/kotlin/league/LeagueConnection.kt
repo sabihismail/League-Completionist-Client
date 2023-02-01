@@ -234,8 +234,21 @@ class LeagueConnection {
         if (recipe == null) return false
 
         val path = "/lol-loot/v1/recipes/${recipe.recipeName}/craft"
-        val lootIds = recipe.slots.flatMap { it.lootIds }
-        val postRequest = clientApi!!.executePost(path, lootIds, LolLootPlayerLootUpdate::class.java)
+        var lootIds = recipe.slots.flatMap { it.lootIds }
+        val postRequest = if (recipe.recipeName.contains("STATSTONE_SHARD_")) {
+            recipe.slots.flatMap { it.lootIds }.firstNotNullOf {
+                lootIds = recipe.slots.flatMap { it.lootIds }
+                val postRequest = clientApi!!.executePost(path, lootIds, LolLootPlayerLootUpdate::class.java)
+
+                if (postRequest.isOk) {
+                    postRequest
+                } else {
+                    null
+                }
+            }
+        } else {
+            clientApi!!.executePost(path, lootIds, LolLootPlayerLootUpdate::class.java)
+        }
         val response = postRequest.responseObject
 
         return if (postRequest.isOk && (response.added.isNotEmpty() || response.removed.isNotEmpty() || response.removed.isNotEmpty())) {
@@ -252,7 +265,11 @@ class LeagueConnection {
             Logging.log("Crafted '${nameText} (${recipe.recipeName})' ($path) with params [${lootIds.joinToString(", ")}]", LogType.INFO)
             true
         } else {
-            Logging.log("Failed Craft: '${recipe.recipeName}' ($path) with params [${lootIds.joinToString(", ")}]", LogType.INFO)
+            var nameText = recipe.recipeName
+            if (extraText != null) {
+                nameText = "$extraText - $nameText"
+            }
+            Logging.log("Failed Craft: '$nameText' ($path) with params [${lootIds.joinToString(", ")}]", LogType.INFO)
             false
         }
     }
@@ -368,7 +385,6 @@ class LeagueConnection {
             }
 
             craftLoot(recipe, extraText = it.localizedName)
-            true
         }.any { it }
     }
 
@@ -669,7 +685,7 @@ class LeagueConnection {
         return response.flatMap { it.offers }
     }
 
-    private fun handleEventShop(event: LolEventShopInfo) {
+    private fun handleEventShop(event: LolEventShopInfo, itemText: String = " emote") {
         val shop = getEventShop()
 
         // Shop is not on right now
@@ -677,9 +693,9 @@ class LeagueConnection {
 
         val canPurchase: Boolean
         if (isSmurf) {
-            val item = shop.first { it.localizedTitle.lowercase().contains(" emote") }
+            val item = shop.first { it.localizedTitle.lowercase().contains(itemText) }
 
-            canPurchase = event.currentTokenBalance > item.price
+            canPurchase = event.currentTokenBalance >= item.price
             if (!canPurchase) return
 
             val finalBalance = event.currentTokenBalance - item.price
@@ -779,11 +795,11 @@ class LeagueConnection {
             LeagueApi.updateMatchHistory()
             updateChampionMasteryInfo()
             checkTftBattlepassRewardsAvailable()
+
             checkEventShopRewardsAvailable()
+            runEventShopCleanup()
         }
 
-        checkEventShopRewardsAvailable()
-        runEventShopCleanup()
         if (!isSmurf) {
             role = championSelectInfo.assignedRole
         }
