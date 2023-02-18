@@ -237,7 +237,7 @@ class LeagueConnection {
         var lootIds = recipe.slots.flatMap { it.lootIds }
         val postRequest = if (recipe.recipeName.contains("STATSTONE_SHARD_")) {
             recipe.slots.flatMap { it.lootIds }.firstNotNullOf {
-                lootIds = recipe.slots.flatMap { it.lootIds }
+                lootIds = listOf(recipe.slots.flatMap { it.lootIds }.first())
                 val postRequest = clientApi!!.executePost(path, lootIds, LolLootPlayerLootUpdate::class.java)
 
                 if (postRequest.isOk) {
