@@ -249,8 +249,8 @@ class LeagueConnection {
         } else {
             clientApi!!.executePost(path, lootIds, LolLootPlayerLootUpdate::class.java)
         }
-        val response = postRequest.responseObject
 
+        val response = postRequest.responseObject
         return if (postRequest.isOk && (response.added.isNotEmpty() || response.removed.isNotEmpty() || response.removed.isNotEmpty())) {
             val localizedName = listOf(
                 { LeagueCommunityDragonApi.getLootEntity("loot_name_" + recipe.recipeName.lowercase().replace("_open", "")) },
@@ -353,6 +353,31 @@ class LeagueConnection {
         }.any { it }
     }
 
+    private fun upgradeChampionPermanents(loot: List<LolLootPlayerLoot>, blueEssence: LolLootPlayerLoot): Boolean {
+        return loot.map {
+            val recipes = getRecipes(it.lootId)
+
+            val recipe = if (recipes.size == 1) {
+                recipes.first { recipe -> recipe.recipeName.lowercase().contains("disenchant") }
+            } else {
+                val upgradeRecipe = recipes.first { recipe -> recipe.recipeName.contains("upgrade") }
+                val cost = upgradeRecipe.slots.first { slot -> slot.lootIds.contains(blueEssence.lootId) }.quantity
+
+                if (blueEssence.count > cost) {
+                    upgradeRecipe
+                } else {
+                    null
+                }
+            }
+
+            if (recipe == null) {
+                return@map false
+            }
+
+            craftLoot(recipe, extraText = it.localizedName)
+        }.any { it }
+    }
+
     private fun upgradeMasteryTokens(loot: Array<LolLootPlayerLoot>, onlyShard: Boolean = false): Boolean {
         val shards = loot.filter { it.type == "CHAMPION_RENTAL" }
         val tokens = loot.filter { it.type == "CHAMPION_TOKEN" }
@@ -408,6 +433,7 @@ class LeagueConnection {
         val blueEssence = loot.first { it.lootId == "CURRENCY_champion" } // CURRENCY_RP
 
         val shards = loot.filter { it.type == "CHAMPION_RENTAL" }
+        val permanents = loot.filter { it.type == "CHAMPION" }
         val functions = mutableListOf(
             { craftLoot(loot, "MATERIAL_key_fragment", 3) },
             { disenchantByText(loot, "Little Legends") },
@@ -434,16 +460,18 @@ class LeagueConnection {
 
                 { craftLoot(shards, "CHAMPION_RENTAL_disenchant") { championInfo[it.storeItemId]?.level == 7 } },
                 { craftLoot(shards, "CHAMPION_RENTAL_disenchant") { championInfo[it.storeItemId]?.level == 6 && it.count == 2 } },
-                { craftLoot(shards, "CHAMPION_RENTAL_disenchant") { it.count == 3 &&
+                { craftLoot(shards, "CHAMPION_RENTAL_disenchant") { it.count >= 3 &&
                         !ChampionOwnershipStatus.UNOWNED_SET.contains(championInfo[it.storeItemId]?.ownershipStatus) } },
 
                 { upgradeChampionShard(shards, blueEssence) { ChampionOwnershipStatus.UNOWNED_SET.contains(championInfo[it.storeItemId]?.ownershipStatus) } },
+                { upgradeChampionPermanents(permanents, blueEssence) },
 
                 { disenchantTokenItem(loot, "Unlock new and classic content exclusively for Mythic Essence", "Random Skin Shard") },
             ))
 
             // If we have any unowned champions
-            if (championInfo.map { it.value.ownershipStatus }.any { ChampionOwnershipStatus.UNOWNED_SET.contains(it) }) {
+            val unownedChampion = championInfo.values.firstOrNull { ChampionOwnershipStatus.UNOWNED_SET.contains(it.ownershipStatus) }
+            if (unownedChampion != null) {
                 functions.addAll(mutableListOf(
                     { disenchantByText(loot, "Champion Capsule") },
                     { disenchantByText(loot, "Random Champion Shard") },
@@ -458,8 +486,7 @@ class LeagueConnection {
 
     private fun updateChampionMasteryInfo() {
         val champions = clientApi?.executeGet("/lol-champions/v1/inventories/${summonerInfo.summonerId}/champions",
-            Array<LolChampionsCollectionsChampionImpl>::class.java)?.responseObject ?: return
-        Logging.log(champions, LogType.VERBOSE)
+            Array<LolChampionsCollectionsChampionImpl>::class.java)?.responseObject?.filter { it.active == true } ?: return
 
         val championMasteryList = clientApi!!.executeGet("/lol-collections/v1/inventories/${summonerInfo.summonerId}/champion-mastery",
             Array<LolCollectionsCollectionsChampionMastery>::class.java).responseObject ?: return
