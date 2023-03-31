@@ -45,9 +45,8 @@ open class MainViewController : Controller() {
             normalView.setChampions(FXCollections.observableList(newSortedChampionInfo))
         }
 
-        normalView.currentChallenge.addListener { _, _, newValue ->
-            val newSortedChampionInfo = leagueConnection.getChampionMasteryInfo().filter { newValue == ChallengeMappingEnum.NONE || !it.challengesMapping[newValue]!! }
-            normalView.setChampions(FXCollections.observableList(newSortedChampionInfo))
+        normalView.currentChallenge.addListener { _, _, _ ->
+            normalView.setChampions(leagueConnection.getChampionMasteryInfo())
         }
 
         challengesView.currentGameModeProperty.addListener { _, _, _ ->

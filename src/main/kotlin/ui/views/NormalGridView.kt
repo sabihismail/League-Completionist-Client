@@ -34,6 +34,7 @@ class NormalGridView: View() {
         championListProperty.value = FXCollections.observableList(
             allChampions.value.filter { !eternalsOnlyProperty.value || it.eternalInfo.any { eternal -> eternal.value } }
                 .filter { it.nameLower.contains(championSearchProperty.value.lowercase()) }
+                .filter { currentChallenge.value == ChallengeMappingEnum.NONE || !it.challengesMapping[currentChallenge.value]!! }
         )
     }
 
