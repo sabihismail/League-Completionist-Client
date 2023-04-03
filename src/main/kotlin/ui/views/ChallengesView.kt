@@ -82,7 +82,7 @@ class ChallengesView : View("LoL Challenges") {
                 },
 
                 ChallengeFilter(currentSearchTextProperty.value.isNotEmpty()) { challengeInfo ->
-                    challengeInfo.description!!.lowercase().contains(currentSearchTextProperty.value.lowercase())
+                    challengeInfo.descriptiveDescription.lowercase().contains(currentSearchTextProperty.value.lowercase())
                 },
             )
 

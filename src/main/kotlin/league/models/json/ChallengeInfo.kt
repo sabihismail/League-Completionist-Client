@@ -132,6 +132,7 @@ class ChallengeInfo {
     val descriptiveDescription by lazy {
         description + if (name?.contains(GenericConstants.YEAR) == false) "" else " (${GenericConstants.YEAR})"
     }
+    
     fun init() {
         initGameMode()
         initRewardTitle()
