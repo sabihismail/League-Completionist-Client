@@ -66,7 +66,7 @@ object StringUtil {
         return if (regex.matches(text)) regex.find(text)!!.groups[group]!!.value + " " else default
     }
 
-    fun extractJSON(s: String, trimUntilStr: String? = null, elementLocation: Int = 0): String {
+    fun extractJSON(s: String, trimUntilStr: String? = null, elementLocation: Int = 0, skipStartCount: Int = 0): String {
         var str = s
         val finalJsonValues = mutableListOf<String>()
         var start = 0
@@ -78,6 +78,7 @@ object StringUtil {
                 str = str.substring(trimIndex)
             }
 
+            str = str.substring(skipStartCount)
             start = str.indexOf('{')
             if (start == -1) break
 
@@ -105,8 +106,8 @@ object StringUtil {
         return finalJsonValues[index]
     }
 
-    inline fun <reified T> extractJSONFromString(s: String, trimUntilStr: String? = null, elementLocation: Int = 0): T {
-        val jsonStr = extractJSON(s, trimUntilStr=trimUntilStr, elementLocation=elementLocation)
+    inline fun <reified T> extractJSONFromString(s: String, trimUntilStr: String? = null, elementLocation: Int = 0, skipStartCount: Int = 0): T {
+        val jsonStr = extractJSON(s, trimUntilStr=trimUntilStr, elementLocation=elementLocation, skipStartCount=skipStartCount)
 
         return JSON_FORMAT.decodeFromString(jsonStr)
     }

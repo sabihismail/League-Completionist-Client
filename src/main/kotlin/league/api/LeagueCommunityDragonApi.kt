@@ -158,7 +158,7 @@ object LeagueCommunityDragonApi {
         CHAMPION_ROLE_MAPPING.clear()
 
         val jsonStr = sendRequest(CHAMPION_ROLE_ENDPOINT)
-        val json = StringUtil.extractJSONFromString<RoleMapping>(jsonStr, "a.exports=", elementLocation = -1)
+        val json = StringUtil.extractJSONFromString<RoleMapping>(jsonStr, "function(a){a.exports={", elementLocation = -1, skipStartCount = "function(a){".length + 1)
 
         CHAMPION_ROLE_MAPPING[Role.TOP] = json.top
         CHAMPION_ROLE_MAPPING[Role.JUNGLE] = json.jungle
