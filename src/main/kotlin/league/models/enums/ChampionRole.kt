@@ -1,7 +1,7 @@
 package league.models.enums
 
 enum class ChampionRole {
-    UNKNOWN,
+    ANY,
     MAGE,
     FIGHTER,
     TANK,
@@ -14,7 +14,7 @@ enum class ChampionRole {
             val upper = str.uppercase()
             val r = values().firstOrNull { it.name == upper }
 
-            return r ?: UNKNOWN
+            return r ?: ANY
         }
     }
 }

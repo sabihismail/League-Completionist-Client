@@ -36,13 +36,17 @@ open class MainViewController : Controller() {
 
         leagueConnection.start()
 
-        normalView.currentRole.addListener { _, _, newValue ->
+        normalView.currentLane.addListener { _, _, newValue ->
             manualRoleSelect = true
 
             leagueConnection.role = newValue
 
             val newSortedChampionInfo = leagueConnection.getChampionMasteryInfo()
             normalView.setChampions(FXCollections.observableList(newSortedChampionInfo))
+        }
+
+        normalView.currentChampionRole.addListener { _, _, _ ->
+            normalView.setChampions(leagueConnection.getChampionMasteryInfo())
         }
 
         normalView.currentChallenge.addListener { _, _, _ ->
@@ -70,7 +74,7 @@ open class MainViewController : Controller() {
                         view.currentChampionView.replaceWith(newFragment)
                         view.currentChampionView = newFragment
                     }
-                    runLater { normalView.currentRole.set(Role.ANY) }
+                    runLater { normalView.currentLane.set(Role.ANY) }
                 }
             }
         }
@@ -187,7 +191,7 @@ open class MainViewController : Controller() {
 
         if (ROLE_SPECIFIC_MODES.contains(leagueConnection.gameMode) && !manualRoleSelect) {
             if (!leagueConnection.isSmurf) {
-                runLater { normalView.currentRole.set(leagueConnection.championSelectInfo.assignedRole) }
+                runLater { normalView.currentLane.set(leagueConnection.championSelectInfo.assignedRole) }
             }
         }
 

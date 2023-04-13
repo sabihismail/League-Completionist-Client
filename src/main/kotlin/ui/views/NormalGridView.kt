@@ -8,6 +8,7 @@ import javafx.collections.FXCollections
 import javafx.geometry.Pos
 import league.models.ChampionInfo
 import league.models.enums.ChallengeMappingEnum
+import league.models.enums.ChampionRole
 import league.models.enums.Role
 import tornadofx.*
 import ui.views.fragments.ChampionFragment
@@ -16,7 +17,8 @@ import util.constants.ViewConstants.IMAGE_WIDTH
 
 
 class NormalGridView: View() {
-    val currentRole = SimpleObjectProperty(Role.ANY)
+    val currentLane = SimpleObjectProperty(Role.ANY)
+    val currentChampionRole = SimpleObjectProperty(ChampionRole.ANY)
     val currentChallenge = SimpleObjectProperty(ChallengeMappingEnum.NONE)
 
     private val allChampions = SimpleListProperty<ChampionInfo>()
@@ -34,6 +36,7 @@ class NormalGridView: View() {
         championListProperty.value = FXCollections.observableList(
             allChampions.value.filter { !eternalsOnlyProperty.value || it.eternalInfo.any { eternal -> eternal.value } }
                 .filter { it.nameLower.contains(championSearchProperty.value.lowercase()) }
+                .filter { currentChampionRole.value == ChampionRole.ANY || it.roles?.contains(currentChampionRole.value) == true }
                 .filter { currentChallenge.value == ChallengeMappingEnum.NONE || !it.challengesMapping[currentChallenge.value]!! }
         )
     }
@@ -62,7 +65,7 @@ class NormalGridView: View() {
                 cellHeight = IMAGE_WIDTH
 
                 cellCache {
-                    find<ChampionFragment>(mapOf(ChampionFragment::champion to it, ChampionFragment::showEternals to false)).root
+                    find<ChampionFragment>(mapOf(ChampionFragment::champion to it, ChampionFragment::showEternals to NORMAL_ETERNAL_ENABLED)).root
                 }
             }
 
@@ -89,8 +92,8 @@ class NormalGridView: View() {
                     hbox {
                         alignment = Pos.CENTER_RIGHT
 
-                        label("Role: ")
-                        combobox(currentRole, Role.values().toList())
+                        label("Lane: ")
+                        combobox(currentLane, Role.values().toList())
                     }
 
                     hbox {
@@ -100,11 +103,22 @@ class NormalGridView: View() {
                         combobox(currentChallenge, ChallengeMappingEnum.values().toList())
                     }
 
+                    hbox {
+                        alignment = Pos.CENTER_RIGHT
+
+                        label("Character Role: ")
+                        combobox(currentChampionRole, ChampionRole.values().toList())
+                    }
+
                     checkbox("Eternals Only", eternalsOnlyProperty).apply {
                         eternalsOnlyProperty.onChange { setActiveChampions() }
                     }
                 }
             }
         }
+    }
+
+    companion object {
+        const val NORMAL_ETERNAL_ENABLED = true
     }
 }

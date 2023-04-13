@@ -36,11 +36,13 @@ data class ChampionInfo(val id: Int = -1, val name: String = "None", val ownersh
 
     fun getEternals(showEternals: Boolean): List<LolStatstonesStatstone> {
         return if (eternalInfo.any { it.value } && showEternals) {
-            clientApi?.executeGet("/lol-statstones/v2/player-statstones-self/${id}", Array<LolStatstonesStatstoneSet>::class.java)?.responseObject
+            val lst = clientApi?.executeGet("/lol-statstones/v2/player-statstones-self/${id}", Array<LolStatstonesStatstoneSet>::class.java)?.responseObject
                 ?.filter { set -> set.name != "Starter Series" && set.stonesOwned > 0 }
-                ?.flatMap { set -> set.statstones } ?: listOf()
+                ?.flatMap { set -> set.statstones } ?: emptyList()
+
+            return lst.filter { it.formattedMilestoneLevel.toInt() < 5 }
         } else {
-            listOf()
+            emptyList()
         }
     }
 
