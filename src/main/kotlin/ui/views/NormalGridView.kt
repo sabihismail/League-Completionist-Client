@@ -99,15 +99,15 @@ class NormalGridView: View() {
                     hbox {
                         alignment = Pos.CENTER_RIGHT
 
-                        label("Challenge: ")
-                        combobox(currentChallenge, ChallengeMappingEnum.values().toList())
+                        label("Character Role: ")
+                        combobox(currentChampionRole, ChampionRole.values().toList())
                     }
 
                     hbox {
                         alignment = Pos.CENTER_RIGHT
 
-                        label("Character Role: ")
-                        combobox(currentChampionRole, ChampionRole.values().toList())
+                        label("Challenge: ")
+                        combobox(currentChallenge, ChallengeMappingEnum.values().toList())
                     }
 
                     checkbox("Eternals Only", eternalsOnlyProperty).apply {
