@@ -2,11 +2,11 @@ package league.models
 
 import com.stirante.lolclient.ClientApi
 import db.DatabaseImpl
-import generated.LolStatstonesStatstone
-import generated.LolStatstonesStatstoneSet
 import league.models.enums.ChallengeMappingEnum
 import league.models.enums.ChampionOwnershipStatus
 import league.models.enums.ChampionRole
+import league.models.json.LolStatstonesStatstoneInfo
+import league.models.json.LolStatstonesStatstoneSetInfo
 
 data class ChampionInfo(val id: Int = -1, val name: String = "None", val ownershipStatus: ChampionOwnershipStatus = ChampionOwnershipStatus.NOT_OWNED,
                         val masteryPoints: Int = 1, val currentMasteryPoints: Int = 1, val nextLevelMasteryPoints: Int = 2, val level: Int = 0, val tokens: Int = 0,
@@ -34,9 +34,9 @@ data class ChampionInfo(val id: Int = -1, val name: String = "None", val ownersh
         "[" + challengesMapping.toList().filter { !it.second }.joinToString("|") { ChallengeMappingEnum.mapping[it.first]!! } + "]"
     }
 
-    fun getEternals(showEternals: Boolean): List<LolStatstonesStatstone> {
+    fun getEternals(showEternals: Boolean): List<LolStatstonesStatstoneInfo> {
         return if (eternalInfo.any { it.value } && showEternals) {
-            val lst = clientApi?.executeGet("/lol-statstones/v2/player-statstones-self/${id}", Array<LolStatstonesStatstoneSet>::class.java)?.responseObject
+            val lst = clientApi?.executeGet("/lol-statstones/v2/player-statstones-self/${id}", Array<LolStatstonesStatstoneSetInfo>::class.java)?.responseObject
                 ?.filter { set -> set.name != "Starter Series" && set.stonesOwned > 0 }
                 ?.flatMap { set -> set.statstones } ?: emptyList()
 
