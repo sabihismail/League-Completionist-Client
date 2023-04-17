@@ -23,7 +23,7 @@ class LolStatstonesStatstoneInfo {
     var playerRecord: LolStatstonesStatstonePlayerRecord? = null
     */
 
-    var summaryThreshold = lazy {
+    val summaryThreshold by lazy {
         LeagueCommunityDragonApi.getEternal(statstoneId)
             .dropLast(1)
             .filter { it.first > parseNextMilestone(it.second, nextMilestone) }
