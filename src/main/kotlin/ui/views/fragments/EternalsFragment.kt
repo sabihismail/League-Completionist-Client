@@ -28,7 +28,7 @@ class EternalsFragment : Fragment() {
                 .forEach {
                     val regex = StringUtil.getSafeRegex(ETERNALS_DESCRIPTION_REGEX, it.description)
                     blackLabel(regex + "Lvl ${it.formattedMilestoneLevel} - ${it.formattedValue}/${it.nextMilestone}", fontSize = fontSizeIn, isWrapText = false) {
-                        val txt = if (it.formattedMilestoneLevel.toInt() >= 5) {
+                        val txt = if (it.formattedMilestoneLevel.toInt() >= 4) {
                             it.description
                         } else {
                             "${it.description} (${it.summaryThreshold})"
