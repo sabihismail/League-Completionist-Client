@@ -90,7 +90,7 @@ class LeagueConnection {
             val dataJson = FieldUtils.readField(event, "dataJson", true) as JsonObject
             val data = GSON.fromJson(dataJson, LolEventShopInfo::class.java)
 
-            handleEventShop(data)
+            handleEventShop(data, " orb")
         },
     )
 
@@ -415,7 +415,7 @@ class LeagueConnection {
 
     fun runEventShopCleanup() {
         val data = clientApi?.executeGet("/lol-event-shop/v1/info", LolEventShopInfo::class.java)?.responseObject ?: LolEventShopInfo(0)
-        handleEventShop(data)
+        handleEventShop(data, " orb")
     }
 
     fun runLootCleanup() {
@@ -712,7 +712,7 @@ class LeagueConnection {
         return response.flatMap { it.offers }
     }
 
-    private fun handleEventShop(event: LolEventShopInfo, itemText: String = " emote") {
+    private fun handleEventShop(event: LolEventShopInfo, @Suppress("SameParameterValue") itemText: String) {
         val shop = getEventShop()
 
         // Shop is not on right now
@@ -732,7 +732,7 @@ class LeagueConnection {
 
             if (purchase?.statusCode == 200) {
                 val newEvent = LolEventShopInfo(finalBalance)
-                handleEventShop(newEvent)
+                handleEventShop(newEvent, " orb")
             }
         } else if (isMain) {
             Logging.log("Main not supported", LogType.INFO, messageType = LogMessageType.EVENT_SHOP)
