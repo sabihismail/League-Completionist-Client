@@ -39,7 +39,7 @@ class ChallengesView : View("LoL Challenges") {
     private val hideNonWinChallengesProperty = SimpleBooleanProperty(false)
     private val hideMultiTierChallengesProperty = SimpleBooleanProperty(false)
     private val hideCollectionProperty = SimpleBooleanProperty(false)
-    private val hideLegacyProperty = SimpleBooleanProperty(true)
+    private val hideLegacyProperty = SimpleBooleanProperty(false)
     private val hideNonSeasonChallengesProperty = SimpleBooleanProperty(false)
     private val currentSearchTextProperty = SimpleStringProperty("")
 

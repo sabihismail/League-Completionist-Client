@@ -1,10 +1,15 @@
 package league.models.enums
 
 import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonNames
 
+@Serializable
 @Suppress("unused", "UNUSED_PARAMETER")
 enum class ChallengeLevel(i: Int) {
-    @SerializedName("NONE")
+    @OptIn(ExperimentalSerializationApi::class)
+    @JsonNames("NONE", "")
     NONE(0),
     @SerializedName("IRON")
     IRON(1),

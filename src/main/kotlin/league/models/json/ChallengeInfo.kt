@@ -13,39 +13,39 @@ import kotlin.math.abs
 @Serializable
 @Suppress("unused")
 class ChallengeInfo {
-    var id: Long? = null
-    var name: String? = null
-    var description: String? = null
-    var capstoneGroupId: Long? = null
+    // var availableIds: List<>
+    var capstoneGroupId: Double? = null
     var capstoneGroupName: String? = null
-    var capstoneId: Long? = null
-    //var category: String? = null
-    //var currentLevel: String? = null
-    var currentLevelAchievedTime: Long? = null
+    var category: ChallengeCategory? = null
+    var currentLevel: ChallengeLevel? = null
+    var currentLevelAchievedTime: Double? = null
     var currentThreshold: Double? = null
     var currentValue: Double? = null
+    var description: String? = null
     var descriptionShort: String? = null
+    // var friendsAtLevels: List<>
     var gameModes: List<String>? = null
     var hasLeaderboard: Boolean = false
-    var iconPath: String? = null
+    var id: Double? = null
+    var idListType: String? = null
     var isApex: Boolean? = null
     var isCapstone: Boolean? = null
     var isReverseDirection: Boolean? = null
+    var name: String? = null
     var nextLevel: ChallengeLevel? = null
-    var nextLevelIconPath: String? = null
     var nextThreshold: Double? = null
+    var parentId: Double? = null
+    var parentName: String? = null
     var percentile: Double? = null
-    var pointsAwarded: Long? = null
-    var position: Int? = null
-    var previousLevel: String? = null
+    var pointsAwarded: Double? = null
+    var position: Double? = null
+    var previousLevel: ChallengeLevel? = null
     var previousValue: Double? = null
+    var priority: Double? = null
+    var retireTimestamp: Double? = null
     var source: String? = null
-    //var thresholds: Any? = null
-    var valueMapping: String? = null
-
     var thresholds: Map<ChallengeLevel, ChallengeThreshold>? = null
-    var category: ChallengeCategory? = null
-    var currentLevel: ChallengeLevel? = null
+    var valueMapping: String? = null
 
     val allThresholds by lazy {
         thresholds!!.toList().sortedBy { it.first }
@@ -157,16 +157,6 @@ class ChallengeInfo {
 
     operator fun minus(other: ChallengeInfo): Int {
         return (currentValue!! - other.currentValue!!).toInt()
-    }
-
-    override fun toString(): String {
-        return "ChallengeInfo(id=$id, name=$name, description=$description, capstoneGroupId=$capstoneGroupId, capstoneGroupName=$capstoneGroupName, " +
-                "capstoneId=$capstoneId, currentLevelAchievedTime=$currentLevelAchievedTime, currentThreshold=$currentThreshold, currentValue=$currentValue, " +
-                "descriptionShort=$descriptionShort, gameModes=$gameModes, hasLeaderboard=$hasLeaderboard, iconPath=$iconPath, " +
-                "isApex=$isApex, isCapstone=$isCapstone, isReverseDirection=$isReverseDirection, nextLevel=$nextLevel, " +
-                "nextLevelIconPath=$nextLevelIconPath, nextThreshold=$nextThreshold, percentile=$percentile, pointsAwarded=$pointsAwarded, position=$position, " +
-                "previousLevel=$previousLevel, previousValue=$previousValue, source=$source, valueMapping=$valueMapping, thresholds=$thresholds, category=$category, " +
-                "currentLevel=$currentLevel, rewardTitle='$rewardTitle', rewardLevel=$rewardLevel, hasRewardTitle=$hasRewardTitle)"
     }
 
     companion object {

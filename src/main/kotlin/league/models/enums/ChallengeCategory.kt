@@ -4,6 +4,8 @@ import com.google.gson.annotations.SerializedName
 
 @Suppress("unused", "UNUSED_PARAMETER")
 enum class ChallengeCategory(i: Int) {
+    @SerializedName("NONE")
+    NONE(0),
     @SerializedName("EXPERTISE")
     EXPERTISE(1),
     @SerializedName("TEAMWORK")

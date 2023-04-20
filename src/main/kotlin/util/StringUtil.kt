@@ -112,7 +112,7 @@ object StringUtil {
         return JSON_FORMAT.decodeFromString(jsonStr)
     }
 
-    inline fun <reified T> extractJSONMapFromString(s: String, trimUntilStr: String? = null, elementLocation: Int = 0): HashMap<String, T> {
+    inline fun <reified T> extractJsonMapFromString(s: String, trimUntilStr: String? = null, elementLocation: Int = 0): HashMap<String, T> {
         val jsonStr = extractJSON(s, trimUntilStr=trimUntilStr, elementLocation=elementLocation)
         val json = JSON_FORMAT.parseToJsonElement(jsonStr)
 

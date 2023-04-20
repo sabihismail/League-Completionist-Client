@@ -571,9 +571,11 @@ class LeagueConnection {
     }
 
     fun updateChallengesInfo() {
-        val challenges = clientApi!!.executeGet("/lol-challenges/v1/challenges/local-player", Array<ChallengeInfo>::class.java).responseObject
+        val challengesResult = clientApi!!.executeGet("/lol-challenges/v1/challenges/local-player", Map::class.java).responseObject
+        val jsonStr = GSON.toJson(challengesResult)
+        val json = StringUtil.extractJsonMapFromString<ChallengeInfo>(jsonStr)
 
-        val sections = challenges.groupBy { it.category!! }
+        val sections = json.values.groupBy { it.category!! }
             .map { entry ->
                 Pair(entry.key, entry.value.sortedWith(
                     compareBy<ChallengeInfo> { it.isComplete }
@@ -588,7 +590,7 @@ class LeagueConnection {
 
         sections.values.forEach { value -> value.forEach { it.init() } }
 
-        challengeInfo = sections
+        challengeInfo = sections.filter { it.key != ChallengeCategory.NONE }
         challengeInfoSummary = clientApi!!.executeGet("/lol-challenges/v1/summary-player-data/local-player", ChallengeSummary::class.java).responseObject
     }
 

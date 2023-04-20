@@ -148,7 +148,7 @@ object LeagueCommunityDragonApi {
         QUEUE_MAPPING.clear()
 
         val jsonStr = sendRequest(QUEUE_TYPE_ENDPOINT)
-        val json = StringUtil.extractJSONMapFromString<ApiQueueInfoResponse>(jsonStr)
+        val json = StringUtil.extractJsonMapFromString<ApiQueueInfoResponse>(jsonStr)
 
         QUEUE_MAPPING = HashMap(json.mapKeys { it.key.toInt() })
         CacheUtil.addJsonCache(CacheType.JSON, ::QUEUE_MAPPING, append = versionEscaped)
