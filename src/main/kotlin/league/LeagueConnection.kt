@@ -81,10 +81,11 @@ class LeagueConnection {
             runLootCleanup()
         },
         "/lol-challenges/v1/my-updated-challenges/.*".toRegex() to { event ->
-            handleChallengesChange((event.data as Array<*>).map {
-                val obj = GSON.toJson(it)
-                GSON.fromJson(obj, ChallengeInfo::class.java)
-            })
+            val dataJson = FieldUtils.readField(event, "dataJson", true) as JsonObject
+            val jsonStr = GSON.toJson(dataJson)
+            val json = StringUtil.extractJsonMapFromString<ChallengeInfo>(jsonStr)
+
+            handleChallengesChange(json.values.toList())
         },
         "/lol-event-shop/v1/info".toRegex() to { event ->
             val dataJson = FieldUtils.readField(event, "dataJson", true) as JsonObject
