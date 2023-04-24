@@ -14,7 +14,7 @@ import util.constants.ViewConstants.DEFAULT_SPACING
 import util.constants.ViewConstants.IMAGE_SPACING_WIDTH
 import util.constants.ViewConstants.IMAGE_WIDTH
 
-class ChallengesUpdatedView : View("LoL Challenges - Updated") {
+class ChallengesUpdatedView : View("League Challenges - Updated") {
     val challengesProgressedProperty = SimpleListProperty<Pair<ChallengeInfo, ChallengeInfo>>()
     val challengesCompletedProperty = SimpleListProperty<Pair<ChallengeInfo, ChallengeInfo>>()
     val challengesUpgradedProperty = SimpleListProperty<Pair<ChallengeInfo, ChallengeInfo>>()

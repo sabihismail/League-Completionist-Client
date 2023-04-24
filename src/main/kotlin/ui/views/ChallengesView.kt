@@ -22,7 +22,7 @@ import util.constants.ViewConstants.CHALLENGE_IMAGE_WIDTH
 import util.constants.ViewConstants.DEFAULT_SPACING
 import util.constants.ViewConstants.SCROLLBAR_HEIGHT
 
-class ChallengesView : View("LoL Challenges") {
+class ChallengesView : View("League Challenges") {
     val currentGameModeProperty = SimpleObjectProperty(GameMode.ANY)
 
     private val challengesSummaryProperty = SimpleObjectProperty<ChallengeSummary>()
