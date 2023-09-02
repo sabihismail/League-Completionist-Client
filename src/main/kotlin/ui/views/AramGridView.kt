@@ -6,6 +6,7 @@ import league.models.ChampionInfo
 import tornadofx.*
 import ui.views.fragments.ChampionFragment
 import ui.views.util.boldLabel
+import util.constants.ViewConstants.IMAGE_HORIZONTAL_COUNT
 import util.constants.ViewConstants.IMAGE_SPACING_WIDTH
 import util.constants.ViewConstants.IMAGE_WIDTH
 
@@ -26,7 +27,7 @@ class AramGridView: View() {
                 paddingBottom = 16.0
 
                 maxRows = 2
-                maxCellsInRow = 5
+                maxCellsInRow = IMAGE_HORIZONTAL_COUNT
                 cellWidth = IMAGE_WIDTH
                 cellHeight = IMAGE_WIDTH
 
@@ -40,7 +41,7 @@ class AramGridView: View() {
                 alignment = Pos.CENTER
 
                 maxRows = 1
-                maxCellsInRow = 5
+                maxCellsInRow = IMAGE_HORIZONTAL_COUNT
                 cellWidth = IMAGE_WIDTH
                 cellHeight = IMAGE_WIDTH
                 horizontalCellSpacing = IMAGE_SPACING_WIDTH

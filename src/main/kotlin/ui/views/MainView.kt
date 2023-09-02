@@ -24,8 +24,10 @@ import util.constants.ViewConstants.CHAMPION_STATUS_AVAILABLE_CHEST_COLOR
 import util.constants.ViewConstants.CHAMPION_STATUS_NOT_OWNED_COLOR
 import util.constants.ViewConstants.CHAMPION_STATUS_UNAVAILABLE_CHEST_COLOR
 import util.constants.ViewConstants.DEFAULT_SPACING
+import util.constants.ViewConstants.IMAGE_HORIZONTAL_COUNT
 import util.constants.ViewConstants.IMAGE_SPACING_WIDTH
 import util.constants.ViewConstants.IMAGE_WIDTH
+import util.constants.ViewConstants.SCROLLBAR_WIDTH
 
 
 class MainView: View("League Mastery Box Client") {
@@ -124,6 +126,13 @@ class MainView: View("League Mastery Box Client") {
                     paddingHorizontal = 8.0
                     spacing = 8.0
 
+                    button("Friends").apply {
+                        action {
+                            val stage = find<FriendsView>().openWindow(owner = null)
+                            ViewUtil.moveToScreen(stage)
+                        }
+                    }
+
                     button("View Challenges").apply {
                         enableWhen { summonerProperty.select { (it.status == SummonerStatus.LOGGED_IN_AUTHORIZED).toProperty() } }
                         action {
@@ -193,7 +202,7 @@ class MainView: View("League Mastery Box Client") {
     }
 
     companion object {
-        const val APP_WIDTH = IMAGE_WIDTH * 5 + IMAGE_SPACING_WIDTH * (5 + 2) + 40.0
+        const val APP_WIDTH = IMAGE_WIDTH * IMAGE_HORIZONTAL_COUNT + IMAGE_SPACING_WIDTH * (IMAGE_HORIZONTAL_COUNT * 2) + (IMAGE_HORIZONTAL_COUNT * 2) + SCROLLBAR_WIDTH
         const val APP_HEIGHT = 960.0
     }
 }

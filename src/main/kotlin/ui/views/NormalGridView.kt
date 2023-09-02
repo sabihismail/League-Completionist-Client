@@ -13,6 +13,7 @@ import league.models.enums.Role
 import tornadofx.*
 import ui.views.fragments.ChampionFragment
 import ui.views.util.boldLabel
+import util.constants.ViewConstants.IMAGE_HORIZONTAL_COUNT
 import util.constants.ViewConstants.IMAGE_WIDTH
 
 
@@ -60,7 +61,7 @@ class NormalGridView: View() {
                 paddingBottom = 8.0
 
                 maxRows = 32
-                maxCellsInRow = 5
+                maxCellsInRow = IMAGE_HORIZONTAL_COUNT
                 cellWidth = IMAGE_WIDTH
                 cellHeight = IMAGE_WIDTH
 

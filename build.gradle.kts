@@ -31,14 +31,15 @@ dependencies {
     implementation("no.tornado", "tornadofx", "1.7.20")
     implementation("org.apache.commons", "commons-lang3", "3.12.0")
     implementation("org.junit.jupiter", "junit-jupiter", "5.9.2")
+    implementation("com.github.oshi", "oshi-core-java11", "6.4.5")
+    implementation("com.squareup.okhttp3", "okhttp", "4.11.0")
+    implementation("org.xerial", "sqlite-jdbc", "3.40.0.0")
 
     val exposedVersion = "0.41.1"
     implementation("org.jetbrains.exposed", "exposed-core", exposedVersion)
     implementation("org.jetbrains.exposed", "exposed-dao", exposedVersion)
     implementation("org.jetbrains.exposed", "exposed-jdbc", exposedVersion)
     implementation("org.jetbrains.exposed", "exposed-java-time", exposedVersion)
-
-    implementation("org.xerial", "sqlite-jdbc", "3.40.0.0")
 
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")

@@ -657,7 +657,7 @@ class LeagueConnection {
                         if (event == null || event.uri == null) return
 
                         val mappedRegex = eventListenerMapping.keys.firstOrNull { event.uri.matches(it) }
-                        val bad = listOf("/lol-hovercard", "/lol-chat", "/lol-game-client-chat", "/riot-messaging-service", "/lol-patch/v1/products/league_of_legends",
+                        val bad = listOf("/lol-hovercard", "/lol-game-client-chat", "/riot-messaging-service", "/lol-patch/v1/products/league_of_legends",
                             "/patcher/v1/products/league_of_legends", "/lol-settings", "/data-store", "/lol-premade-voice", "/lol-matchmaking/v1/search",
                             "/lol-loadouts/v1/loadouts/scope/champion", "/lol-suggested-players/v1/suggested-player", "/lol-matchmaking/v1/ready-check",
                             "/lol-clash", "/lol-champ-select/v1/sfx-notifications", "/lol-regalia/v2/summoners/", "/lol-league-session/v1/league-session-token",
