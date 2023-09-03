@@ -5,6 +5,7 @@ package league.models.json
 import com.google.gson.annotations.SerializedName
 import kotlinx.serialization.Serializable
 
+val PRODUCT_MAPPING = mapOf(LolProductName.VALORANT to "valorant", LolProductName.LEAGUE_OF_LEGENDS to "league")
 
 @Serializable
 enum class LolProductName {
@@ -12,7 +13,11 @@ enum class LolProductName {
     LEAGUE_OF_LEGENDS,
 
     @SerializedName("valorant")
-    VALORANT,
+    VALORANT,;
+
+    override fun toString(): String {
+        return PRODUCT_MAPPING[this] ?: ""
+    }
 }
 
 @Serializable

@@ -25,6 +25,11 @@ class FriendsView : View("Friend List") {
     private val userIdMapping = hashMapOf<String, String>()
     private val friendsLst = HashMap<String, Array<LolChatFriendResourceImpl>>()
 
+    private val BOOLEAN_FILTER_MAPPING = listOf<Pair<SimpleBooleanProperty, (LolChatFriendResourceImpl) -> Boolean>>(
+        Pair(isOnlineProperty) { it.availability != LolAvailability.OFFLINE },
+        Pair(isHideMobileProperty) { it.availability != LolAvailability.MOBILE },
+    )
+
     override val root = borderpane {
         prefWidth = MainView.APP_WIDTH
         prefHeight = MainView.APP_HEIGHT
@@ -32,7 +37,7 @@ class FriendsView : View("Friend List") {
         center = tableview(friends) {
             column("Account", LolChatFriendResourceImpl::ownerFriend) { minWidth = 50.0 }
             column("Friend Name", LolChatFriendResourceImpl::gameName) { minWidth = 100.0 }
-            column("Note", LolChatFriendResourceImpl::note) { minWidth = 100.0 }
+            column("Note", LolChatFriendResourceImpl::note) { minWidth = 300.0 }
             column("Game", LolChatFriendResourceImpl::product) { minWidth = 150.0 }
         }
 
@@ -126,13 +131,8 @@ class FriendsView : View("Friend List") {
                 lst = lst.filter { it.product?.name?.lowercase()?.contains(tagStr) == true || it.note?.lowercase()?.contains(tagStr) == true }
             }
 
-            val booleanMapping = listOf<Pair<SimpleBooleanProperty, (LolChatFriendResourceImpl) -> Boolean>>(
-                Pair(isOnlineProperty) { it.availability != LolAvailability.OFFLINE },
-                Pair(isHideMobileProperty) { it.availability != LolAvailability.MOBILE },
-            )
-
-            val filters = booleanMapping.filter { map -> map.first.get() }.map { it.second }
-            filters.forEach { lst = lst.filter(it) }
+            val booleanFilters = BOOLEAN_FILTER_MAPPING.filter { map -> map.first.get() }.map { it.second }
+            booleanFilters.forEach { lst = lst.filter(it) }
 
             lst
         } ui { lst ->
