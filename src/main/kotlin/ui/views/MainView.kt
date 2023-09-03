@@ -34,6 +34,7 @@ class MainView: View("League Mastery Box Client") {
     val defaultGridView = find(DefaultGridView::class)
     val masteryAccountView = find(MasteryAccountView::class)
     var currentChampionView = find(ChampionFragment::class)
+    val friendsView = find(FriendsView::class)
 
     val summonerProperty = SimpleObjectProperty(SummonerInfo())
     val chestProperty = SimpleObjectProperty(MasteryChestInfo())
@@ -128,7 +129,8 @@ class MainView: View("League Mastery Box Client") {
 
                     button("Friends").apply {
                         action {
-                            val stage = find<FriendsView>().openWindow(owner = null)
+                            val stage = friendsView.openWindow(owner = null)
+                            stage?.setOnHiding { friendsView.onClose() }
                             ViewUtil.moveToScreen(stage)
                         }
                     }

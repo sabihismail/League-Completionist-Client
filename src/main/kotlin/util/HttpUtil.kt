@@ -1,32 +1,40 @@
 package util
 
-import okhttp3.Headers
-import okhttp3.OkHttpClient
-import okhttp3.Request
+import league.util.LeagueConnectionUtil
+import org.apache.hc.client5.http.classic.methods.HttpGet
+import org.apache.hc.core5.http.Header
+import org.apache.hc.core5.http.io.entity.EntityUtils
 import util.constants.GenericConstants.GSON
+import java.net.URI
 
 object HttpUtil {
-    fun makeGetRequest(url: String, headers: Headers? = null): String {
-        val client = OkHttpClient()
+    private val HTTP_CLIENT = LeagueConnectionUtil.createHttpClient()
 
-        var requestBuilder = Request.Builder()
-            .url(url)
-
-        if (headers != null) {
-            requestBuilder = requestBuilder.headers(headers)
+    fun makeGetRequest(url: String, headers: List<Header> = listOf()): String {
+        val method = HttpGet(URI(url))
+        for (header in headers) {
+            method.addHeader(header)
         }
 
-        val request = requestBuilder.get().build()
+        HTTP_CLIENT.execute(method).use { response ->
+            if (response.code != 200) {
+                println("[makeGetRequest] Failed querying $url, headers=${headers.map { "${it.name}:${it.value}" }}")
+            } else {
+                val t = LeagueConnectionUtil.dumpStream(response.entity.content)
+                EntityUtils.consume(response.entity)
 
-        val response = client.newCall(request).execute()
-        val responseString = response.body?.string() ?: ""
+                return t ?: ""
+            }
+        }
 
-        return responseString
+        return ""
     }
 
-    inline fun <reified S : Class<T>, T> makeGetRequestJson(url: String, headers: Headers? = null): Class<T> {
+    inline fun <reified T: Any> makeGetRequestJson(url: String, headers: List<Header> = listOf()): T? {
         val stringResponse = makeGetRequest(url, headers = headers)
 
-        return GSON.fromJson(stringResponse, S::class.java)
+        if (stringResponse.isBlank()) return null
+
+        return GSON.fromJson(stringResponse, T::class.java)
     }
 }

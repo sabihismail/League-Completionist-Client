@@ -61,37 +61,39 @@ object LeagueConnectionUtil {
                 val path = File(File(clientPath), "lockfile").absolutePath
                 val lockfile = readFile(path)
                 if (lockfile == null) {
+                    println("Lockfile not found!")
                     logConsumer.accept("Lockfile not found!")
-                } else {
-                    logConsumer.accept("Lockfile found: $lockfile")
-                    val split = lockfile.split(":".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-                    val password = split[3]
-                    val token = String(Base64.getEncoder().encode("riot:$password".toByteArray()))
-                    val port = split[2].toInt()
-                    logConsumer.accept("Token: $token")
-                    logConsumer.accept("Port: $port")
-                    logConsumer.accept("Executing test request")
+                    return
+                }
 
-                    val client = createHttpClient()
-                    val method = HttpGet(URI("https://127.0.0.1:$port/system/v1/builds"))
-                    method.addHeader("Authorization", "Basic $token")
-                    method.addHeader("Accept", "*/*")
-                    client.execute(method).use { response ->
-                        val b = response.code == 200
-                        if (!b) {
-                            logConsumer.accept("Status code: " + response.code)
-                        } else {
-                            val t = dumpStream(response.entity.content)
-                            EntityUtils.consume(response.entity)
-                            logConsumer.accept("Response: $t")
-                        }
+                logConsumer.accept("Lockfile found: $lockfile")
+                val split = lockfile.split(":".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+                val password = split[3]
+                val token = String(Base64.getEncoder().encode("riot:$password".toByteArray()))
+                val port = split[2].toInt()
+                logConsumer.accept("Token: $token")
+                logConsumer.accept("Port: $port")
+                logConsumer.accept("Executing test request")
+
+                val client = createHttpClient()
+                val method = HttpGet(URI("https://127.0.0.1:$port/system/v1/builds"))
+                method.addHeader("Authorization", "Basic $token")
+                method.addHeader("Accept", "*/*")
+                client.execute(method).use { response ->
+                    val b = response.code == 200
+                    if (!b) {
+                        logConsumer.accept("Status code: " + response.code)
+                    } else {
+                        val t = dumpStream(response.entity.content)
+                        EntityUtils.consume(response.entity)
+                        logConsumer.accept("Response: $t")
                     }
                 }
             }
         }
     }
 
-    private fun createHttpClient(): CloseableHttpClient {
+    fun createHttpClient(): CloseableHttpClient {
         val requestConfig = RequestConfig.custom()
             .setConnectTimeout(Timeout.ofMilliseconds(5000))
             .setResponseTimeout(Timeout.ofMilliseconds(5000))
@@ -116,7 +118,7 @@ object LeagueConnectionUtil {
     }
 
     private fun readFile(path: String): String? {
-        try {
+        return try {
             val scanner = Scanner(InputStreamReader(FileInputStream(path)))
             val sb = StringBuilder()
             while (scanner.hasNextLine()) {
@@ -126,14 +128,13 @@ object LeagueConnectionUtil {
                 sb.append(scanner.nextLine())
             }
             scanner.close()
-            return sb.toString()
+            sb.toString()
         } catch (e: FileNotFoundException) {
-            e.printStackTrace()
+            null
         }
-        return null
     }
 
-    private fun dumpStream(inputStream: InputStream): String? {
+    fun dumpStream(inputStream: InputStream): String? {
         val s = Scanner(inputStream).useDelimiter("\\A")
         return if (s.hasNext()) s.next() else ""
     }
