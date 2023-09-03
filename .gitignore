@@ -75,3 +75,4 @@ kotlin-ide/
 cache/
 database.db
 config.json
+ui.views.FriendsView.properties

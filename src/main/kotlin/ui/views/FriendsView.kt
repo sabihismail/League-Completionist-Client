@@ -8,6 +8,7 @@ import javafx.collections.FXCollections
 import javafx.geometry.Pos
 import league.models.json.LolAvailability
 import league.models.json.LolChatFriendResourceImpl
+import league.models.json.lolChatFriendResourceImplPropertyMap
 import org.apache.hc.core5.http.HttpHeaders
 import org.apache.hc.core5.http.message.BasicHeader
 import tornadofx.*
@@ -18,7 +19,7 @@ import java.util.*
 
 class FriendsView : View("Friend List") {
     private val friends = SimpleListProperty<LolChatFriendResourceImpl>()
-    private val searchProperty = SimpleStringProperty(this, TAG, config.string(TAG) ?: "")
+    private val searchProperty = SimpleStringProperty(this, SEARCH_FILTER, config.string(SEARCH_FILTER) ?: "")
     private val isOnlineProperty = SimpleBooleanProperty(this, IS_ONLINE, config.boolean(IS_ONLINE) ?: true)
     private val isHideMobileProperty = SimpleBooleanProperty(this, IS_HIDE_MOBILE, config.boolean(IS_HIDE_MOBILE) ?: true)
 
@@ -36,15 +37,17 @@ class FriendsView : View("Friend List") {
 
         center = tableview(friends) {
             column("Account", LolChatFriendResourceImpl::ownerFriend) { minWidth = 50.0 }
-            column("Friend Name", LolChatFriendResourceImpl::gameName) { minWidth = 100.0 }
+            column("Friend Name", LolChatFriendResourceImpl::gameName) { minWidth = 150.0 }
             column("Note", LolChatFriendResourceImpl::note) { minWidth = 300.0 }
             column("Game") {
                 minWidth = 150.0
 
                 if (it.value.availability == LolAvailability.MOBILE) {
                     "mobile".toProperty()
-                } else {
+                } else if (it.value.product != null) {
                     it.value.product.toString().toProperty()
+                } else {
+                    "".toProperty()
                 }
             }
         }
@@ -58,24 +61,24 @@ class FriendsView : View("Friend List") {
                 alignment = Pos.CENTER_LEFT
                 spacing = 10.0
 
-                label("Tag: ")
+                label("Filter: ")
                 textfield(searchProperty) {
                     textProperty().addListener { _, _, new ->
-                        config[TAG] = new
+                        config[SEARCH_FILTER] = new
                         refresh()
                     }
                 }
 
                 checkbox("Is Online", isOnlineProperty).apply {
                     isOnlineProperty.onChange {
-                        config[IS_ONLINE] = it
+                        config[IS_ONLINE] = it.toString()
                         refresh()
                     }
                 }
 
                 checkbox("Is Hide Mobile", isHideMobileProperty).apply {
                     isHideMobileProperty.onChange {
-                        config[IS_HIDE_MOBILE] = it
+                        config[IS_HIDE_MOBILE] = it.toString()
                         refresh()
                     }
                 }
@@ -134,13 +137,13 @@ class FriendsView : View("Friend List") {
         runAsync {
             var lst = friendsLst.flatMap { it.value.toList() }
 
-            val tagStr = searchProperty.value.toString()
-            if (tagStr.isNotBlank()) {
-                lst = lst.filter { it.product?.name?.lowercase()?.contains(tagStr) == true || it.note?.lowercase()?.contains(tagStr) == true }
-            }
-
             val booleanFilters = booleanFilterMapping.filter { map -> map.first.get() }.map { it.second }
             booleanFilters.forEach { lst = lst.filter(it) }
+
+            val tagStr = searchProperty.value.toString().lowercase()
+            if (tagStr.isNotBlank()) {
+                lst = lst.filter { x -> lolChatFriendResourceImplPropertyMap.any { it.getter.call(x).toString().lowercase().contains(tagStr) } }
+            }
 
             lst
         } ui { lst ->
@@ -155,7 +158,7 @@ class FriendsView : View("Friend List") {
     companion object {
         val timer = Timer()
 
-        const val TAG = "tag"
+        const val SEARCH_FILTER = "tag"
         const val IS_ONLINE = "is_online"
         const val IS_HIDE_MOBILE = "is_hide_mobile"
     }

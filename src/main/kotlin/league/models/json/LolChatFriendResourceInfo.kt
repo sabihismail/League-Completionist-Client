@@ -4,6 +4,7 @@ package league.models.json
 
 import com.google.gson.annotations.SerializedName
 import kotlinx.serialization.Serializable
+import kotlin.reflect.full.declaredMemberProperties
 
 val PRODUCT_MAPPING = mapOf(LolProductName.VALORANT to "valorant", LolProductName.LEAGUE_OF_LEGENDS to "league")
 
@@ -61,4 +62,8 @@ class LolChatFriendResourceImpl {
     var summonerId: Long? = null
     // var time: Long? = null
     var ownerFriend = ""
+}
+
+val lolChatFriendResourceImplPropertyMap by lazy {
+    LolChatFriendResourceImpl::class.declaredMemberProperties
 }
