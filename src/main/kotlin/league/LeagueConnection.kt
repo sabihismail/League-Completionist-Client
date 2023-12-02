@@ -38,9 +38,9 @@ class LeagueConnection {
     var championSelectInfo = ChampionSelectInfo()
     var championInfo = mapOf<Int, ChampionInfo>()
     var challengeInfo = mapOf<ChallengeCategory, MutableList<ChallengeInfo>>()
+    var completableChallenges = listOf<ChallengeInfo>()
     var challengesUpdatedInfo = mutableListOf<Pair<ChallengeInfo, ChallengeInfo>>()
     var challengeInfoSummary = ChallengeSummary()
-    var currentChampion = championSelectInfo.teamChampions.firstOrNull { it?.isSummonerSelectedChamp == true }
 
     private var clientApiListener: ClientConnectionListener? = null
 
@@ -486,6 +486,10 @@ class LeagueConnection {
     }
 
     private fun updateChampionMasteryInfo() {
+        if (challengeInfo.isEmpty()) {
+            updateChallengesInfo()
+        }
+
         val champions = clientApi?.executeGet("/lol-champions/v1/inventories/${summonerInfo.summonerId}/champions",
             Array<LolChampionsCollectionsChampionImpl>::class.java)?.responseObject?.filter { it.active == true } ?: return
 
@@ -541,6 +545,22 @@ class LeagueConnection {
                     eternalInfo=championIdToHasEternal.getOrDefault(it.id, mapOf()), roles=it.roles.map { role -> ChampionRole.fromString(role) }.toSet(),
                     clientApi=clientApi)
             }
+
+        completableChallenges = challengeInfo.values.flatten().filter { it.isListingCompletedChampions }
+        val challengeInfoCompletable = hashMapOf<Int, MutableSet<Int>>()
+        completableChallenges.forEach { challenge ->
+            challenge.completedIdsInt?.forEach { champId ->
+                if (!challengeInfoCompletable.containsKey(champId)) {
+                    challengeInfoCompletable[champId] = mutableSetOf()
+                }
+
+                challengeInfoCompletable[champId]?.add(challenge.id?.toInt()!!)
+            }
+        }
+
+        masteryPairing.forEach { champ ->
+            champ.completedChallenges = challengeInfoCompletable[champ.id] ?: mutableSetOf()
+        }
 
         championInfo = masteryPairing.associateBy({ it.id }, { it })
     }
@@ -822,7 +842,6 @@ class LeagueConnection {
 
         if (clientState == LolGameflowGameflowPhase.ENDOFGAME) {
             updateLootTab()
-            LeagueApi.updateMatchHistory()
             updateChampionMasteryInfo()
             checkTftBattlepassRewardsAvailable()
 
@@ -933,9 +952,8 @@ class LeagueConnection {
             summoner.percentCompleteForNextLevel, summoner.summonerLevel, summoner.xpUntilNextLevel)
         summonerChanged()
 
-        LeagueApi.updateMatchHistory()
-        updateMasteryChestInfo()
         updateChampionMasteryInfo()
+        updateMasteryChestInfo()
         updateClientState()
         getEternalsQueueIds()
 

@@ -1,6 +1,5 @@
 package ui.controllers
 
-import db.DatabaseImpl
 import generated.LolGameflowGameflowPhase
 import javafx.collections.FXCollections
 import league.LeagueConnection
@@ -42,7 +41,8 @@ open class MainViewController : Controller() {
             leagueConnection.role = newValue
 
             val newSortedChampionInfo = leagueConnection.getChampionMasteryInfo()
-            normalView.setChampions(FXCollections.observableList(newSortedChampionInfo))
+            normalView.setCompletableChallenges(leagueConnection.completableChallenges)
+            normalView.setChampions(newSortedChampionInfo)
         }
 
         normalView.currentChampionRole.addListener { _, _, _ ->
@@ -212,7 +212,8 @@ open class MainViewController : Controller() {
                 ActiveView.NORMAL -> {
                     val championList = leagueConnection.getChampionMasteryInfo()
 
-                    normalView.setChampions(FXCollections.observableList(championList))
+                    normalView.setCompletableChallenges(leagueConnection.completableChallenges)
+                    normalView.setChampions(championList)
                 }
             }
         }
@@ -244,14 +245,6 @@ open class MainViewController : Controller() {
 
     fun updateChallengesUpdatedView() {
         runAsync {
-            if (upgradedMission("Perfectionist")) {
-                DatabaseImpl.setChallengeComplete(ChallengeMappingEnum.S_PLUS_DIFFERENT_CHAMPIONS, leagueConnection.currentChampion?.id ?: -1, true)
-            }
-
-            if (upgradedMission("All Random All Champions")) {
-                DatabaseImpl.setChallengeComplete(ChallengeMappingEnum.S_MINUS_DIFFERENT_CHAMPIONS_ARAM, leagueConnection.currentChampion?.id ?: -1, true)
-            }
-
             val upgraded = leagueConnection.challengesUpdatedInfo.filter { it.first.currentLevel != it.second.currentLevel }
                 .sortedWith(
                     compareByDescending<Pair<ChallengeInfo, ChallengeInfo>> { it.second.category != ChallengeCategory.LEGACY }
@@ -301,10 +294,6 @@ open class MainViewController : Controller() {
             challengesUpdatedView.challengesProgressedProperty.set(FXCollections.observableList(it.progressed))
             challengesUpdatedView.challengesCompletedProperty.set(FXCollections.observableList(it.completed))
         }
-    }
-
-    private fun upgradedMission(name: String): Boolean {
-        return leagueConnection.challengesUpdatedInfo.any { it.first.name == name }
     }
 
     companion object {

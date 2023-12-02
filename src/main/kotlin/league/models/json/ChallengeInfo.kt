@@ -17,7 +17,7 @@ class ChallengeInfo {
     var capstoneGroupId: Double? = null
     var capstoneGroupName: String? = null
     var category: ChallengeCategory? = null
-    private var completedIds: Array<String>? = null
+    private var completedIds: Array<Double>? = null
     var currentLevel: ChallengeLevel? = null
     var currentLevelAchievedTime: Double? = null
     var currentThreshold: Double? = null
@@ -25,7 +25,7 @@ class ChallengeInfo {
     var description: String? = null
     var descriptionShort: String? = null
     // var friendsAtLevels: List<>
-    private var gameModes: List<String>? = null
+    private var gameModes: Array<String>? = null
     var hasLeaderboard: Boolean = false
     var id: Double? = null
     var idListType: String? = null
@@ -134,8 +134,13 @@ class ChallengeInfo {
         description + if (name?.contains(GenericConstants.YEAR) == false) "" else " (${GenericConstants.YEAR})"
     }
 
-    private val completedIdsInt by lazy { completedIds?.map { it.toInt() }?.toSet() }
-    val hasCompletedIds by lazy { completedIdsInt?.size!! > 0 }
+    val completedIdsInt by lazy { completedIds?.map { it.toInt() }?.toSet() }
+    val isListingCompletedChampions by lazy {
+        descriptionShort?.contains("\u003cem\u003e") == true &&
+                description?.contains("5-stack") == false &&
+                description?.contains("Mastery 7") == false &&
+                description?.contains("Obtain") == false
+    }
 
     fun init() {
         initGameMode()
@@ -144,10 +149,6 @@ class ChallengeInfo {
 
     private fun initGameMode() {
         gameModeSet = gameModes!!.map { GameMode.valueOf(it) }.toSet()
-    }
-
-    private fun hasChampionCompleted(championId: Int): Boolean {
-        return completedIdsInt?.contains(championId) ?: false
     }
 
     private fun initRewardTitle() {
@@ -165,6 +166,10 @@ class ChallengeInfo {
 
     operator fun minus(other: ChallengeInfo): Int {
         return (currentValue!! - other.currentValue!!).toInt()
+    }
+
+    override fun toString(): String {
+        return description!!
     }
 
     companion object {

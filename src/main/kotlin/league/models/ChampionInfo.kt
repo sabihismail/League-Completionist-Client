@@ -1,8 +1,6 @@
 package league.models
 
 import com.stirante.lolclient.ClientApi
-import db.DatabaseImpl
-import league.models.enums.ChallengeMappingEnum
 import league.models.enums.ChampionOwnershipStatus
 import league.models.enums.ChampionRole
 import league.models.json.LolStatstonesStatstoneInfo
@@ -12,6 +10,8 @@ data class ChampionInfo(val id: Int = -1, val name: String = "None", val ownersh
                         val masteryPoints: Int = 1, val currentMasteryPoints: Int = 1, val nextLevelMasteryPoints: Int = 2, val level: Int = 0, val tokens: Int = 0,
                         var isSummonerSelectedChamp: Boolean = false, var eternalInfo: Map<Int, Boolean> = mapOf(), var roles: Set<ChampionRole>? = null,
                         var idealChampionToMasterEntry: Int = -1, val clientApi: ClientApi? = null) {
+    lateinit var completedChallenges: MutableSet<Int>
+
     val nameLower by lazy {
         name.lowercase()
     }
@@ -21,17 +21,6 @@ data class ChampionInfo(val id: Int = -1, val name: String = "None", val ownersh
             " (${"%.1f".format((currentMasteryPoints.toDouble()/(nextLevelMasteryPoints + currentMasteryPoints)) * 100)}%)"
         else
             ""
-    }
-
-    val challengesMapping by lazy {
-        val ignoreSet = setOf(ChallengeMappingEnum.NONE)
-
-        ChallengeMappingEnum.values().filter { !ignoreSet.contains(it) }
-            .associateWith { DatabaseImpl.getChallengeComplete(it, id) }
-    }
-
-    val differentChallenges by lazy {
-        "[" + challengesMapping.toList().filter { !it.second }.joinToString("|") { ChallengeMappingEnum.mapping[it.first]!! } + "]"
     }
 
     fun getEternals(showEternals: Boolean): List<LolStatstonesStatstoneInfo> {
@@ -50,6 +39,6 @@ data class ChampionInfo(val id: Int = -1, val name: String = "None", val ownersh
         return "ChampionInfo(id=$id, name='$name', ownershipStatus=$ownershipStatus, masteryPoints=$masteryPoints, currentMasteryPoints=$currentMasteryPoints, " +
                 "nextLevelMasteryPoints=$nextLevelMasteryPoints, level=$level, tokens=$tokens, isSummonerSelectedChamp=$isSummonerSelectedChamp, hasEternal=$eternalInfo, " +
                 "roles=$roles, idealChampionToMasterEntry=$idealChampionToMasterEntry, clientApi=$clientApi, nameLower='$nameLower', " +
-                "percentageUntilNextLevel='$percentageUntilNextLevel', challengesMapping=$challengesMapping, differentChallenges='$differentChallenges')"
+                "percentageUntilNextLevel='$percentageUntilNextLevel')"
     }
 }

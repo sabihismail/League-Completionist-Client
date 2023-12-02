@@ -7,9 +7,9 @@ import javafx.beans.property.SimpleStringProperty
 import javafx.collections.FXCollections
 import javafx.geometry.Pos
 import league.models.ChampionInfo
-import league.models.enums.ChallengeMappingEnum
 import league.models.enums.ChampionRole
 import league.models.enums.Role
+import league.models.json.ChallengeInfo
 import tornadofx.*
 import ui.views.fragments.ChampionFragment
 import ui.views.util.boldLabel
@@ -20,11 +20,12 @@ import util.constants.ViewConstants.IMAGE_WIDTH
 class NormalGridView: View() {
     val currentLane = SimpleObjectProperty(Role.ANY)
     val currentChampionRole = SimpleObjectProperty(ChampionRole.ANY)
-    val currentChallenge = SimpleObjectProperty(ChallengeMappingEnum.NONE)
+    val currentChallenge = SimpleObjectProperty<ChallengeInfo>(null)
 
     private val allChampions = SimpleListProperty<ChampionInfo>()
     private val championListProperty = SimpleListProperty<ChampionInfo>()
     private val eternalsOnlyProperty = SimpleBooleanProperty(false)
+    private val completableChallengesProperty = SimpleListProperty<ChallengeInfo>()
     private val championSearchProperty = SimpleStringProperty("")
 
     fun setChampions(lst: List<ChampionInfo>) {
@@ -33,12 +34,16 @@ class NormalGridView: View() {
         setActiveChampions()
     }
 
+    fun setCompletableChallenges(completableChallenges: List<ChallengeInfo>) {
+        completableChallengesProperty.value = FXCollections.observableList(completableChallenges)
+    }
+
     private fun setActiveChampions() {
         championListProperty.value = FXCollections.observableList(
             allChampions.value.filter { !eternalsOnlyProperty.value || it.eternalInfo.any { eternal -> eternal.value } }
                 .filter { it.nameLower.contains(championSearchProperty.value.lowercase()) }
                 .filter { currentChampionRole.value == ChampionRole.ANY || it.roles?.contains(currentChampionRole.value) == true }
-                .filter { currentChallenge.value == ChallengeMappingEnum.NONE || !it.challengesMapping[currentChallenge.value]!! }
+                .filter { currentChallenge.value == null || it.completedChallenges.contains(currentChallenge.value.id?.toInt()) }
         )
     }
 
@@ -108,7 +113,7 @@ class NormalGridView: View() {
                         alignment = Pos.CENTER_RIGHT
 
                         label("Challenge: ")
-                        combobox(currentChallenge, ChallengeMappingEnum.values().toList())
+                        combobox(currentChallenge, completableChallengesProperty)
                     }
 
                     checkbox("Eternals Only", eternalsOnlyProperty).apply {
