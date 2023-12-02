@@ -17,6 +17,7 @@ class ChallengeInfo {
     var capstoneGroupId: Double? = null
     var capstoneGroupName: String? = null
     var category: ChallengeCategory? = null
+    private var completedIds: Array<String>? = null
     var currentLevel: ChallengeLevel? = null
     var currentLevelAchievedTime: Double? = null
     var currentThreshold: Double? = null
@@ -24,7 +25,7 @@ class ChallengeInfo {
     var description: String? = null
     var descriptionShort: String? = null
     // var friendsAtLevels: List<>
-    var gameModes: List<String>? = null
+    private var gameModes: List<String>? = null
     var hasLeaderboard: Boolean = false
     var id: Double? = null
     var idListType: String? = null
@@ -132,7 +133,10 @@ class ChallengeInfo {
     val descriptiveDescription by lazy {
         description + if (name?.contains(GenericConstants.YEAR) == false) "" else " (${GenericConstants.YEAR})"
     }
-    
+
+    private val completedIdsInt by lazy { completedIds?.map { it.toInt() }?.toSet() }
+    val hasCompletedIds by lazy { completedIdsInt?.size!! > 0 }
+
     fun init() {
         initGameMode()
         initRewardTitle()
@@ -140,6 +144,10 @@ class ChallengeInfo {
 
     private fun initGameMode() {
         gameModeSet = gameModes!!.map { GameMode.valueOf(it) }.toSet()
+    }
+
+    private fun hasChampionCompleted(championId: Int): Boolean {
+        return completedIdsInt?.contains(championId) ?: false
     }
 
     private fun initRewardTitle() {
