@@ -11,6 +11,7 @@ data class ChampionInfo(val id: Int = -1, val name: String = "None", val ownersh
                         var isSummonerSelectedChamp: Boolean = false, var eternalInfo: Map<Int, Boolean> = mapOf(), var roles: Set<ChampionRole>? = null,
                         var idealChampionToMasterEntry: Int = -1, val clientApi: ClientApi? = null) {
     lateinit var completedChallenges: MutableSet<Int>
+    lateinit var availableChallenges: MutableSet<Int>
 
     val nameLower by lazy {
         name.lowercase()

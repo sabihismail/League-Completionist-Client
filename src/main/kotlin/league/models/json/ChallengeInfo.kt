@@ -13,7 +13,7 @@ import kotlin.math.abs
 @Serializable
 @Suppress("unused")
 class ChallengeInfo {
-    // var availableIds: List<>
+    var availableIds: Array<Double>? = null
     var capstoneGroupId: Double? = null
     var capstoneGroupName: String? = null
     var category: ChallengeCategory? = null
@@ -23,7 +23,7 @@ class ChallengeInfo {
     var currentThreshold: Double? = null
     var currentValue: Double? = null
     var description: String? = null
-    var descriptionShort: String? = null
+    private var descriptionShort: String? = null
     // var friendsAtLevels: List<>
     private var gameModes: Array<String>? = null
     var hasLeaderboard: Boolean = false
@@ -33,7 +33,7 @@ class ChallengeInfo {
     var isCapstone: Boolean? = null
     var isReverseDirection: Boolean? = null
     var name: String? = null
-    var nextLevel: ChallengeLevel? = null
+    private var nextLevel: ChallengeLevel? = null
     var nextThreshold: Double? = null
     var parentId: Double? = null
     var parentName: String? = null
@@ -134,12 +134,13 @@ class ChallengeInfo {
         description + if (name?.contains(GenericConstants.YEAR) == false) "" else " (${GenericConstants.YEAR})"
     }
 
+    val availableIdsInt by lazy { availableIds?.map { it.toInt() }?.toSet() }
     val completedIdsInt by lazy { completedIds?.map { it.toInt() }?.toSet() }
     val isListingCompletedChampions by lazy {
-        descriptionShort?.contains("\u003cem\u003e") == true &&
-                description?.contains("5-stack") == false &&
-                description?.contains("Mastery 7") == false &&
-                description?.contains("Obtain") == false
+        val contains = setOf("\u003cem\u003e")
+        val ignore = setOf("5-stack", "Mastery 7", "Mastery 5", "Obtain", "premade 5", "mythic items", "champion skins")
+
+        return@lazy contains.all { descriptionShort?.contains(it) == true } && ignore.all { description?.contains(it) == false }
     }
 
     fun init() {

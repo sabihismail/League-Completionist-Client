@@ -547,19 +547,29 @@ class LeagueConnection {
             }
 
         completableChallenges = challengeInfo.values.flatten().filter { it.isListingCompletedChampions }
-        val challengeInfoCompletable = hashMapOf<Int, MutableSet<Int>>()
+        val challengesCompleted = hashMapOf<Int, MutableSet<Int>>()
+        val challengesAvailable = hashMapOf<Int, MutableSet<Int>>()
         completableChallenges.forEach { challenge ->
             challenge.completedIdsInt?.forEach { champId ->
-                if (!challengeInfoCompletable.containsKey(champId)) {
-                    challengeInfoCompletable[champId] = mutableSetOf()
+                if (!challengesCompleted.containsKey(champId)) {
+                    challengesCompleted[champId] = mutableSetOf()
                 }
 
-                challengeInfoCompletable[champId]?.add(challenge.id?.toInt()!!)
+                challengesCompleted[champId]?.add(challenge.id?.toInt()!!)
+            }
+
+            challenge.availableIdsInt?.forEach { champId ->
+                if (!challengesAvailable.containsKey(champId)) {
+                    challengesAvailable[champId] = mutableSetOf()
+                }
+
+                challengesAvailable[champId]?.add(challenge.id?.toInt()!!)
             }
         }
 
         masteryPairing.forEach { champ ->
-            champ.completedChallenges = challengeInfoCompletable[champ.id] ?: mutableSetOf()
+            champ.completedChallenges = challengesCompleted[champ.id] ?: mutableSetOf()
+            champ.availableChallenges = challengesAvailable[champ.id] ?: mutableSetOf()
         }
 
         championInfo = masteryPairing.associateBy({ it.id }, { it })

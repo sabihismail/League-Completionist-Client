@@ -8,6 +8,7 @@ import javafx.collections.FXCollections
 import javafx.geometry.Pos
 import league.models.ChampionInfo
 import league.models.enums.ChampionRole
+import league.models.enums.GameMode
 import league.models.enums.Role
 import league.models.json.ChallengeInfo
 import tornadofx.*
@@ -35,16 +36,30 @@ class NormalGridView: View() {
     }
 
     fun setCompletableChallenges(completableChallenges: List<ChallengeInfo>) {
-        completableChallengesProperty.value = FXCollections.observableList(completableChallenges)
+        runAsync {
+            FXCollections.observableList(
+                completableChallenges.sortedBy { it.description }.filter { it.gameModeSet != setOf(GameMode.ARAM) }
+            )
+        } ui {
+            completableChallengesProperty.value = it
+        }
     }
 
     private fun setActiveChampions() {
-        championListProperty.value = FXCollections.observableList(
-            allChampions.value.filter { !eternalsOnlyProperty.value || it.eternalInfo.any { eternal -> eternal.value } }
-                .filter { it.nameLower.contains(championSearchProperty.value.lowercase()) }
-                .filter { currentChampionRole.value == ChampionRole.ANY || it.roles?.contains(currentChampionRole.value) == true }
-                .filter { currentChallenge.value == null || it.completedChallenges.contains(currentChallenge.value.id?.toInt()) }
-        )
+        runAsync {
+            FXCollections.observableList(
+                allChampions.value.filter { !eternalsOnlyProperty.value || it.eternalInfo.any { eternal -> eternal.value } }
+                    .filter { it.nameLower.contains(championSearchProperty.value.lowercase()) }
+                    .filter { currentChampionRole.value == ChampionRole.ANY || it.roles?.contains(currentChampionRole.value) == true }
+                    .filter {
+                        currentChallenge.value == null ||
+                                (currentChallenge.value.availableIdsInt?.isEmpty() == true && !it.completedChallenges.contains(currentChallenge.value.id?.toInt())) ||
+                                (currentChallenge.value.availableIdsInt?.isEmpty() == false && !it.availableChallenges.contains(currentChallenge.value.id?.toInt()))
+                    }
+            )
+        } ui {
+            championListProperty.value = it
+        }
     }
 
     override val root = borderpane {
