@@ -33,36 +33,23 @@ class AramGridView: View() {
         }
     }
 
-    fun setBenchedChampions(benchedChampions: List<ChampionInfo>) {
-        runAsync {
-            FXCollections.observableList(
-                benchedChampions.filter {
-                    currentChallengeProperty.value == null ||
-                            (currentChallengeProperty.value.availableIdsInt?.isEmpty() == true && !it.completedChallenges.contains(currentChallengeProperty.value.id?.toInt())) ||
-                            (currentChallengeProperty.value.availableIdsInt?.isEmpty() == false && it.availableChallenges.contains(currentChallengeProperty.value.id?.toInt()) && !it.completedChallenges.contains(currentChallengeProperty.value.id?.toInt()))
-                }
-            )
-        } ui {
-            benchedChampionListProperty.value = it
-        }
-    }
-
     fun setChampions(championSelectInfo: ChampionSelectInfo) {
         runAsync {
             Pair(
                 FXCollections.observableList(
                     championSelectInfo.benchedChampions.filter {
                         currentChallengeProperty.value == null ||
-                                (currentChallengeProperty.value.availableIdsInt?.isEmpty() == true && !it.completedChallenges.contains(currentChallengeProperty.value.id?.toInt())) ||
-                                (currentChallengeProperty.value.availableIdsInt?.isEmpty() == false && it.availableChallenges.contains(currentChallengeProperty.value.id?.toInt()) && !it.completedChallenges.contains(currentChallengeProperty.value.id?.toInt()))
+                                (currentChallengeProperty.value.availableIdsInt?.isEmpty()!! && !it.completedChallenges.contains(currentChallengeProperty.value.id?.toInt())) ||
+                                (!currentChallengeProperty.value.availableIdsInt?.isEmpty()!! && it.availableChallenges.contains(currentChallengeProperty.value.id?.toInt()) && !it.completedChallenges.contains(currentChallengeProperty.value.id?.toInt()))
                     }
                 ),
 
                 FXCollections.observableList(
                     championSelectInfo.teamChampions.map {
                         it?.apply {
-                            hasChallengeAvailable = (currentChallengeProperty.value.availableIdsInt?.isEmpty() == true && !it.completedChallenges.contains(currentChallengeProperty.value.id?.toInt())) ||
-                                    (currentChallengeProperty.value.availableIdsInt?.isEmpty() == false && it.availableChallenges.contains(currentChallengeProperty.value.id?.toInt()) && !it.completedChallenges.contains(currentChallengeProperty.value.id?.toInt()))
+                            hasChallengeAvailable = currentChallengeProperty.value != null &&
+                                    ((currentChallengeProperty.value.availableIdsInt?.isEmpty()!! && !it.completedChallenges.contains(currentChallengeProperty.value.id?.toInt())) ||
+                                    (!currentChallengeProperty.value.availableIdsInt?.isEmpty()!! && it.availableChallenges.contains(currentChallengeProperty.value.id?.toInt()) && !it.completedChallenges.contains(currentChallengeProperty.value.id?.toInt())))
                         }
                     }
                 )
