@@ -35,7 +35,7 @@ open class MainViewController : Controller() {
 
         leagueConnection.start()
 
-        normalView.currentLane.addListener { _, _, newValue ->
+        normalView.currentLaneProperty.addListener { _, _, newValue ->
             manualRoleSelect = true
 
             leagueConnection.role = newValue
@@ -45,12 +45,16 @@ open class MainViewController : Controller() {
             normalView.setChampions(newSortedChampionInfo)
         }
 
-        normalView.currentChampionRole.addListener { _, _, _ ->
+        normalView.currentChampionRoleProperty.addListener { _, _, _ ->
             normalView.setChampions(leagueConnection.getChampionMasteryInfo())
         }
 
-        normalView.currentChallenge.addListener { _, _, _ ->
+        normalView.currentChallengeProperty.addListener { _, _, _ ->
             normalView.setChampions(leagueConnection.getChampionMasteryInfo())
+        }
+
+        aramView.currentChallengeProperty.addListener { _, _, _ ->
+            aramView.setChampions(leagueConnection.championSelectInfo)
         }
 
         challengesView.currentGameModeProperty.addListener { _, _, _ ->
@@ -74,7 +78,7 @@ open class MainViewController : Controller() {
                         view.currentChampionView.replaceWith(newFragment)
                         view.currentChampionView = newFragment
                     }
-                    runLater { normalView.currentLane.set(Role.ANY) }
+                    runLater { normalView.currentLaneProperty.set(Role.ANY) }
                 }
             }
         }
@@ -191,7 +195,7 @@ open class MainViewController : Controller() {
 
         if (ROLE_SPECIFIC_MODES.contains(leagueConnection.gameMode) && !manualRoleSelect) {
             if (!leagueConnection.isSmurf) {
-                runLater { normalView.currentLane.set(leagueConnection.championSelectInfo.assignedRole) }
+                runLater { normalView.currentLaneProperty.set(leagueConnection.championSelectInfo.assignedRole) }
             }
         }
 
@@ -206,8 +210,8 @@ open class MainViewController : Controller() {
         runLater {
             when (activeView) {
                 ActiveView.ARAM -> {
-                    aramView.benchedChampionListProperty.set(FXCollections.observableList(leagueConnection.championSelectInfo.benchedChampions))
-                    aramView.teamChampionListProperty.set(FXCollections.observableList(leagueConnection.championSelectInfo.teamChampions))
+                    aramView.setCompletableChallenges(leagueConnection.completableChallenges)
+                    aramView.setChampions(leagueConnection.championSelectInfo)
                 }
                 ActiveView.NORMAL -> {
                     val championList = leagueConnection.getChampionMasteryInfo()

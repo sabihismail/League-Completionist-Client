@@ -69,7 +69,7 @@ class NormalMockController : MainViewController() {
             regularView.setChampions(FXCollections.observableList(sortedChampionInfo))
         }
 
-        regularView.currentLane.addListener { _, _, newValue ->
+        regularView.currentLaneProperty.addListener { _, _, newValue ->
             leagueConnection.role = newValue
             leagueConnection.gameMode = GameMode.RANKED_FLEX
             leagueConnection.championSelectInfo = ChampionSelectInfo(assignedRole = leagueConnection.role)

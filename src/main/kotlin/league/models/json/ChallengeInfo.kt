@@ -170,7 +170,7 @@ class ChallengeInfo {
     }
 
     override fun toString(): String {
-        return description!!
+        return description!! + (if (isComplete) " (DONE)" else "")
     }
 
     companion object {

@@ -1,8 +1,13 @@
 package ui.views
 
 import javafx.beans.property.SimpleListProperty
+import javafx.beans.property.SimpleObjectProperty
+import javafx.collections.FXCollections
 import javafx.geometry.Pos
 import league.models.ChampionInfo
+import league.models.ChampionSelectInfo
+import league.models.enums.GameMode
+import league.models.json.ChallengeInfo
 import tornadofx.*
 import ui.views.fragments.ChampionFragment
 import ui.views.util.boldLabel
@@ -12,8 +17,61 @@ import util.constants.ViewConstants.IMAGE_WIDTH
 
 
 class AramGridView: View() {
+    val currentChallengeProperty = SimpleObjectProperty<ChallengeInfo>(null)
     val benchedChampionListProperty = SimpleListProperty<ChampionInfo>()
     val teamChampionListProperty = SimpleListProperty<ChampionInfo>()
+
+    private val completableChallengesProperty = SimpleListProperty<ChallengeInfo>()
+
+    fun setCompletableChallenges(completableChallenges: List<ChallengeInfo>) {
+        runAsync {
+            FXCollections.observableList(
+                completableChallenges.sortedBy { it.description }.filter { it.gameModeSet != setOf(GameMode.ARAM) }
+            )
+        } ui {
+            completableChallengesProperty.value = it
+        }
+    }
+
+    fun setBenchedChampions(benchedChampions: List<ChampionInfo>) {
+        runAsync {
+            FXCollections.observableList(
+                benchedChampions.filter {
+                    currentChallengeProperty.value == null ||
+                            (currentChallengeProperty.value.availableIdsInt?.isEmpty() == true && !it.completedChallenges.contains(currentChallengeProperty.value.id?.toInt())) ||
+                            (currentChallengeProperty.value.availableIdsInt?.isEmpty() == false && it.availableChallenges.contains(currentChallengeProperty.value.id?.toInt()) && !it.completedChallenges.contains(currentChallengeProperty.value.id?.toInt()))
+                }
+            )
+        } ui {
+            benchedChampionListProperty.value = it
+        }
+    }
+
+    fun setChampions(championSelectInfo: ChampionSelectInfo) {
+        runAsync {
+            Pair(
+                FXCollections.observableList(
+                    championSelectInfo.benchedChampions.filter {
+                        currentChallengeProperty.value == null ||
+                                (currentChallengeProperty.value.availableIdsInt?.isEmpty() == true && !it.completedChallenges.contains(currentChallengeProperty.value.id?.toInt())) ||
+                                (currentChallengeProperty.value.availableIdsInt?.isEmpty() == false && it.availableChallenges.contains(currentChallengeProperty.value.id?.toInt()) && !it.completedChallenges.contains(currentChallengeProperty.value.id?.toInt()))
+                    }
+                ),
+
+                FXCollections.observableList(
+                    championSelectInfo.teamChampions.map {
+                        it?.apply {
+                            hasChallengeAvailable = (currentChallengeProperty.value.availableIdsInt?.isEmpty() == true && !it.completedChallenges.contains(currentChallengeProperty.value.id?.toInt())) ||
+                                    (currentChallengeProperty.value.availableIdsInt?.isEmpty() == false && it.availableChallenges.contains(currentChallengeProperty.value.id?.toInt()) && !it.completedChallenges.contains(currentChallengeProperty.value.id?.toInt()))
+                        }
+                    }
+                )
+            )
+        } ui {
+            benchedChampionListProperty.value = it.first
+            teamChampionListProperty.value = it.second
+        }
+    }
 
     override val root = borderpane {
         prefHeight = 1000.0
@@ -48,6 +106,26 @@ class AramGridView: View() {
 
                 cellCache {
                     find<ChampionFragment>(mapOf(ChampionFragment::champion to it, ChampionFragment::showTokens to false, ChampionFragment::showYou to true)).root
+                }
+            }
+        }
+
+        bottom = borderpane {
+            right = vbox {
+                alignment = Pos.BOTTOM_RIGHT
+                paddingBottom = 24.0
+                paddingRight = 24.0
+
+                vbox {
+                    alignment = Pos.BOTTOM_RIGHT
+                    spacing = 6.0
+
+                    hbox {
+                        alignment = Pos.CENTER_RIGHT
+
+                        label("Challenge (skips completed champs): ")
+                        combobox(currentChallengeProperty, completableChallengesProperty)
+                    }
                 }
             }
         }

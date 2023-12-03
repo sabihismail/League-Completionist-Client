@@ -19,18 +19,18 @@ import util.constants.ViewConstants.IMAGE_WIDTH
 
 
 class NormalGridView: View() {
-    val currentLane = SimpleObjectProperty(Role.ANY)
-    val currentChampionRole = SimpleObjectProperty(ChampionRole.ANY)
-    val currentChallenge = SimpleObjectProperty<ChallengeInfo>(null)
+    val currentLaneProperty = SimpleObjectProperty(Role.ANY)
+    val currentChampionRoleProperty = SimpleObjectProperty(ChampionRole.ANY)
+    val currentChallengeProperty = SimpleObjectProperty<ChallengeInfo>(null)
 
-    private val allChampions = SimpleListProperty<ChampionInfo>()
+    private val allChampionsProperty = SimpleListProperty<ChampionInfo>()
     private val championListProperty = SimpleListProperty<ChampionInfo>()
     private val eternalsOnlyProperty = SimpleBooleanProperty(false)
     private val completableChallengesProperty = SimpleListProperty<ChallengeInfo>()
     private val championSearchProperty = SimpleStringProperty("")
 
     fun setChampions(lst: List<ChampionInfo>) {
-        allChampions.value = FXCollections.observableList(lst)
+        allChampionsProperty.value = FXCollections.observableList(lst)
 
         setActiveChampions()
     }
@@ -48,13 +48,13 @@ class NormalGridView: View() {
     private fun setActiveChampions() {
         runAsync {
             FXCollections.observableList(
-                allChampions.value.filter { !eternalsOnlyProperty.value || it.eternalInfo.any { eternal -> eternal.value } }
+                allChampionsProperty.value.filter { !eternalsOnlyProperty.value || it.eternalInfo.any { eternal -> eternal.value } }
                     .filter { it.nameLower.contains(championSearchProperty.value.lowercase()) }
-                    .filter { currentChampionRole.value == ChampionRole.ANY || it.roles?.contains(currentChampionRole.value) == true }
+                    .filter { currentChampionRoleProperty.value == ChampionRole.ANY || it.roles?.contains(currentChampionRoleProperty.value) == true }
                     .filter {
-                        currentChallenge.value == null ||
-                                (currentChallenge.value.availableIdsInt?.isEmpty() == true && !it.completedChallenges.contains(currentChallenge.value.id?.toInt())) ||
-                                (currentChallenge.value.availableIdsInt?.isEmpty() == false && !it.availableChallenges.contains(currentChallenge.value.id?.toInt()))
+                        currentChallengeProperty.value == null ||
+                                (currentChallengeProperty.value.availableIdsInt?.isEmpty() == true && !it.completedChallenges.contains(currentChallengeProperty.value.id?.toInt())) ||
+                                (currentChallengeProperty.value.availableIdsInt?.isEmpty() == false && it.availableChallenges.contains(currentChallengeProperty.value.id?.toInt()) && !it.completedChallenges.contains(currentChallengeProperty.value.id?.toInt()))
                     }
             )
         } ui {
@@ -114,21 +114,21 @@ class NormalGridView: View() {
                         alignment = Pos.CENTER_RIGHT
 
                         label("Lane: ")
-                        combobox(currentLane, Role.values().toList())
+                        combobox(currentLaneProperty, Role.values().toList())
                     }
 
                     hbox {
                         alignment = Pos.CENTER_RIGHT
 
                         label("Character Role: ")
-                        combobox(currentChampionRole, ChampionRole.values().toList())
+                        combobox(currentChampionRoleProperty, ChampionRole.values().toList())
                     }
 
                     hbox {
                         alignment = Pos.CENTER_RIGHT
 
-                        label("Challenge: ")
-                        combobox(currentChallenge, completableChallengesProperty)
+                        label("Challenge (skips completed champs): ")
+                        combobox(currentChallengeProperty, completableChallengesProperty)
                     }
 
                     checkbox("Eternals Only", eternalsOnlyProperty).apply {
