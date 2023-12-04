@@ -6,14 +6,12 @@ import oshi.SystemInfo
 import java.io.ByteArrayOutputStream
 import java.security.SecureRandom
 import java.security.spec.KeySpec
-import java.util.*
 import javax.crypto.Cipher
 import javax.crypto.SecretKey
 import javax.crypto.SecretKeyFactory
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.PBEKeySpec
 import javax.crypto.spec.SecretKeySpec
-import javax.xml.bind.DatatypeConverter
 
 
 object Crypto {
@@ -55,20 +53,20 @@ object Crypto {
         outputStream.write(iv)
         outputStream.write(encryptedText)
 
-        return DatatypeConverter.printBase64Binary(outputStream.toByteArray())
+        return outputStream.toByteArray().toString(charset("UTF-8"))
     }
 
     fun decrypt(str: String): String {
         val hardwareHash = generateHardwareHash()
 
-        val ciphertext = DatatypeConverter.parseBase64Binary(str)
+        val ciphertext = str.toByteArray(charset("UTC-8"))
         if (ciphertext.size < 48) {
             throw Exception("Ciphertext too small")
         }
 
-        val salt = Arrays.copyOfRange(ciphertext, 0, 16)
-        val iv = Arrays.copyOfRange(ciphertext, 16, 32)
-        val ct = Arrays.copyOfRange(ciphertext, 32, ciphertext.size)
+        val salt = ciphertext.copyOfRange(0, 16)
+        val iv = ciphertext.copyOfRange(16, 32)
+        val ct = ciphertext.copyOfRange(32, ciphertext.size)
 
         val factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1")
         val spec: KeySpec = PBEKeySpec(hardwareHash.toCharArray(), salt, 65536, 256)

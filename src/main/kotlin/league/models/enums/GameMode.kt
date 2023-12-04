@@ -31,22 +31,24 @@ enum class GameMode {
     BOT,
     @SerializedName("PRACTICETOOL")
     PRACTICE_TOOL,
+
     NONE,
     ANY,
     UNKNOWN;
 
     val isClassic get() = CLASSIC_MODES.contains(this)
-    val getSerializedName: SerializedName get() = this.declaringClass.getField(this.name).getAnnotation(SerializedName::class.java)
+
+    val getSerializedName: SerializedName get() = this.declaringJavaClass.getField(this.name).getAnnotation(SerializedName::class.java)
 
     companion object {
         private val CLASSIC_MODES = setOf(CLASSIC, BLIND_PICK, DRAFT_PICK, RANKED_SOLO, RANKED_FLEX, CLASH, BOT)
 
         fun fromGameMode(str: String, queueId: Int): GameMode {
-            val tmp = GameMode.values().firstOrNull { it.name == str } ?: UNKNOWN
+            val tmp = entries.firstOrNull { it.name == str } ?: UNKNOWN
             if (tmp != CLASSIC) return tmp
 
             val gameType = LeagueCommunityDragonApi.getQueueMapping(queueId)
-            return GameMode.values().firstOrNull {
+            return entries.firstOrNull {
                 val serializedName = it.getSerializedName
 
                 serializedName.value == gameType.description || serializedName.alternate.contains(gameType.description)
