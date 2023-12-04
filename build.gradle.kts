@@ -29,7 +29,6 @@ dependencies {
     implementation("no.tornado", "tornadofx", "2.0.0-SNAPSHOT")
     implementation("org.apache.commons", "commons-lang3", "3.12.0")
     implementation("org.junit.jupiter", "junit-jupiter", "5.9.2")
-    implementation("com.github.oshi", "oshi-core-java11", "6.4.5")
     implementation("com.squareup.okhttp3", "okhttp", "4.11.0")
     implementation("org.xerial", "sqlite-jdbc", "3.40.0.0")
 

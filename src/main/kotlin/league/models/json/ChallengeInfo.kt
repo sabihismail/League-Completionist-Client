@@ -138,7 +138,7 @@ class ChallengeInfo {
     val completedIdsInt by lazy { completedIds?.map { it.toInt() }?.toSet() }
     val isListingCompletedChampions by lazy {
         val contains = setOf("\u003cem\u003e")
-        val ignore = setOf("5-stack", "Mastery 7", "Mastery 5", "Obtain", "premade 5", "mythic items", "champion skins")
+        val ignore = setOf("5-stack", "Mastery 7", "Mastery 5", "Obtain", "premade 5", "mythic items", "champion skins", "5 or more skins")
 
         return@lazy contains.all { descriptionShort?.contains(it) == true } && ignore.all { description?.contains(it) == false }
     }

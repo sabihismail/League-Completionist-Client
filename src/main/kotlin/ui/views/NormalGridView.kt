@@ -132,12 +132,17 @@ class NormalGridView: View() {
                         combobox(currentChallengeProperty, completableChallengesProperty)
                     }
 
-                    checkbox("Eternals Only", eternalsOnlyProperty).apply {
-                        eternalsOnlyProperty.onChange { setActiveChampions() }
-                    }
+                    hbox {
+                        alignment = Pos.CENTER_RIGHT
+                        spacing = 10.0
 
-                    checkbox("Load Eternal Values", loadEternalsProperty).apply {
-                        loadEternalsProperty.onChange { setActiveChampions() }
+                        checkbox("Load Eternals", loadEternalsProperty).apply {
+                            loadEternalsProperty.onChange { setActiveChampions() }
+                        }
+
+                        checkbox("Champions with Eternals Only", eternalsOnlyProperty).apply {
+                            eternalsOnlyProperty.onChange { setActiveChampions() }
+                        }
                     }
                 }
             }

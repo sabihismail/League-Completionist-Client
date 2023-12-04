@@ -26,7 +26,7 @@ class AramGridView: View() {
     fun setCompletableChallenges(completableChallenges: List<ChallengeInfo>) {
         runAsync {
             FXCollections.observableList(
-                completableChallenges.sortedBy { it.description }.filter { it.gameModeSet != setOf(GameMode.ARAM) }
+                completableChallenges.sortedBy { it.description }.filter { it.gameModeSet.contains(GameMode.ARAM) }
             )
         } ui {
             completableChallengesProperty.value = it
