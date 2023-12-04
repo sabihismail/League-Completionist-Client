@@ -3,14 +3,6 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 group = "me.sabihismail"
 version = "1.0.0"
 
-tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = JavaVersion.VERSION_15.toString()
-}
-
-tasks.test {
-    useJUnitPlatform()
-}
-
 plugins {
     kotlin("jvm") version "1.9.10"
     kotlin("plugin.serialization") version "1.9.10"
@@ -58,6 +50,14 @@ application {
 }
 
 tasks {
+    withType<KotlinCompile> {
+        kotlinOptions.jvmTarget = JavaVersion.VERSION_15.toString()
+    }
+
+    wrapper {
+        gradleVersion = "8.5"
+    }
+
     shadowJar {
         doLast {
             val file = File("config.json")
@@ -70,12 +70,17 @@ tasks {
             }
         }
     }
+
+    test {
+        useJUnitPlatform()
+    }
 }
 
 val compileKotlin: KotlinCompile by tasks
 compileKotlin.kotlinOptions {
     jvmTarget = "15"
 }
+
 val compileTestKotlin: KotlinCompile by tasks
 compileTestKotlin.kotlinOptions {
     jvmTarget = "15"

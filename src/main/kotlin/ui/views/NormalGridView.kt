@@ -26,6 +26,7 @@ class NormalGridView: View() {
     private val allChampionsProperty = SimpleListProperty<ChampionInfo>()
     private val championListProperty = SimpleListProperty<ChampionInfo>()
     private val eternalsOnlyProperty = SimpleBooleanProperty(false)
+    private val loadEternalsProperty = SimpleBooleanProperty(false)
     private val completableChallengesProperty = SimpleListProperty<ChallengeInfo>()
     private val championSearchProperty = SimpleStringProperty("")
 
@@ -85,8 +86,8 @@ class NormalGridView: View() {
                 cellWidth = IMAGE_WIDTH
                 cellHeight = IMAGE_WIDTH
 
-                cellCache {
-                    find<ChampionFragment>(mapOf(ChampionFragment::champion to it, ChampionFragment::showEternals to NORMAL_ETERNAL_ENABLED)).root
+                cellFormat {
+                    graphic = find<ChampionFragment>(mapOf(ChampionFragment::champion to it, ChampionFragment::showEternals to loadEternalsProperty.value)).root
                 }
             }
 
@@ -114,14 +115,14 @@ class NormalGridView: View() {
                         alignment = Pos.CENTER_RIGHT
 
                         label("Lane: ")
-                        combobox(currentLaneProperty, Role.values().toList())
+                        combobox(currentLaneProperty, Role.entries)
                     }
 
                     hbox {
                         alignment = Pos.CENTER_RIGHT
 
                         label("Character Role: ")
-                        combobox(currentChampionRoleProperty, ChampionRole.values().toList())
+                        combobox(currentChampionRoleProperty, ChampionRole.entries)
                     }
 
                     hbox {
@@ -134,12 +135,12 @@ class NormalGridView: View() {
                     checkbox("Eternals Only", eternalsOnlyProperty).apply {
                         eternalsOnlyProperty.onChange { setActiveChampions() }
                     }
+
+                    checkbox("Load Eternal Values", loadEternalsProperty).apply {
+                        loadEternalsProperty.onChange { setActiveChampions() }
+                    }
                 }
             }
         }
-    }
-
-    companion object {
-        const val NORMAL_ETERNAL_ENABLED = true
     }
 }

@@ -8,7 +8,7 @@ import util.constants.GenericConstants.DISTANCE_CONSTANT
 
 @Serializable
 data class ApiEternalsListing(val name: String, val contentId: String, val boundChampion: ApiEternalsChampion, val milestones: List<Int>, val trackingType: Int) {
-    private val trackingTypeValue get() = EternalTrackingType.values()[trackingType]
+    private val trackingTypeValue get() = EternalTrackingType.entries[trackingType]
 
     fun getMilestoneValues(): List<Pair<Int, String>> {
         val elements = milestones.foldIndexed<Int, List<Int>>(listOf()) { i, acc, e -> acc + ((if (i >= 1) acc[i - 1] else 0) + e) }
