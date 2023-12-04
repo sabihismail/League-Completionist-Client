@@ -30,11 +30,11 @@ import util.constants.ViewConstants.IMAGE_WIDTH
 import util.constants.ViewConstants.SCROLLBAR_WIDTH
 
 
-class MainView: View("League Mastery Box Client") {
+class MainView: View("League Alternative Client") {
     val defaultGridView = find(DefaultGridView::class)
     val masteryAccountView = find(MasteryAccountView::class)
     var currentChampionView = find(ChampionFragment::class)
-    val friendsView = find(FriendsView::class)
+    private val friendsView = find(FriendsView::class)
 
     val summonerProperty = SimpleObjectProperty(SummonerInfo())
     val chestProperty = SimpleObjectProperty(MasteryChestInfo())
@@ -114,7 +114,6 @@ class MainView: View("League Mastery Box Client") {
                 }
 
                 scrollpane(fitToHeight = true) {
-                    style = "-fx-background-color:transparent;"
                     minHeight = Font.getDefault().size + DEFAULT_SPACING * 2 + DEFAULT_SPACING * 2
 
                     borderpane {
@@ -127,21 +126,24 @@ class MainView: View("League Mastery Box Client") {
                     paddingHorizontal = 8.0
                     spacing = 8.0
 
-                    button("Friends").apply {
-                        action {
-                            val stage = friendsView.openWindow(owner = null)
-                            stage?.setOnHiding { friendsView.onClose() }
-                            ViewUtil.moveToScreen(stage)
-                        }
-                    }
-
-                    button("View Challenges").apply {
+                    button("Challenge Explorer").apply {
                         enableWhen { summonerProperty.select { (it.status == SummonerStatus.LOGGED_IN_AUTHORIZED).toProperty() } }
                         action {
                             controller.leagueConnection.updateChallengesInfo()
                             controller.updateChallengesView()
 
                             val stage = find<ChallengesView>().openWindow(owner = null)
+                            ViewUtil.moveToScreen(stage)
+                        }
+                    }
+
+                    button("Last Game's Challenges").apply {
+                        enableWhen { summonerProperty.select { (it.status == SummonerStatus.LOGGED_IN_AUTHORIZED).toProperty() } }
+                        action {
+                            controller.leagueConnection.updateChallengesInfo()
+                            controller.updateChallengesUpdatedView()
+
+                            val stage = find<ChallengesUpdatedView>().openWindow(owner = null)
                             ViewUtil.moveToScreen(stage)
                         }
                     }
@@ -157,18 +159,7 @@ class MainView: View("League Mastery Box Client") {
                         }
                     }
 
-                    button("View Last Game's Challenges").apply {
-                        enableWhen { summonerProperty.select { (it.status == SummonerStatus.LOGGED_IN_AUTHORIZED).toProperty() } }
-                        action {
-                            controller.leagueConnection.updateChallengesInfo()
-                            controller.updateChallengesUpdatedView()
-
-                            val stage = find<ChallengesUpdatedView>().openWindow(owner = null)
-                            ViewUtil.moveToScreen(stage)
-                        }
-                    }
-
-                    button("Execute Endpoint").apply {
+                    button("Execute Endpoint (for devs)").apply {
                         enableWhen { summonerProperty.select { (it.status == SummonerStatus.LOGGED_IN_AUTHORIZED).toProperty() } }
                         action {
                             val dialog = TextInputDialog()
@@ -182,10 +173,18 @@ class MainView: View("League Mastery Box Client") {
                         }
                     }
 
-                    button("Debug").apply {
+                    button("Debug (for devs)").apply {
                         enableWhen { summonerProperty.select { (it.status == SummonerStatus.LOGGED_IN_AUTHORIZED).toProperty() } }
                         action {
                             val stage = find<DebugView>().openWindow(owner = null)
+                            ViewUtil.moveToScreen(stage)
+                        }
+                    }
+
+                    button("Friends").apply {
+                        action {
+                            val stage = friendsView.openWindow(owner = null)
+                            stage?.setOnHiding { friendsView.onClose() }
                             ViewUtil.moveToScreen(stage)
                         }
                     }
