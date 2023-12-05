@@ -3,6 +3,7 @@ package ui
 import javafx.scene.paint.Color
 import tornadofx.Stylesheet
 
+@Suppress("unused")
 class DarkMode: Stylesheet() {
     init {
         root {

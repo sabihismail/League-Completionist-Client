@@ -1,5 +1,6 @@
 package ui
 
+import atlantafx.base.theme.PrimerDark
 import javafx.stage.Stage
 import tornadofx.App
 import tornadofx.reloadStylesheetsOnFocus
@@ -9,11 +10,14 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.system.exitProcess
 
-class MainApp: App(MainView::class, DarkMode::class) {
+
+class MainApp: App(MainView::class) {
     override val configPath: Path = Paths.get("config.properties")
 
     init {
         reloadStylesheetsOnFocus()
+
+        setUserAgentStylesheet(PrimerDark().userAgentStylesheet)
     }
 
     override fun start(stage: Stage) {

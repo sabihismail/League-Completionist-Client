@@ -31,6 +31,7 @@ dependencies {
     implementation("org.junit.jupiter", "junit-jupiter", "5.9.2")
     implementation("com.squareup.okhttp3", "okhttp", "4.11.0")
     implementation("org.xerial", "sqlite-jdbc", "3.40.0.0")
+    implementation("io.github.mkpaz", "atlantafx-base", "2.0.1")
 
     val exposedVersion = "0.45.0"
     implementation("org.jetbrains.exposed", "exposed-core", exposedVersion)
