@@ -1,6 +1,6 @@
 package ui
 
-import atlantafx.base.theme.PrimerDark
+import atlantafx.base.theme.NordDark
 import javafx.stage.Stage
 import tornadofx.App
 import tornadofx.reloadStylesheetsOnFocus
@@ -17,7 +17,7 @@ class MainApp: App(MainView::class) {
     init {
         reloadStylesheetsOnFocus()
 
-        setUserAgentStylesheet(PrimerDark().userAgentStylesheet)
+        setUserAgentStylesheet(NordDark().userAgentStylesheet)
     }
 
     override fun start(stage: Stage) {
