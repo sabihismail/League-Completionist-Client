@@ -41,7 +41,6 @@ class MainView: View("League Alternative Client") {
     val clientStateProperty = SimpleObjectProperty(LolGameflowGameflowPhase.NONE)
     val gameModeProperty = SimpleObjectProperty(GameMode.NONE)
 
-    @Suppress("unused")
     private val controller = find(
         if (DEBUG_FAKE_UI_DATA_ARAM) AramMockController::class
         else if (DEBUG_FAKE_UI_DATA_NORMAL) NormalMockController::class
