@@ -152,8 +152,8 @@ class ChallengesView : View("League Challenges") {
 
     override val root = vbox {
         alignment = Pos.CENTER
-        minWidth = 1380.0
-        maxWidth = 1380.0
+        minWidth = 1580.0
+        maxWidth = 1580.0
 
         hbox {
             spacing = 0.0

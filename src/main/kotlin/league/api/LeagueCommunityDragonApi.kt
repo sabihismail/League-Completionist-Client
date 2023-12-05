@@ -34,7 +34,7 @@ object LeagueCommunityDragonApi {
     var QUEUE_MAPPING = hashMapOf<Int, ApiQueueInfoResponse>()
     var CHALLENGE_MAPPING = hashMapOf<String, Long>()
     var ETERNALS_MAPPING = hashMapOf<String, List<Pair<Int, String>>>()
-    var LOOT_TRANSLATION_MAPPING = hashMapOf<String, String>()
+    private var LOOT_TRANSLATION_MAPPING = hashMapOf<String, String>()
 
     private val versionEscaped get() = VERSION.replace(".", "_")
 

@@ -42,3 +42,4 @@ request in the [issues](https://github.com/sabihismail/LoL-Mastery-Box-Client/is
 - [LoL Client Java API](https://github.com/stirante/lol-client-java-api) - Handles 
 LoL client connection and endpoint handling
 - [TornadoFX](https://tornadofx.io/) - JavaFX UI framework for Kotlin
+- [AtlantaFX](https://github.com/mkpaz/atlantafx/) - Dark theme (nord-dark.css)

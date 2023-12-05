@@ -3,6 +3,7 @@ package ui
 // import atlantafx.base.theme.NordDark
 import javafx.stage.Stage
 import tornadofx.App
+import tornadofx.importStylesheet
 import tornadofx.reloadStylesheetsOnFocus
 import ui.views.MainView
 import util.ViewUtil
@@ -17,7 +18,8 @@ class MainApp: App(MainView::class) {
     init {
         reloadStylesheetsOnFocus()
 
-        // setUserAgentStylesheet(NordDark().userAgentStylesheet)
+        val url = this.javaClass.classLoader.getResource("nord-dark.css")
+        importStylesheet(Paths.get(url!!.toURI()))
     }
 
     override fun start(stage: Stage) {
