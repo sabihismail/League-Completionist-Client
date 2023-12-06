@@ -1,42 +1,38 @@
-﻿# LoL Mastery Info Client
+﻿# LoL Helper Client
 
-Just a small application to let you view mastery chest and mastery token
-availability information in a simple, real-time menu. It is intended to 
-be run alongside the LoL client.
+A helper client that allows you to view a ton of extra stuff 
 
-### How to Build a Jar
-- Run `./gradle :shadowJar` or use IntelliJ's gradle plugin and look for `shadow/shadowJar`
+### Features
+- Mastery chest info (multiple accounts supported)
+- Challenges, Challenge Title info, and remaining Challenges per champion
+- ARAM/Normal side-views
+- Eternals information
 
-### Supported Modes
-- ARAM
-  - Mastery Chest &check;
-  - Mastery Tokens &cross;
-  - Role Filter &cross;
-- Summoner's Rift - Blind Pick
-  - Mastery Chest &check;
-  - Mastery Tokens &check;
-  - Role Filter &cross;
-- Summoner's Rift - Draft Pick
-  - Mastery Chest &check;
-  - Mastery Tokens &check;
-  - Role Filter &check;
-- Summoner's Rift - Ranked Solo/Duo
-  - Mastery Chest &check;
-  - Mastery Tokens &check;
-  - Role Filter &check;
-- Summoner's Rift - Ranked Flex
-  - Mastery Chest &check;
-  - Mastery Tokens &check;
-  - Role Filter &check;
-
-If you would like another mode to be supported, please make a feature 
-request in the [issues](https://github.com/sabihismail/LoL-Mastery-Box-Client/issues) section.
+### How to Use It
+- Download the [latest release](https://github.com/sabihismail/LoL-Mastery-Chest-Client/releases)
+and run the `.bat` file (make sure it stays in the same directory as the 
+`.jar` file)
 
 ### Example ARAM View:
 ![image description](images/ARAM.png)
 
-### Example Normal/Draft View:
+### Example Normals/Draft View:
 ![image description](images/Normals.png)
+
+### Example Challenges Overview:
+![image description](images/Challenges.png)
+
+### Example Remaining Levels Overview:
+![image description](images/ChallengeTitles.png)
+
+# Developer Info
+
+### How to Build an Executable Jar
+- Run `./gradle :shadowJar` or use IntelliJ's gradle plugin and look for 
+`shadow/shadowJar`
+
+If you would like another more utility functions, make an issue in the
+[issues](https://github.com/sabihismail/LoL-Mastery-Box-Client/issues) section.
 
 ### Built With:
 - [LoL Client Java API](https://github.com/stirante/lol-client-java-api) - Handles 
