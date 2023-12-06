@@ -215,7 +215,7 @@ object LeagueCommunityDragonApi {
         val jsonStr = sendRequest(CHALLENGES_ENDPOINT)
         val json = StringUtil.extractJSONFromString<ApiChallengeResponse>(jsonStr)
 
-        return json.challenges.flatMap { it.value.thresholds!!.keys.map { rank -> arrayOf(it.key.toString(), rank.name.lowercase()) } }
+        return json.challenges.flatMap { it.value.levelToIconPath.keys.map { rank -> arrayOf(it.key.toString(), rank.lowercase()) } }
     }
 
     private fun populateChallengeThresholdMapping() {

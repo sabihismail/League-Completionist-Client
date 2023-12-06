@@ -32,6 +32,7 @@ class ChallengeInfo {
     var isApex: Boolean? = null
     var isCapstone: Boolean? = null
     var isReverseDirection: Boolean? = null
+    var levelToIconPath: Map<String, String> = mapOf()
     var name: String? = null
     private var nextLevel: ChallengeLevel? = null
     var nextThreshold: Double? = null
