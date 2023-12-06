@@ -6,16 +6,9 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import league.models.CacheInfo
 import league.models.enums.CacheType
-import league.models.enums.ChallengeCategory
-import league.models.json.ChallengeInfo
-import util.LogType
-import util.Logging
 import util.constants.GenericConstants
-import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
-import java.util.concurrent.atomic.AtomicInteger
-import kotlin.concurrent.thread
 import kotlin.io.path.*
 import kotlin.reflect.KMutableProperty0
 
@@ -39,37 +32,6 @@ object CacheUtil {
 
     fun getEndpoint(cacheType: CacheType): String? {
         return CACHE_MAPPING[cacheType]!!.endpoint()
-    }
-
-    fun preloadChallengesCache(challengeInfo: Map<ChallengeCategory, MutableList<ChallengeInfo>>) {
-        thread {
-            val elements = challengeInfo.values
-                .flatMap { challengeInfos -> challengeInfos.flatMap { challengeInfo -> challengeInfo.thresholds!!.keys.map { rank -> Pair(challengeInfo.id, rank) } } }
-                .toList()
-
-            val maxCount = elements.count()
-            val fileWalk = Files.walk(getPath(CacheType.CHALLENGE)).count()
-            if (fileWalk < maxCount) {
-                thread {
-                    Logging.log("Challenges - Starting Cache Download...", LogType.INFO)
-
-                    val num = AtomicInteger(0)
-                    elements.parallelStream()
-                        .forEach {
-                            LeagueCommunityDragonApi.getImagePath(CacheType.CHALLENGE, it.first.toString().lowercase(), it.second.name.lowercase())
-
-                            val n = num.incrementAndGet()
-                            Logging.log("Loaded Challenge Cache Image: ${n + 1}/${elements.size}", LogType.INFO, carriageReturn = (n + 1) / elements.size)
-                        }
-
-                    while (num.get() != maxCount) {
-                        Thread.sleep(1000)
-                    }
-
-                    Logging.log("Challenges - Finished Cache Download.", LogType.INFO)
-                }
-            }
-        }
     }
 
     fun <T1, T2> addJsonCache(cacheType: CacheType, data: KMutableProperty0<HashMap<T1, T2>>, append: String = "") {

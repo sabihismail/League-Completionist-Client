@@ -21,18 +21,24 @@ import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.net.URL
 import java.nio.channels.Channels
+import java.nio.file.Files
 import java.nio.file.Path
+import java.util.concurrent.Callable
+import java.util.concurrent.Executors
 import kotlin.io.path.createDirectory
 import kotlin.io.path.exists
 import kotlin.io.path.notExists
 
 
 object LeagueCommunityDragonApi {
+    private val EXECUTOR_SERVICE = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 1) // Sub 1 for UI thread?
+    private val EXECUTOR_SET = setOf<Path>()
+
     var VERSION = "latest"
 
     var CHAMPION_ROLE_MAPPING = hashMapOf<Role, HashMap<Int, Float>>()
     var QUEUE_MAPPING = hashMapOf<Int, ApiQueueInfoResponse>()
-    var CHALLENGE_MAPPING = hashMapOf<String, Long>()
+    var CHALLENGE_THRESHOLD_MAPPING = hashMapOf<String, Long>()
     var ETERNALS_MAPPING = hashMapOf<String, List<Pair<Int, String>>>()
     private var LOOT_TRANSLATION_MAPPING = hashMapOf<String, String>()
 
@@ -64,10 +70,10 @@ object LeagueCommunityDragonApi {
         return QUEUE_MAPPING[id]!!
     }
 
-    fun getChallenge(id: String, challengeLevel: ChallengeLevel): Long {
-        CacheUtil.checkIfJsonCached(CacheType.JSON, ::CHALLENGE_MAPPING, ::populateChallengeMapping, append = versionEscaped)
+    fun getChallengeThreshold(id: String, challengeLevel: ChallengeLevel): Long {
+        CacheUtil.checkIfJsonCached(CacheType.JSON, ::CHALLENGE_THRESHOLD_MAPPING, ::populateChallengeThresholdMapping, append = versionEscaped)
 
-        return CHALLENGE_MAPPING[id + challengeLevel.name]!!
+        return CHALLENGE_THRESHOLD_MAPPING[id + challengeLevel.name]!!
     }
 
     fun getEternal(contentId: String): List<Pair<Int, String>> {
@@ -77,20 +83,30 @@ object LeagueCommunityDragonApi {
     }
 
     fun getImage(t: CacheType, vararg params: Any): Image {
-        val path = getImagePath(t, *params)
+        val path = getImagePath(t, forceReturn = true, *params)
 
         return Image(path!!.toUri().toString())
     }
 
-    fun getImagePath(cacheType: CacheType, vararg params: Any): Path? {
-        val path = CacheUtil.getPath(cacheType)
-
-        if (path.notExists()) {
-            path.createDirectory()
+    private fun enqueueAllImageDownloads(cacheType: CacheType) {
+        val ids = when (cacheType) {
+            CacheType.CHAMPION -> getChampionIds()
+            CacheType.CHALLENGE -> getChallengeImageMapping()
+            else -> emptyList()
         }
 
-        val imagePath = path.resolve(params.joinToString("-") + ".png")
-        if (!imagePath.exists()) {
+        val path = CacheUtil.getPath(cacheType)
+        ids.forEach {
+            val imagePath = path.resolve(it.joinToString("-") + ".png")
+
+            addToExecutorService(cacheType, imagePath, forceReturn = false, *it)
+        }
+    }
+
+    private fun addToExecutorService(cacheType: CacheType, imagePath: Path, forceReturn: Boolean = false, vararg params: Any) {
+        if (EXECUTOR_SET.contains(imagePath)) return
+
+        val obj = EXECUTOR_SERVICE.submit(Callable {
             val urlStr = CacheUtil.getEndpoint(cacheType)?.format(*params)
 
             val connection = URL(urlStr).openConnection()
@@ -101,13 +117,34 @@ object LeagueCommunityDragonApi {
                 val fileOutputStream = FileOutputStream(imagePath.toFile())
 
                 fileOutputStream.channel.transferFrom(readableByteChannel, 0, Long.MAX_VALUE)
-            } catch (e: FileNotFoundException) {
-                if (cacheType == CacheType.CHALLENGE) return null
 
+                Logging.log("Image Download: '$imagePath", LogType.INFO)
+            } catch (e: FileNotFoundException) {
                 throw e
             }
 
-            Logging.log("Image Download: '$imagePath'", LogType.INFO)
+            return@Callable imagePath
+        })
+
+        if (forceReturn) {
+            obj.get()
+        }
+    }
+
+    fun getImagePath(cacheType: CacheType, forceReturn: Boolean, vararg params: Any): Path? {
+        val path = CacheUtil.getPath(cacheType)
+
+        if (path.notExists() || Files.list(path).count() == 0L) {
+            if (path.notExists()) {
+                path.createDirectory()
+            }
+
+            enqueueAllImageDownloads(cacheType)
+        }
+
+        val imagePath = path.resolve(params.joinToString("-") + ".png")
+        if (!imagePath.exists()) {
+            addToExecutorService(cacheType, imagePath, forceReturn = forceReturn, *params)
         }
 
         return imagePath
@@ -144,6 +181,12 @@ object LeagueCommunityDragonApi {
         return ColorAdjust(0.0, -0.5, -0.5, -0.1)
     }
 
+    private fun getChampionIds(): List<Array<Int>> {
+        CacheUtil.checkIfJsonCached(CacheType.JSON, ::CHAMPION_ROLE_MAPPING, ::populateRoleMapping, append = versionEscaped)
+
+        return CHAMPION_ROLE_MAPPING.map { it.value }.flatMap { it.keys.map { key -> arrayOf(key) } }
+    }
+
     private fun populateQueueMapping() {
         QUEUE_MAPPING.clear()
 
@@ -168,20 +211,23 @@ object LeagueCommunityDragonApi {
         CacheUtil.addJsonCache(CacheType.JSON, ::CHAMPION_ROLE_MAPPING, append = versionEscaped)
     }
 
-    private fun populateChallengeMapping() {
-        CHALLENGE_MAPPING.clear()
-
+    private fun getChallengeImageMapping(): List<Array<String>> {
         val jsonStr = sendRequest(CHALLENGES_ENDPOINT)
         val json = StringUtil.extractJSONFromString<ApiChallengeResponse>(jsonStr)
 
-        CHALLENGE_MAPPING = HashMap(json.challenges.values.flatMap { c -> c.thresholds!!.map { (k, v) -> (c.name!! + k.name) to v.value!!.toLong() } }
+        return json.challenges.flatMap { it.value.thresholds!!.keys.map { rank -> arrayOf(it.key.toString(), rank.name.lowercase()) } }
+    }
+
+    private fun populateChallengeThresholdMapping() {
+        val jsonStr = sendRequest(CHALLENGES_ENDPOINT)
+        val json = StringUtil.extractJSONFromString<ApiChallengeResponse>(jsonStr)
+
+        CHALLENGE_THRESHOLD_MAPPING = HashMap(json.challenges.values.flatMap { c -> c.thresholds!!.map { (k, v) -> (c.name!! + k.name) to v.value!!.toLong() } }
             .toMap())
-        CacheUtil.addJsonCache(CacheType.JSON, ::CHALLENGE_MAPPING, append = versionEscaped)
+        CacheUtil.addJsonCache(CacheType.JSON, ::CHALLENGE_THRESHOLD_MAPPING, append = versionEscaped)
     }
 
     private fun populateEternalsMapping() {
-        ETERNALS_MAPPING.clear()
-
         val jsonStr = sendRequest(ETERNALS_ENDPOINT)
         val json = StringUtil.extractJSONFromString<ApiEternalsResponse>(jsonStr)
 
@@ -192,8 +238,6 @@ object LeagueCommunityDragonApi {
     }
 
     private fun populateLootTranslationMapping() {
-        LOOT_TRANSLATION_MAPPING.clear()
-
         val jsonStr = sendRequest(LOOT_NAME_ENDPOINT)
         val json = StringUtil.extractJSONFromString<Map<String, String>>(jsonStr)
 

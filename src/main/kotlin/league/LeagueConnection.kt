@@ -710,8 +710,6 @@ class LeagueConnection {
 
                 updateChallengesInfo()
                 loggedIn()
-
-                CacheUtil.preloadChallengesCache(challengeInfo)
             }
 
             override fun onClientDisconnected() {

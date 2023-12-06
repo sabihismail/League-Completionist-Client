@@ -139,8 +139,8 @@ class ChallengesView : View("League Challenges") {
     }
 
     private fun getChallengeString(level: ChallengeLevel, key: String, current: Long, s: String = " - ", includeTotal: Boolean = false): String {
-        val maxPoints = LeagueCommunityDragonApi.getChallenge(key, ChallengeLevel.entries[level.ordinal + 1])
-        val minPoints = LeagueCommunityDragonApi.getChallenge(key, ChallengeLevel.entries[level.ordinal])
+        val maxPoints = LeagueCommunityDragonApi.getChallengeThreshold(key, ChallengeLevel.entries[level.ordinal + 1])
+        val minPoints = LeagueCommunityDragonApi.getChallengeThreshold(key, ChallengeLevel.entries[level.ordinal])
 
         val currentPoints = current - minPoints
         val maxPointsCurrentLevel = maxPoints - minPoints
