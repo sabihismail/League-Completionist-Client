@@ -25,6 +25,8 @@ enum class GameMode {
     ONE_FOR_ALL,
     @SerializedName("URF")
     URF,
+    @SerializedName("CHERRY")
+    CHERRY,
     @SerializedName("TUTORIAL")
     TUTORIAL,
     @SerializedName("BOT", alternate = ["Beginner", "Intermediate", "Co-op vs. AI", "Intro"])
@@ -38,10 +40,16 @@ enum class GameMode {
 
     val isClassic get() = CLASSIC_MODES.contains(this)
 
-    val getSerializedName: SerializedName get() = this.declaringJavaClass.getField(this.name).getAnnotation(SerializedName::class.java)
+    val serializedName: SerializedName by lazy { this.declaringJavaClass.getField(this.name).getAnnotation(SerializedName::class.java) }
+
+    override fun toString(): String {
+        return STRING_MAPPING.getOrDefault(this, this.name)
+    }
 
     companion object {
         private val CLASSIC_MODES = setOf(CLASSIC, BLIND_PICK, DRAFT_PICK, RANKED_SOLO, RANKED_FLEX, CLASH, BOT)
+
+        val STRING_MAPPING = mapOf(ANY to "All", CHERRY to "Arena", CLASSIC to "Summoner's Rift")
 
         fun fromGameMode(str: String, queueId: Int): GameMode {
             val tmp = entries.firstOrNull { it.name == str } ?: UNKNOWN
@@ -49,7 +57,7 @@ enum class GameMode {
 
             val gameType = LeagueCommunityDragonApi.getQueueMapping(queueId)
             return entries.firstOrNull {
-                val serializedName = it.getSerializedName
+                val serializedName = it.serializedName
 
                 serializedName.value == gameType.description || serializedName.alternate.contains(gameType.description)
             } ?: UNKNOWN

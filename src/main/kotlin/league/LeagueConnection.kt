@@ -474,6 +474,7 @@ class LeagueConnection {
             val unownedChampion = championInfo.values.firstOrNull { ChampionOwnershipStatus.UNOWNED_SET.contains(it.ownershipStatus) }
             if (unownedChampion != null) {
                 functions.addAll(mutableListOf(
+                    { disenchantByText(loot, "Random Champion Permanent") },
                     { disenchantByText(loot, "Champion Capsule") },
                     { disenchantByText(loot, "Random Champion Shard") },
                 ))

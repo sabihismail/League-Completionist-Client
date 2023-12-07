@@ -30,7 +30,7 @@ import util.constants.ViewConstants.IMAGE_WIDTH
 import util.constants.ViewConstants.SCROLLBAR_WIDTH
 
 
-class MainView: View("LoL Helper Client") {
+class MainView: View("League Completionist Client") {
     val defaultGridView = find(DefaultGridView::class)
     val masteryAccountView = find(MasteryAccountView::class)
     var currentChampionView = find(ChampionFragment::class)

@@ -30,6 +30,7 @@ class ChallengesView : View("League Challenges") {
     private val categoriesProperty = SimpleListProperty<ChallengeCategory>()
     private val allChallengesProperty = SimpleMapProperty<ChallengeCategory, List<ChallengeInfo>>()
     private val filteredChallengesProperty = SimpleMapProperty<ChallengeCategory, List<ChallengeInfo>>()
+    private val allGameModesProperty = SimpleListProperty<GameMode>()
 
     private val hideEarnPointChallengesProperty = SimpleBooleanProperty(true)
     private val hidePremadeChallengesProperty = SimpleBooleanProperty(true)
@@ -76,8 +77,7 @@ class ChallengesView : View("League Challenges") {
 
                     when(currentGameModeProperty.value) {
                         GameMode.ANY -> true
-                        GameMode.ARAM -> challengeInfo.gameModeSet.contains(GameMode.ARAM) || challengeInfo.description!!.contains("ARAM")
-                        else -> challengeInfo.gameModeSet.contains(currentGameModeProperty.value) && !challengeInfo.description!!.contains("ARAM")
+                        else -> challengeInfo.gameModeSet.contains(currentGameModeProperty.value)
                     }
                 },
 
@@ -91,14 +91,18 @@ class ChallengesView : View("League Challenges") {
             var categories = if (hideCollectionProperty.value) allCategories.filter { it != ChallengeCategory.COLLECTION } else allCategories
             categories = if (hideLegacyProperty.value) categories.filter { it != ChallengeCategory.LEGACY } else categories
 
+            val uniqueGameModeBase = if (allChallengesProperty.size > 0) allChallengesProperty.value else sortedMap
+            val uniqueGameModes = setOf(GameMode.ANY).union(uniqueGameModeBase.flatMap { it.value }.flatMap { it.gameModeSet })
+
             ChallengeUiRefreshData(summary, FXCollections.observableMap(challengeInfo), FXCollections.observableMap(sortedMap),
-                FXCollections.observableList(allCategories), FXCollections.observableList(categories))
+                FXCollections.observableList(allCategories), FXCollections.observableList(categories), FXCollections.observableList(uniqueGameModes.toList()))
         } ui {
             challengesSummaryProperty.value = it.challengesSummary
             allCategoriesProperty.value = it.allCategories
             categoriesProperty.value = it.categories
             allChallengesProperty.value = it.allChallenges
             filteredChallengesProperty.value = it.filteredChallenges
+            allGameModesProperty.value = it.allGameModes
 
             ROW_COUNT = categoriesProperty.size
 
@@ -260,7 +264,7 @@ class ChallengesView : View("League Challenges") {
                 checkbox("Hide Multi-tier", hideMultiTierChallengesProperty)
                 checkbox("Hide Collection", hideCollectionProperty)
                 checkbox("Hide Legacy", hideLegacyProperty)
-                combobox(currentGameModeProperty, listOf(GameMode.ANY, GameMode.ARAM, GameMode.CLASSIC))
+                combobox(currentGameModeProperty, allGameModesProperty)
             }
         }
     }

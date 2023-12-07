@@ -4,9 +4,14 @@ import org.apache.commons.lang3.builder.RecursiveToStringStyle
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder
 
 object Logging {
+    private const val ANSI_RESET = "\u001B[0m"
+    private const val ANSI_ERROR_RED = "\u001B[91m"
+    private const val ANSI_WARNING_YELLOW = "\u001B[93m"
+    private val ANSI_SET = setOf(ANSI_ERROR_RED, ANSI_WARNING_YELLOW)
+
     private val LOG_MODE = LogType.INFO
 
-    private var lastMessageLogged = ""
+    private val logged = hashSetOf<String>()
 
     fun log(obj: Any, logType: LogType, header: String? = null, ignorableDuplicate: Boolean = false) {
         if (logType < LOG_MODE) return
@@ -23,8 +28,17 @@ object Logging {
 
     fun log(str: String, logType: LogType, header: String? = null, ignorableDuplicate: Boolean = false, carriageReturn: Int = -1, messageType: LogMessageType? = null) {
         if (logType < LOG_MODE) return
-        
         val s = StringBuilder()
+        if (logType == LogType.WARNING) {
+            if (logged.contains(str)) return
+
+            s.append(ANSI_WARNING_YELLOW + "WARNING: ")
+        }
+
+        if (logType == LogType.ERROR) {
+            s.append(ANSI_ERROR_RED + "ERROR: ")
+        }
+
         if (messageType != null) {
             s.append("[${messageType.name}] ")
         }
@@ -35,10 +49,14 @@ object Logging {
 
         s.append(str)
 
-        val toStr = s.toString()
-        if (ignorableDuplicate && toStr == lastMessageLogged) return
+        if (ANSI_SET.any { it.contains(s.toString()) }) {
+            s.append(ANSI_RESET)
+        }
 
-        lastMessageLogged = toStr
+        val toStr = s.toString()
+        if (ignorableDuplicate && toStr == logged.last()) return
+
+        logged.add(str)
 
         if (carriageReturn != -1) {
             print(toStr + if (carriageReturn == 0) "\r" else "\n")

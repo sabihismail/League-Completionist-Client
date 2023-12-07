@@ -6,6 +6,8 @@ import league.models.enums.ChallengeLevel
 import league.models.enums.ChallengeThresholdRewardCategory
 import league.models.enums.GameMode
 import util.KotlinExtensionUtil.toCommaSeparatedNumber
+import util.LogType
+import util.Logging
 import util.constants.GenericConstants
 import kotlin.math.abs
 
@@ -150,7 +152,14 @@ class ChallengeInfo {
     }
 
     private fun initGameMode() {
-        gameModeSet = gameModes!!.map { GameMode.valueOf(it) }.toSet()
+        gameModeSet = gameModes!!.map {
+            try {
+                GameMode.valueOf(it)
+            } catch (e: IllegalArgumentException) {
+                Logging.log(e.message!!, LogType.WARNING)
+                return@map null
+            }
+        }.filterNotNull().toSet()
     }
 
     private fun initRewardTitle() {

@@ -1,4 +1,4 @@
-﻿# LoL Helper Client
+﻿# League Completionist Client
 
 A helper client that allows you to view a ton of extra stuff 
 
