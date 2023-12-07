@@ -3,6 +3,8 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 group = "me.sabihismail"
 version = "0.4.1"
 
+val ARCHIVE_NAME = "League-Completionist-Client.jar"
+
 plugins {
     kotlin("jvm") version "1.9.10"
     kotlin("plugin.serialization") version "1.9.10"
@@ -48,8 +50,6 @@ dependencies {
 application {
     mainClass.set("MainKt")
 }
-
-val ARCHIVE_NAME = "League-Completionist-Client.jar"
 
 tasks {
     withType<KotlinCompile> {
