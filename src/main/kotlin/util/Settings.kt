@@ -12,7 +12,6 @@ import kotlin.reflect.full.memberProperties
 import kotlin.system.exitProcess
 
 class Settings {
-    var riotApiKey = ""
     var mainId = 0L
     var smurfId = 0L
 
