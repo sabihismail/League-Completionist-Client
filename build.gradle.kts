@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 group = "me.sabihismail"
-version = "1.0.0"
+version = "0.4.1"
 
 plugins {
     kotlin("jvm") version "1.9.10"
@@ -49,19 +49,23 @@ application {
     mainClass.set("MainKt")
 }
 
+val ARCHIVE_NAME = "League-Completionist-Client.jar"
+
 tasks {
     withType<KotlinCompile> {
         kotlinOptions.jvmTarget = JavaVersion.VERSION_1_8.toString()
     }
 
     shadowJar {
+        archiveFileName.set(ARCHIVE_NAME)
+
         doLast {
             val file = File("config.json")
             val json = groovy.json.JsonSlurper().parseText(file.readText()) as Map<*, *>
             val exportDirectory = json.getOrDefault("exportDirectory", System.getProperty("user.home")) as String
 
             copy {
-                from("build/libs/LoL-Mastery-Box-Client-1.0.0-all.jar")
+                from("build/libs/${ARCHIVE_NAME}")
                 into(exportDirectory)
             }
         }
