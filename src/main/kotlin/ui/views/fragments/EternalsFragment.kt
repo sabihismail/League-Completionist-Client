@@ -2,14 +2,14 @@ package ui.views.fragments
 
 import javafx.geometry.Pos
 import javafx.scene.text.Font
-import league.models.json.LolStatstonesStatstoneInfo
+import league.models.json.EternalsInfo
 import tornadofx.*
 import ui.views.util.blackLabel
 import util.StringUtil
 import util.constants.GenericConstants.ETERNALS_DESCRIPTION_REGEX
 
 class EternalsFragment : Fragment() {
-    val eternal: List<LolStatstonesStatstoneInfo> by param()
+    val eternal: List<EternalsInfo> by param()
     val fontSizeIn: Double by param()
 
     override var root = stackpane {
@@ -22,7 +22,7 @@ class EternalsFragment : Fragment() {
         }
     }
 
-    fun set(newEternal: List<LolStatstonesStatstoneInfo>) {
+    fun set(newEternal: List<EternalsInfo>) {
         val vBox = vbox {
             newEternal.sortedByDescending { it.formattedMilestoneLevel }
                 .forEach {

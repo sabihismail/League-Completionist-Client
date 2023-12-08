@@ -1,4 +1,4 @@
-package league.models.json
+package league.models.json.communitydragon
 
 import kotlinx.serialization.Serializable
 

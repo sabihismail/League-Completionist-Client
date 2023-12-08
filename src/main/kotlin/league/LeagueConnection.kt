@@ -4,8 +4,6 @@ import com.google.gson.JsonObject
 import com.stirante.lolclient.*
 import db.DatabaseImpl
 import generated.*
-import league.api.CacheUtil
-import league.api.LeagueApi
 import league.api.LeagueCommunityDragonApi
 import league.models.*
 import league.models.enums.*
@@ -37,9 +35,9 @@ class LeagueConnection {
 
     var championSelectInfo = ChampionSelectInfo()
     var championInfo = mapOf<Int, ChampionInfo>()
-    var challengeInfo = mapOf<ChallengeCategory, MutableList<ChallengeInfo>>()
-    var completableChallenges = listOf<ChallengeInfo>()
-    var challengesUpdatedInfo = mutableListOf<Pair<ChallengeInfo, ChallengeInfo>>()
+    var challengeInfo = mapOf<ChallengeCategory, MutableList<Challenge>>()
+    var completableChallenges = listOf<Challenge>()
+    var challengesUpdatedInfo = mutableListOf<Pair<Challenge, Challenge>>()
     var challengeInfoSummary = ChallengeSummary()
 
     private var clientApiListener: ClientConnectionListener? = null
@@ -83,7 +81,7 @@ class LeagueConnection {
         "/lol-challenges/v1/my-updated-challenges/.*".toRegex() to { event ->
             val dataJson = FieldUtils.readField(event, "dataJson", true) as JsonObject
             val jsonStr = GSON.toJson(dataJson)
-            val json = StringUtil.extractJsonMapFromString<ChallengeInfo>(jsonStr)
+            val json = StringUtil.extractJsonMapFromString<Challenge>(jsonStr)
 
             handleChallengesChange(json.values.toList())
         },
@@ -605,12 +603,12 @@ class LeagueConnection {
     fun updateChallengesInfo() {
         val challengesResult = clientApi!!.executeGet("/lol-challenges/v1/challenges/local-player", Map::class.java).responseObject
         val jsonStr = GSON.toJson(challengesResult)
-        val json = StringUtil.extractJsonMapFromString<ChallengeInfo>(jsonStr)
+        val json = StringUtil.extractJsonMapFromString<Challenge>(jsonStr)
 
         val sections = json.values.groupBy { it.category!! }
             .map { entry ->
                 Pair(entry.key, entry.value.sortedWith(
-                    compareBy<ChallengeInfo> { it.isComplete }
+                    compareBy<Challenge> { it.isComplete }
                         .thenByDescending { it.currentLevel }
                         .thenByDescending { it.hasRewardTitle }
                         .thenBy { !it.rewardObtained }
@@ -773,7 +771,7 @@ class LeagueConnection {
         runLootCleanup()
     }
 
-    private fun handleChallengesChange(challengeInfoList: List<ChallengeInfo>) {
+    private fun handleChallengesChange(challengeInfoList: List<Challenge>) {
         challengesUpdatedInfo.clear()
 
         challengeInfoList.forEach {
@@ -825,17 +823,17 @@ class LeagueConnection {
 
         gameMode = when (gameFlowPhase) {
             LolGameflowGameflowPhase.CHAMPSELECT -> {
-                val gameFlow = clientApi!!.executeGet("/lol-gameflow/v1/session", LolGameflowGameflowSession::class.java).responseObject ?: return
+                val gameFlow = clientApi!!.executeGet("/lol-gameflow/v1/session", GameflowSession::class.java).responseObject ?: return
                 Logging.log(gameFlow, LogType.DEBUG)
 
                 GameMode.fromGameMode(gameFlow.gameData.queue.gameMode, gameFlow.gameData.queue.id)
             }
             LolGameflowGameflowPhase.INPROGRESS -> {
-                val gameFlow = clientApi!!.executeGet("/lol-gameflow/v1/session", LolGameflowGameflowSession::class.java).responseObject ?: return
+                val gameFlow = clientApi!!.executeGet("/lol-gameflow/v1/session", GameflowSession::class.java).responseObject ?: return
                 Logging.log(gameFlow, LogType.DEBUG)
 
                 if (championSelectInfo.teamChampions.isEmpty()) {
-                    val championId = LeagueApi.getCurrentGameChampionId()
+                    val championId = gameFlow.gameData.currentChampionId(summonerInfo.displayName)
                     val champion = championInfo[championId].apply { this?.isSummonerSelectedChamp = true }
 
                     championSelectInfo = ChampionSelectInfo(listOf(champion), listOf(), Role.ANY)
@@ -972,7 +970,6 @@ class LeagueConnection {
     private fun getClientVersion() {
         val versionInfo = clientApi!!.executeGet("/system/v1/builds", BuildInfo::class.java).responseObject
         LeagueCommunityDragonApi.VERSION = versionInfo.version.split(".").subList(0, 2).joinToString(".")
-        CacheUtil.CACHE_MAPPING
     }
 
     private fun getEternalsQueueIds() {

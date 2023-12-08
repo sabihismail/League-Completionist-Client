@@ -15,7 +15,7 @@ import kotlin.reflect.KMutableProperty0
 object CacheUtil {
     val FILE_LOCKS = hashMapOf<Path, Mutex>()
 
-    val CACHE_MAPPING = mutableMapOf(
+    private val CACHE_MAPPING = mutableMapOf(
         CacheType.API to CacheInfo("api"),
         CacheType.CHAMPION to CacheInfo("champion") { LeagueCommunityDragonApi.CHAMPION_PORTRAIT_ENDPOINT },
         CacheType.CHALLENGE to CacheInfo("challenge") { LeagueCommunityDragonApi.CHALLENGE_IMAGE_ENDPOINT },

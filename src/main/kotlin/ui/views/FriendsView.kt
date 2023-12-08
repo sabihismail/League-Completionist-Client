@@ -7,7 +7,7 @@ import javafx.beans.property.SimpleStringProperty
 import javafx.collections.FXCollections
 import javafx.geometry.Pos
 import league.models.json.LolAvailability
-import league.models.json.LolChatFriendResourceImpl
+import league.models.json.Friend
 import league.models.json.lolChatFriendResourceImplPropertyMap
 import org.apache.hc.core5.http.HttpHeaders
 import org.apache.hc.core5.http.message.BasicHeader
@@ -18,15 +18,15 @@ import java.util.*
 
 
 class FriendsView : View("Friend List") {
-    private val friends = SimpleListProperty<LolChatFriendResourceImpl>()
+    private val friends = SimpleListProperty<Friend>()
     private val searchProperty = SimpleStringProperty(this, SEARCH_FILTER, config.string(SEARCH_FILTER) ?: "")
     private val isOnlineProperty = SimpleBooleanProperty(this, IS_ONLINE, config.boolean(IS_ONLINE) ?: true)
     private val isHideMobileProperty = SimpleBooleanProperty(this, IS_HIDE_MOBILE, config.boolean(IS_HIDE_MOBILE) ?: true)
 
     private val userIdMapping = hashMapOf<String, String>()
-    private val friendsLst = HashMap<String, Array<LolChatFriendResourceImpl>>()
+    private val friendsLst = HashMap<String, Array<Friend>>()
 
-    private val booleanFilterMapping = listOf<Pair<SimpleBooleanProperty, (LolChatFriendResourceImpl) -> Boolean>>(
+    private val booleanFilterMapping = listOf<Pair<SimpleBooleanProperty, (Friend) -> Boolean>>(
         Pair(isOnlineProperty) { it.availability != LolAvailability.OFFLINE },
         Pair(isHideMobileProperty) { it.availability != LolAvailability.MOBILE },
     )
@@ -36,9 +36,9 @@ class FriendsView : View("Friend List") {
         prefHeight = MainView.APP_HEIGHT
 
         center = tableview(friends) {
-            column("Account", LolChatFriendResourceImpl::ownerFriend) { minWidth = 50.0 }
-            column("Friend Name", LolChatFriendResourceImpl::gameName) { minWidth = 150.0 }
-            column("Note", LolChatFriendResourceImpl::note) { minWidth = 300.0 }
+            column("Account", Friend::ownerFriend) { minWidth = 50.0 }
+            column("Friend Name", Friend::gameName) { minWidth = 150.0 }
+            column("Note", Friend::note) { minWidth = 300.0 }
             column("Game") {
                 minWidth = 150.0
 
@@ -117,14 +117,14 @@ class FriendsView : View("Friend List") {
                         }
                     }
 
-                    val friendResponse = HttpUtil.makeGetRequestJson<Array<LolChatFriendResourceImpl>>("$baseUrl/lol-chat/v1/friends", headers = headers)
+                    val friendResponse = HttpUtil.makeGetRequestJson<Array<Friend>>("$baseUrl/lol-chat/v1/friends", headers = headers)
                     handleFriendArray(userIdMapping[port], friendResponse)
                 }
             }
         }, 0, 60 * 1000)
     }
 
-    private fun handleFriendArray(userName: String?, response: Array<LolChatFriendResourceImpl>?) {
+    private fun handleFriendArray(userName: String?, response: Array<Friend>?) {
         if (response == null || userName.isNullOrBlank()) return
 
         response.onEach { it.ownerFriend = userName }

@@ -4,7 +4,7 @@ package ui.views
 
 import javafx.beans.property.SimpleListProperty
 import javafx.scene.control.ScrollPane
-import league.models.json.ChallengeInfo
+import league.models.json.Challenge
 import tornadofx.*
 import ui.views.fragments.ChallengeFragment
 import ui.views.util.blackLabel
@@ -15,11 +15,11 @@ import util.constants.ViewConstants.IMAGE_SPACING_WIDTH
 import util.constants.ViewConstants.IMAGE_WIDTH
 
 class ChallengesUpdatedView : View("League Challenges - Updated") {
-    val challengesProgressedProperty = SimpleListProperty<Pair<ChallengeInfo, ChallengeInfo>>()
-    val challengesCompletedProperty = SimpleListProperty<Pair<ChallengeInfo, ChallengeInfo>>()
-    val challengesUpgradedProperty = SimpleListProperty<Pair<ChallengeInfo, ChallengeInfo>>()
+    val challengesProgressedProperty = SimpleListProperty<Pair<Challenge, Challenge>>()
+    val challengesCompletedProperty = SimpleListProperty<Pair<Challenge, Challenge>>()
+    val challengesUpgradedProperty = SimpleListProperty<Pair<Challenge, Challenge>>()
 
-    private fun getBracketTest(it: Pair<ChallengeInfo, ChallengeInfo>): String {
+    private fun getBracketTest(it: Pair<Challenge, Challenge>): String {
         return "${it.second.pointsDifference}) (+${(it.second - it.first)}"
     }
 

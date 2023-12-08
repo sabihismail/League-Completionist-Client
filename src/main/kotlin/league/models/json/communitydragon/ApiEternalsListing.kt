@@ -1,10 +1,19 @@
-package league.models.json
+package league.models.json.communitydragon
 
 import kotlinx.serialization.Serializable
 import league.models.enums.EternalTrackingType
 import util.KotlinExtensionUtil.toCommaSeparatedNumber
 import util.StringUtil
 import util.constants.GenericConstants.DISTANCE_CONSTANT
+
+
+@Serializable
+data class ApiEternalsChampion(val itemId: Int) {
+    override fun toString(): String {
+        return "ApiEternalsChampion(itemId=$itemId)"
+    }
+}
+
 
 @Serializable
 data class ApiEternalsListing(val name: String, val contentId: String, val boundChampion: ApiEternalsChampion, val milestones: List<Int>, val trackingType: Int) {

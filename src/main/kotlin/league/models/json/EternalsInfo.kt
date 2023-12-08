@@ -3,7 +3,7 @@ package league.models.json
 import league.api.LeagueCommunityDragonApi
 import java.text.NumberFormat
 
-class LolStatstonesStatstoneInfo {
+class EternalsInfo {
     private var statstoneId: String = ""
     var description: String = ""
     var formattedMilestoneLevel: String = ""
@@ -50,4 +50,20 @@ class LolStatstonesStatstoneInfo {
             return NumberFormat.getNumberInstance().parse(nextMilestone).toInt()
         }
     }
+}
+
+class EternalsSetInfo {
+    var name: String? = null
+    var statstones: List<EternalsInfo> = emptyList()
+    var stonesOwned: Int = 0
+
+    /*
+    var subInventoryType: String? = null
+    var inventoryType: String? = null
+    var itemId: Int? = null
+    var itemInstanceID: String? = null
+    var milestonesPassed: Int? = null
+    var ownedFromPacks: List<LolStatstonesGameDataStatstonePack>? = null
+    var prices: List<LolStatstonesPriceInfo>? = null
+    */
 }

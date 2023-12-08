@@ -13,11 +13,10 @@ import league.models.ChallengeUiRefreshData
 import league.models.enums.ChallengeCategory
 import league.models.enums.ChallengeLevel
 import league.models.enums.GameMode
-import league.models.json.ChallengeInfo
+import league.models.json.Challenge
 import league.models.json.ChallengeSummary
 import tornadofx.*
 import ui.views.fragments.ChallengeFragment
-import util.constants.GenericConstants
 import util.constants.ViewConstants.CHALLENGE_IMAGE_WIDTH
 import util.constants.ViewConstants.DEFAULT_SPACING
 import util.constants.ViewConstants.SCROLLBAR_HEIGHT
@@ -28,8 +27,8 @@ class ChallengesView : View("League Challenges") {
     private val challengesSummaryProperty = SimpleObjectProperty<ChallengeSummary>()
     private val allCategoriesProperty = SimpleListProperty<ChallengeCategory>()
     private val categoriesProperty = SimpleListProperty<ChallengeCategory>()
-    private val allChallengesProperty = SimpleMapProperty<ChallengeCategory, List<ChallengeInfo>>()
-    private val filteredChallengesProperty = SimpleMapProperty<ChallengeCategory, List<ChallengeInfo>>()
+    private val allChallengesProperty = SimpleMapProperty<ChallengeCategory, List<Challenge>>()
+    private val filteredChallengesProperty = SimpleMapProperty<ChallengeCategory, List<Challenge>>()
     private val allGameModesProperty = SimpleListProperty<GameMode>()
 
     private val hideEarnPointChallengesProperty = SimpleBooleanProperty(true)
@@ -48,7 +47,7 @@ class ChallengesView : View("League Challenges") {
     private lateinit var grid: DataGrid<ChallengeCategory>
 
     fun setChallenges(summary: ChallengeSummary = challengesSummaryProperty.value,
-                      challengeInfo: Map<ChallengeCategory, List<ChallengeInfo>> = allChallengesProperty.value,
+                      challengeInfo: Map<ChallengeCategory, List<Challenge>> = allChallengesProperty.value,
                       allCategories: List<ChallengeCategory> = allCategoriesProperty.value) {
         runAsync {
             val filters = listOf(
@@ -70,7 +69,7 @@ class ChallengesView : View("League Challenges") {
 
                 ChallengeFilter(hideMultiTierChallengesProperty.get()) { challengeInfo -> challengeInfo.thresholds!!.count() == 1 },
 
-                ChallengeFilter(hideNonSeasonChallengesProperty.get()) { challengeInfo -> challengeInfo.name?.contains(GenericConstants.YEAR) == true },
+                ChallengeFilter(hideNonSeasonChallengesProperty.get()) { challengeInfo -> !challengeInfo.isSeasonal },
 
                 ChallengeFilter(true) { challengeInfo ->
                     if (challengeInfo.category == ChallengeCategory.COLLECTION) return@ChallengeFilter true

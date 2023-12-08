@@ -7,7 +7,7 @@ import javafx.geometry.Pos
 import league.models.ChampionInfo
 import league.models.ChampionSelectInfo
 import league.models.enums.GameMode
-import league.models.json.ChallengeInfo
+import league.models.json.Challenge
 import tornadofx.*
 import ui.views.fragments.ChampionFragment
 import ui.views.util.boldLabel
@@ -17,13 +17,13 @@ import util.constants.ViewConstants.IMAGE_WIDTH
 
 
 class AramGridView: View() {
-    val currentChallengeProperty = SimpleObjectProperty<ChallengeInfo>(null)
+    val currentChallengeProperty = SimpleObjectProperty<Challenge>(null)
     val benchedChampionListProperty = SimpleListProperty<ChampionInfo>()
     val teamChampionListProperty = SimpleListProperty<ChampionInfo>()
 
-    private val completableChallengesProperty = SimpleListProperty<ChallengeInfo>()
+    private val completableChallengesProperty = SimpleListProperty<Challenge>()
 
-    fun setCompletableChallenges(completableChallenges: List<ChallengeInfo>) {
+    fun setCompletableChallenges(completableChallenges: List<Challenge>) {
         runAsync {
             FXCollections.observableList(
                 completableChallenges.sortedBy { it.description }.filter { it.gameModeSet.contains(GameMode.ARAM) }

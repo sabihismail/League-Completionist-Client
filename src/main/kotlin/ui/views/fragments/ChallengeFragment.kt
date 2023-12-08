@@ -4,14 +4,14 @@ import javafx.geometry.Pos
 import javafx.scene.text.Font
 import league.api.LeagueCommunityDragonApi
 import league.models.enums.CacheType
-import league.models.json.ChallengeInfo
+import league.models.json.Challenge
 import tornadofx.*
 import ui.views.util.blackLabel
 import util.KotlinExtensionUtil.toCommaSeparatedNumber
 import util.constants.ViewConstants.CHALLENGE_IMAGE_WIDTH
 
 class ChallengeFragment : Fragment() {
-    val challenge: ChallengeInfo by param()
+    val challenge: Challenge by param()
     val bracketText: String by param()
 
     override val root = stackpane {

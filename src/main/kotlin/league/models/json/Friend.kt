@@ -36,7 +36,7 @@ enum class LolAvailability {
 
 @Suppress("MemberVisibilityCanBePrivate")
 @Serializable
-class LolChatFriendResourceImpl {
+class Friend {
     var availability: LolAvailability = LolAvailability.OFFLINE
     // var displayGroupId: Int? = null
     // var displayGroupName: String? = null
@@ -65,5 +65,5 @@ class LolChatFriendResourceImpl {
 }
 
 val lolChatFriendResourceImplPropertyMap by lazy {
-    LolChatFriendResourceImpl::class.declaredMemberProperties
+    Friend::class.declaredMemberProperties
 }

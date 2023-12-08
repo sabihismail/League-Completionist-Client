@@ -8,14 +8,17 @@ import league.models.enums.GameMode
 import util.KotlinExtensionUtil.toCommaSeparatedNumber
 import util.LogType
 import util.Logging
-import util.constants.GenericConstants
 import kotlin.math.abs
 
 
 @Serializable
+data class ChallengeTags(val seasonal: Boolean = false, val parent: Int = -1)
+
+
+@Serializable
 @Suppress("unused")
-class ChallengeInfo {
-    var availableIds: Array<Double>? = null
+class Challenge {
+    private var availableIds: Array<Double>? = null
     var capstoneGroupId: Double? = null
     var capstoneGroupName: String? = null
     var category: ChallengeCategory? = null
@@ -48,6 +51,7 @@ class ChallengeInfo {
     var priority: Double? = null
     var retireTimestamp: Double? = null
     var source: String? = null
+    private var tags: ChallengeTags = ChallengeTags()
     var thresholds: Map<ChallengeLevel, ChallengeThreshold>? = null
     var valueMapping: String? = null
 
@@ -133,8 +137,16 @@ class ChallengeInfo {
 
     val pointsDifference by lazy { abs(nextLevelPoints - previousLevelPoints) }
 
+    val isSeasonal by lazy {
+        if (name?.contains("Seasonal")!!) {
+            println("RE")
+        }
+        name?.contains("Seasonal")!!
+
+    }
+
     val descriptiveDescription by lazy {
-        description + if (name?.contains(GenericConstants.YEAR) == false) "" else " (${GenericConstants.YEAR})"
+        description + if (!isSeasonal) "" else " (Seasonal)"
     }
 
     val availableIdsInt by lazy { availableIds?.map { it.toInt() }?.toSet() }
@@ -175,12 +187,12 @@ class ChallengeInfo {
         hasRewardTitle = false
     }
 
-    operator fun minus(other: ChallengeInfo): Int {
+    operator fun minus(other: Challenge): Int {
         return (currentValue!! - other.currentValue!!).toInt()
     }
 
     override fun toString(): String {
-        return description!! + (if (isComplete) " (DONE)" else "")
+        return descriptiveDescription + (if (isComplete) " (DONE)" else "")
     }
 
     companion object {

@@ -1,5 +1,5 @@
 package league.models
 
-import league.models.json.ChallengeInfo
+import league.models.json.Challenge
 
-data class ChallengeFilter(val isSet: Boolean, val action: (ChallengeInfo) -> Boolean)
+data class ChallengeFilter(val isSet: Boolean, val action: (Challenge) -> Boolean)

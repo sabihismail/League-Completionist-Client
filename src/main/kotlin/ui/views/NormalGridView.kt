@@ -10,7 +10,7 @@ import league.models.ChampionInfo
 import league.models.enums.ChampionRole
 import league.models.enums.GameMode
 import league.models.enums.Role
-import league.models.json.ChallengeInfo
+import league.models.json.Challenge
 import tornadofx.*
 import ui.views.fragments.ChampionFragment
 import ui.views.util.boldLabel
@@ -21,13 +21,13 @@ import util.constants.ViewConstants.IMAGE_WIDTH
 class NormalGridView: View() {
     val currentLaneProperty = SimpleObjectProperty(Role.ANY)
     val currentChampionRoleProperty = SimpleObjectProperty(ChampionRole.ANY)
-    val currentChallengeProperty = SimpleObjectProperty<ChallengeInfo>(null)
+    val currentChallengeProperty = SimpleObjectProperty<Challenge>(null)
 
     private val allChampionsProperty = SimpleListProperty<ChampionInfo>()
     private val championListProperty = SimpleListProperty<ChampionInfo>()
     private val eternalsOnlyProperty = SimpleBooleanProperty(false)
     private val loadEternalsProperty = SimpleBooleanProperty(false)
-    private val completableChallengesProperty = SimpleListProperty<ChallengeInfo>()
+    private val completableChallengesProperty = SimpleListProperty<Challenge>()
     private val championSearchProperty = SimpleStringProperty("")
 
     fun setChampions(lst: List<ChampionInfo>) {
@@ -36,7 +36,7 @@ class NormalGridView: View() {
         setActiveChampions()
     }
 
-    fun setCompletableChallenges(completableChallenges: List<ChallengeInfo>) {
+    fun setCompletableChallenges(completableChallenges: List<Challenge>) {
         runAsync {
             FXCollections.observableList(
                 completableChallenges.sortedBy { it.description }.filter { it.gameModeSet != setOf(GameMode.ARAM) }

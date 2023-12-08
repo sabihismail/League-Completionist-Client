@@ -1,9 +1,9 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
+val jarFileName = "League-Completionist-Client.jar"
+
 group = "me.sabihismail"
 version = "0.4.1"
-
-val ARCHIVE_NAME = "League-Completionist-Client.jar"
 
 plugins {
     kotlin("jvm") version "1.9.10"
@@ -57,7 +57,7 @@ tasks {
     }
 
     shadowJar {
-        archiveFileName.set(ARCHIVE_NAME)
+        archiveFileName.set(jarFileName)
 
         doLast {
             val file = File("config.json")
@@ -65,7 +65,7 @@ tasks {
             val exportDirectory = json.getOrDefault("exportDirectory", System.getProperty("user.home")) as String
 
             copy {
-                from("build/libs/${ARCHIVE_NAME}")
+                from("build/libs/${jarFileName}")
                 into(exportDirectory)
             }
         }
@@ -74,14 +74,12 @@ tasks {
     test {
         useJUnitPlatform()
     }
-}
 
-val compileKotlin: KotlinCompile by tasks
-compileKotlin.kotlinOptions {
-    jvmTarget = "1.8"
-}
+    compileKotlin.get().kotlinOptions {
+        jvmTarget = "1.8"
+    }
 
-val compileTestKotlin: KotlinCompile by tasks
-compileTestKotlin.kotlinOptions {
-    jvmTarget = "1.8"
+    compileTestKotlin.get().kotlinOptions {
+        jvmTarget = "1.8"
+    }
 }

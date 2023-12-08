@@ -7,9 +7,9 @@ import league.models.enums.CacheType
 import league.models.enums.ChallengeLevel
 import league.models.enums.ChampionOwnershipStatus
 import league.models.enums.Role
-import league.models.json.ApiChallengeResponse
-import league.models.json.ApiEternalsResponse
-import league.models.json.ApiQueueInfoResponse
+import league.models.json.communitydragon.ApiChallengeResponse
+import league.models.json.communitydragon.ApiEternalsResponse
+import league.models.json.communitydragon.ApiQueueInfoResponse
 import league.models.json.RoleMapping
 import util.LogType
 import util.Logging

@@ -5,7 +5,7 @@ import javafx.collections.FXCollections
 import league.LeagueConnection
 import league.models.ChallengeLevelInfo
 import league.models.enums.*
-import league.models.json.ChallengeInfo
+import league.models.json.Challenge
 import tornadofx.Controller
 import tornadofx.runLater
 import ui.views.*
@@ -251,12 +251,12 @@ open class MainViewController : Controller() {
         runAsync {
             val upgraded = leagueConnection.challengesUpdatedInfo.filter { it.first.currentLevel != it.second.currentLevel }
                 .sortedWith(
-                    compareByDescending<Pair<ChallengeInfo, ChallengeInfo>> { it.second.category != ChallengeCategory.LEGACY }
+                    compareByDescending<Pair<Challenge, Challenge>> { it.second.category != ChallengeCategory.LEGACY }
                         .thenByDescending { it.second.currentLevel }
                         .thenByDescending { it.second.percentage }
                 )
 
-            val compareBy = compareByDescending<Pair<ChallengeInfo, ChallengeInfo>> { !CRINGE_MISSIONS.any { x -> it.second.name!!.contains(x) } }
+            val compareBy = compareByDescending<Pair<Challenge, Challenge>> { !CRINGE_MISSIONS.any { x -> it.second.name!!.contains(x) } }
                     .thenByDescending { it.second.category != ChallengeCategory.LEGACY }
                     .thenByDescending { it.first.pointsDifference > 0 }
                     .thenByDescending { it.second.currentLevel }
