@@ -26,7 +26,7 @@ class AramGridView: View() {
     private val completableChallengesProperty = SimpleListProperty<Challenge>()
     private val skipCompleteChallengesProperty = SimpleBooleanProperty(false)
 
-    fun setCompletableChallenges(completableChallenges: List<Challenge>) {
+    fun setChallenges(completableChallenges: List<Challenge>) {
         allChallengesProperty.value = FXCollections.observableList(completableChallenges)
 
         setActiveChallenges()

@@ -835,7 +835,7 @@ class LeagueConnection {
                 Logging.log(gameFlow, LogType.DEBUG)
 
                 if (championSelectInfo.teamChampions.isEmpty()) {
-                    val championId = gameFlow.gameData.currentChampionId(summonerInfo.displayName)
+                    val championId = gameFlow.gameData.getCurrentChampionId(summonerInfo.displayName)
                     val champions = gameFlow.gameData.playerChampionSelections.map { championInfo[it.championId] }
                         .map { it.apply { it?.isSummonerSelectedChamp = it?.id == championId } }
 

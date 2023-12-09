@@ -1,11 +1,10 @@
 package league.models.json
 
-import kotlinx.serialization.Serializable
+import generated.LolChallengesUITitle
 import league.models.enums.ChallengeCategory
 import league.models.enums.ChallengeLevel
 
 
-@Serializable
 @Suppress("unused")
 class ChallengeSummaryCategoryProgress {
     var category: ChallengeCategory? = null
@@ -19,7 +18,6 @@ class ChallengeSummaryCategoryProgress {
     }
 }
 
-@Serializable
 @Suppress("unused", "MemberVisibilityCanBePrivate")
 class ChallengeSummary {
     var apexLadderUpdateTime: Long? = null
@@ -27,6 +25,7 @@ class ChallengeSummary {
     var overallChallengeLevel: ChallengeLevel? = null
     var pointsUntilNextRank: Long? = null
     var positionPercentile: Double? = null
+    var title: LolChallengesUITitle? = null
     var topChallenges: List<Challenge>? = null
     var totalChallengeScore: Long? = null
 
@@ -38,7 +37,7 @@ class ChallengeSummary {
 
     override fun toString(): String {
         return "ChallengeSummary(apexLadderUpdateTime=$apexLadderUpdateTime, categoryProgress=$categoryProgress, overallChallengeLevel=$overallChallengeLevel, " +
-                "pointsUntilNextRank=$pointsUntilNextRank, positionPercentile=$positionPercentile, topChallenges=$topChallenges, " +
+                "pointsUntilNextRank=$pointsUntilNextRank, positionPercentile=$positionPercentile, title=$title, topChallenges=$topChallenges, " +
                 "totalChallengeScore=$totalChallengeScore)"
     }
 }

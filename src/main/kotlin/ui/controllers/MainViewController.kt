@@ -42,9 +42,7 @@ open class MainViewController : Controller() {
 
             leagueConnection.role = newValue
 
-            val newSortedChampionInfo = leagueConnection.getChampionMasteryInfo()
-            normalView.setCompletableChallenges(leagueConnection.completableChallenges)
-            normalView.setChampions(newSortedChampionInfo)
+            normalView.setChampions(leagueConnection.getChampionMasteryInfo())
         }
 
         normalView.currentChampionRoleProperty.addListener { _, _, _ ->
@@ -88,7 +86,6 @@ open class MainViewController : Controller() {
         leagueConnection.onMasteryChestChange {
             if (it.nextChestDate == null) return@onMasteryChestChange
 
-            runLater { view.chestProperty.set(it) }
             runLater { view.masteryAccountView.run() }
         }
 
@@ -139,9 +136,7 @@ open class MainViewController : Controller() {
                 updateCurrentChampion()
             }
 
-            if (STATES_TO_REFRESH_DISPLAY.contains(it)) {
-                replaceDisplay()
-            }
+            replaceDisplay()
 
             runLater {
                 view.masteryAccountView.run()
@@ -212,18 +207,23 @@ open class MainViewController : Controller() {
         }
     }
 
+    private fun getActiveView(): ActiveView {
+        return when (view.defaultGridView.root.center) {
+            aramView.root -> ActiveView.ARAM
+            else -> ActiveView.NORMAL
+        }
+    }
+
     private fun updateChampionList() {
         runLater {
-            when (view.defaultGridView.root.center) {
-                aramView.root -> {
-                    aramView.setCompletableChallenges(leagueConnection.completableChallenges)
+            when (getActiveView()) {
+                ActiveView.ARAM -> {
+                    aramView.setChallenges(leagueConnection.completableChallenges)
                     aramView.setChampions(leagueConnection.championSelectInfo)
                 }
                 else -> {
-                    val championList = leagueConnection.getChampionMasteryInfo()
-
-                    normalView.setCompletableChallenges(leagueConnection.completableChallenges)
-                    normalView.setChampions(championList)
+                    normalView.setChallenges(leagueConnection.completableChallenges)
+                    normalView.setChampions(leagueConnection.getChampionMasteryInfo())
                 }
             }
         }

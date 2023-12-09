@@ -34,7 +34,7 @@ data class GameData(
     var teamOne: List<GameDataTeam>,
     var teamTwo: List<GameDataTeam>,
 ) {
-    fun currentChampionId(name: String): Int {
+    fun getCurrentChampionId(name: String): Int {
         val nameToChampionIdMapping = playerChampionSelections.associate { it.summonerInternalName to it.championId }
 
         return nameToChampionIdMapping[name]!!

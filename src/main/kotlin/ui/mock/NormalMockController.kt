@@ -23,9 +23,6 @@ class NormalMockController : MainViewController() {
             1, 12, 1)
         runLater { view.summonerProperty.set(summonerInfo) }
 
-        val masteryChestInfo = MasteryChestInfo(Calendar.getInstance().apply { add(Calendar.DATE, 1) }.time, 3)
-        runLater { view.chestProperty.set(masteryChestInfo) }
-
         leagueConnection.gameMode = GameMode.RANKED_FLEX
         leagueConnection.championInfo = mapOf(
             127 to ChampionInfo(127, "Lissandra", ChampionOwnershipStatus.BOX_ATTAINED, 10463, 0, 1, level = 7),

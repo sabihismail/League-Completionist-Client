@@ -8,7 +8,6 @@ import javafx.beans.property.SimpleObjectProperty
 import javafx.geometry.Pos
 import javafx.scene.control.TextInputDialog
 import javafx.scene.text.Font
-import league.models.MasteryChestInfo
 import league.models.SummonerInfo
 import league.models.enums.GameMode
 import league.models.enums.SummonerStatus
@@ -34,12 +33,12 @@ class MainView: View("League Completionist Client") {
     val defaultGridView = find(DefaultGridView::class)
     val masteryAccountView = find(MasteryAccountView::class)
     var currentChampionView = find(ChampionFragment::class)
-    private val friendsView = find(FriendsView::class)
 
     val summonerProperty = SimpleObjectProperty(SummonerInfo())
-    val chestProperty = SimpleObjectProperty(MasteryChestInfo())
     val clientStateProperty = SimpleObjectProperty(LolGameflowGameflowPhase.NONE)
     val gameModeProperty = SimpleObjectProperty(GameMode.NONE)
+
+    private val friendsView = find(FriendsView::class)
 
     private val controller = find(
         if (DEBUG_FAKE_UI_DATA_ARAM) AramMockController::class
@@ -69,7 +68,6 @@ class MainView: View("League Completionist Client") {
 
                     fitToParentWidth()
                     label(summonerProperty.select { it.toDisplayString().toProperty() })
-                    label(chestProperty.select { "Available chests: ${it.chestCount} (next one in ${it.remainingStr} days)".toProperty() })
                     label(clientStateProperty.select { "Client State: ${it.name}".toProperty() })
                     label(gameModeProperty.select { "Game Mode: $it".toProperty() })
                 }

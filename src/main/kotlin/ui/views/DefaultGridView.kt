@@ -15,6 +15,8 @@ class DefaultGridView: View() {
     }
 
     fun setRoot(view: View) {
+        if (root.center == view.root) return
+
         root.center = view.root
     }
 }

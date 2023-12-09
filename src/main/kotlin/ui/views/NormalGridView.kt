@@ -12,23 +12,31 @@ import league.models.enums.GameMode
 import league.models.enums.Role
 import league.models.json.Challenge
 import tornadofx.*
+import ui.SharedViewUtil
+import ui.SharedViewUtil.isEmptyChallenge
 import ui.views.fragments.ChampionFragment
 import ui.views.util.boldLabel
 import util.constants.ViewConstants.IMAGE_HORIZONTAL_COUNT
 import util.constants.ViewConstants.IMAGE_WIDTH
 
 
-class NormalGridView: View() {
+interface INormalGridView
+
+class NormalGridView: View(), INormalGridView {
     val currentLaneProperty = SimpleObjectProperty(Role.ANY)
     val currentChampionRoleProperty = SimpleObjectProperty(ChampionRole.ANY)
     val currentChallengeProperty = SimpleObjectProperty<Challenge>(null)
 
     private val allChampionsProperty = SimpleListProperty<ChampionInfo>()
     private val championListProperty = SimpleListProperty<ChampionInfo>()
+    private val championSearchProperty = SimpleStringProperty("")
+
+    private val allChallengesProperty = SimpleListProperty<Challenge>()
+    private val challengesProperty = SimpleListProperty<Challenge>()
+    private val skipCompleteChallengesProperty = SimpleBooleanProperty(false)
+
     private val eternalsOnlyProperty = SimpleBooleanProperty(false)
     private val loadEternalsProperty = SimpleBooleanProperty(false)
-    private val completableChallengesProperty = SimpleListProperty<Challenge>()
-    private val championSearchProperty = SimpleStringProperty("")
 
     fun setChampions(lst: List<ChampionInfo>) {
         allChampionsProperty.value = FXCollections.observableList(lst)
@@ -36,14 +44,10 @@ class NormalGridView: View() {
         setActiveChampions()
     }
 
-    fun setCompletableChallenges(completableChallenges: List<Challenge>) {
-        runAsync {
-            FXCollections.observableList(
-                completableChallenges.sortedBy { it.description }.filter { it.gameModeSet != setOf(GameMode.ARAM) }
-            )
-        } ui {
-            completableChallengesProperty.value = it
-        }
+    fun setChallenges(lst: List<Challenge>) {
+        allChallengesProperty.value = FXCollections.observableList(listOf(SharedViewUtil.getEmptyChallenge()) + lst)
+
+        setActiveChallenges()
     }
 
     private fun setActiveChampions() {
@@ -53,13 +57,25 @@ class NormalGridView: View() {
                     .filter { it.nameLower.contains(championSearchProperty.value.lowercase()) }
                     .filter { currentChampionRoleProperty.value == ChampionRole.ANY || it.roles?.contains(currentChampionRoleProperty.value) == true }
                     .filter {
-                        currentChallengeProperty.value == null ||
+                        (currentChallengeProperty.value == null || currentChallengeProperty.value.isEmptyChallenge()) ||
                                 (currentChallengeProperty.value.availableIdsInt?.isEmpty() == true && !it.completedChallenges.contains(currentChallengeProperty.value.id?.toInt())) ||
                                 (currentChallengeProperty.value.availableIdsInt?.isEmpty() == false && it.availableChallenges.contains(currentChallengeProperty.value.id?.toInt()) && !it.completedChallenges.contains(currentChallengeProperty.value.id?.toInt()))
                     }
             )
         } ui {
             championListProperty.value = it
+        }
+    }
+
+    private fun setActiveChallenges() {
+        runAsync {
+            FXCollections.observableList(
+                allChallengesProperty.sortedBy { it.description }
+                    .filter { it.gameModeSet != setOf(GameMode.ARAM) }
+                    .filter { skipCompleteChallengesProperty.value == false || !it.isComplete }
+            )
+        } ui {
+            challengesProperty.value = it
         }
     }
 
@@ -121,7 +137,7 @@ class NormalGridView: View() {
                     hbox {
                         alignment = Pos.CENTER_RIGHT
 
-                        label("Character Role: ")
+                        label("Champion Role: ")
                         combobox(currentChampionRoleProperty, ChampionRole.entries)
                     }
 
@@ -129,7 +145,7 @@ class NormalGridView: View() {
                         alignment = Pos.CENTER_RIGHT
 
                         label("Challenge (skips completed champs): ")
-                        combobox(currentChallengeProperty, completableChallengesProperty)
+                        combobox(currentChallengeProperty, challengesProperty)
                     }
 
                     hbox {
