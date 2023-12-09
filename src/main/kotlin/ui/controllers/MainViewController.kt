@@ -310,9 +310,6 @@ open class MainViewController : Controller() {
         const val CHEST_MAX_COUNT = 4
         const val CHEST_WAIT_TIME = 7.0
 
-        private val STATES_TO_REFRESH_DISPLAY = setOf(LolGameflowGameflowPhase.NONE, LolGameflowGameflowPhase.LOBBY, LolGameflowGameflowPhase.CHAMPSELECT,
-            LolGameflowGameflowPhase.ENDOFGAME)
-
         private val ROLE_SPECIFIC_MODES = setOf(
             GameMode.DRAFT_PICK,
             GameMode.RANKED_SOLO,

@@ -3,7 +3,6 @@ package ui.mock
 import javafx.collections.FXCollections
 import league.models.ChampionInfo
 import league.models.ChampionSelectInfo
-import league.models.MasteryChestInfo
 import league.models.SummonerInfo
 import league.models.enums.ChampionOwnershipStatus
 import league.models.enums.GameMode
@@ -11,7 +10,6 @@ import league.models.enums.Role
 import league.models.enums.SummonerStatus
 import tornadofx.runLater
 import ui.controllers.MainViewController
-import java.util.*
 
 
 class NormalMockController : MainViewController() {
