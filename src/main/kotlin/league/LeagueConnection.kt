@@ -837,7 +837,7 @@ class LeagueConnection {
                 if (championSelectInfo.teamChampions.isEmpty()) {
                     val championId = gameFlow.gameData.getCurrentChampionId(summonerInfo.displayName)
                     val champions = gameFlow.gameData.playerChampionSelections.map { championInfo[it.championId] }
-                        .map { it.apply { it?.isSummonerSelectedChamp = it?.id == championId } }
+                        .mapNotNull { it.apply { it?.isSummonerSelectedChamp = it?.id == championId } }
 
                     championSelectInfo = ChampionSelectInfo(champions, listOf(), Role.ANY)
                 }
@@ -865,6 +865,16 @@ class LeagueConnection {
 
         clientState = gameFlowPhase
         clientStateChanged()
+    }
+
+    fun ensureChampionsAndChallengesSetup() {
+        if (challengeInfo.isEmpty()) {
+            updateChallengesInfo()
+        }
+
+        if (championInfo.isEmpty()) {
+            updateChampionMasteryInfo()
+        }
     }
 
     private fun updateLootTab() {
@@ -918,7 +928,7 @@ class LeagueConnection {
 
         val assignedRole = Role.fromString(selectedChamp.assignedPosition)
 
-        championSelectInfo = ChampionSelectInfo(teamChampions, benchedChampions ?: listOf(), assignedRole)
+        championSelectInfo = ChampionSelectInfo(teamChampions.filterNotNull(), benchedChampions ?: listOf(), assignedRole)
         championSelectChanged()
     }
 

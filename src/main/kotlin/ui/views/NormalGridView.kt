@@ -13,16 +13,13 @@ import league.models.enums.Role
 import league.models.json.Challenge
 import tornadofx.*
 import ui.SharedViewUtil
-import ui.SharedViewUtil.isEmptyChallenge
 import ui.views.fragments.ChampionFragment
 import ui.views.util.boldLabel
 import util.constants.ViewConstants.IMAGE_HORIZONTAL_COUNT
 import util.constants.ViewConstants.IMAGE_WIDTH
 
 
-interface INormalGridView
-
-class NormalGridView: View(), INormalGridView {
+class NormalGridView: View() {
     val currentLaneProperty = SimpleObjectProperty(Role.ANY)
     val currentChampionRoleProperty = SimpleObjectProperty(ChampionRole.ANY)
     val currentChallengeProperty = SimpleObjectProperty<Challenge>(null)
@@ -45,23 +42,15 @@ class NormalGridView: View(), INormalGridView {
     }
 
     fun setChallenges(lst: List<Challenge>) {
-        allChallengesProperty.value = FXCollections.observableList(listOf(SharedViewUtil.getEmptyChallenge()) + lst)
+        allChallengesProperty.value = SharedViewUtil.addEmptyChallenge(lst)
 
         setActiveChallenges()
     }
 
     private fun setActiveChampions() {
         runAsync {
-            FXCollections.observableList(
-                allChampionsProperty.value.filter { !eternalsOnlyProperty.value || it.eternalInfo.any { eternal -> eternal.value } }
-                    .filter { it.nameLower.contains(championSearchProperty.value.lowercase()) }
-                    .filter { currentChampionRoleProperty.value == ChampionRole.ANY || it.roles?.contains(currentChampionRoleProperty.value) == true }
-                    .filter {
-                        (currentChallengeProperty.value == null || currentChallengeProperty.value.isEmptyChallenge()) ||
-                                (currentChallengeProperty.value.availableIdsInt?.isEmpty() == true && !it.completedChallenges.contains(currentChallengeProperty.value.id?.toInt())) ||
-                                (currentChallengeProperty.value.availableIdsInt?.isEmpty() == false && it.availableChallenges.contains(currentChallengeProperty.value.id?.toInt()) && !it.completedChallenges.contains(currentChallengeProperty.value.id?.toInt()))
-                    }
-            )
+            SharedViewUtil.getActiveChampions(allChampionsProperty.value, role = currentChampionRoleProperty, search = championSearchProperty,
+                eternalsOnly = eternalsOnlyProperty, challenges = currentChallengeProperty)
         } ui {
             championListProperty.value = it
         }
@@ -69,13 +58,10 @@ class NormalGridView: View(), INormalGridView {
 
     private fun setActiveChallenges() {
         runAsync {
-            FXCollections.observableList(
-                allChallengesProperty.sortedBy { it.description }
-                    .filter { it.gameModeSet != setOf(GameMode.ARAM) }
-                    .filter { skipCompleteChallengesProperty.value == false || !it.isComplete }
-            )
+            SharedViewUtil.getActiveChallenges(allChallengesProperty.value, gameMode = GameMode.CLASSIC, skip = skipCompleteChallengesProperty)
         } ui {
             challengesProperty.value = it
+            currentChallengeProperty.value = it?.first()
         }
     }
 

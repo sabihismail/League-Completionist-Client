@@ -5,14 +5,11 @@ import league.models.enums.ChallengeCategory
 import league.models.enums.ChallengeLevel
 import league.models.enums.ChallengeThresholdRewardCategory
 import league.models.enums.GameMode
+import ui.SharedViewUtil.isEmptyChallenge
 import util.KotlinExtensionUtil.toCommaSeparatedNumber
 import util.LogType
 import util.Logging
 import kotlin.math.abs
-
-
-@Serializable
-data class ChallengeTags(val seasonal: Boolean = false, val parent: Int = -1)
 
 
 @Serializable
@@ -51,7 +48,6 @@ class Challenge {
     var priority: Double? = null
     var retireTimestamp: Double? = null
     var source: String? = null
-    private var tags: ChallengeTags = ChallengeTags()
     var thresholds: Map<ChallengeLevel, ChallengeThreshold>? = null
     var valueMapping: String? = null
 
@@ -195,7 +191,11 @@ class Challenge {
     }
 
     override fun toString(): String {
-        return descriptiveDescription + (if (isComplete) " (DONE)" else "")
+        return if (isEmptyChallenge()) {
+            name!!
+        } else {
+            descriptiveDescription + (if (isComplete) " (DONE)" else "")
+        }
     }
 
     companion object {

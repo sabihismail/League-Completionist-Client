@@ -77,8 +77,9 @@ open class MainViewController : Controller() {
                         val newFragment = view.find<ChampionFragment>()
                         view.currentChampionView.replaceWith(newFragment)
                         view.currentChampionView = newFragment
+
+                        normalView.currentLaneProperty.set(Role.ANY)
                     }
-                    runLater { normalView.currentLaneProperty.set(Role.ANY) }
                 }
             }
         }
@@ -93,7 +94,7 @@ open class MainViewController : Controller() {
             runLater { view.gameModeProperty.set(leagueConnection.gameMode) }
 
             if (!ACCEPTABLE_GAME_MODES.contains(leagueConnection.gameMode)) return@onChampionSelectChange
-            if (view.currentChampionView.champion.id != it.teamChampions.firstOrNull { championInfo -> championInfo?.isSummonerSelectedChamp == true }?.id) {
+            if (view.currentChampionView.champion.id != it.teamChampions.firstOrNull { championInfo -> championInfo.isSummonerSelectedChamp }?.id) {
                 championFragmentSet = false
             }
 
@@ -156,24 +157,6 @@ open class MainViewController : Controller() {
         }
     }
 
-    private fun updateCurrentChampion() {
-        if (championFragmentSet) return
-        if (!leagueConnection.championSelectInfo.teamChampions.any { championInfo -> championInfo?.isSummonerSelectedChamp == true }) return
-
-        runAsync {
-            leagueConnection.championSelectInfo.teamChampions.firstOrNull { championInfo -> championInfo?.isSummonerSelectedChamp == true }
-                ?.apply { eternalInfo = leagueConnection.championInfo[id]?.eternalInfo!! }
-        } ui {
-            if (it == null) return@ui
-
-            val newFragment = view.find<ChampionFragment>(mapOf(ChampionFragment::champion to it, ChampionFragment::showEternals to true))
-            view.currentChampionView.replaceWith(newFragment)
-            view.currentChampionView = newFragment
-
-            championFragmentSet = true
-        }
-    }
-
     fun replaceDisplay() {
         val activeView = when (leagueConnection.gameMode) {
             GameMode.ARAM -> ActiveView.ARAM
@@ -214,7 +197,27 @@ open class MainViewController : Controller() {
         }
     }
 
+    private fun updateCurrentChampion() {
+        if (championFragmentSet) return
+        if (!leagueConnection.championSelectInfo.teamChampions.any { championInfo -> championInfo.isSummonerSelectedChamp }) return
+
+        runAsync {
+            leagueConnection.championSelectInfo.teamChampions.firstOrNull { championInfo -> championInfo.isSummonerSelectedChamp }
+                ?.apply { eternalInfo = leagueConnection.championInfo[id]?.eternalInfo!! }
+        } ui {
+            if (it == null) return@ui
+
+            val newFragment = view.find<ChampionFragment>(mapOf(ChampionFragment::champion to it, ChampionFragment::showEternals to true))
+            view.currentChampionView.replaceWith(newFragment)
+            view.currentChampionView = newFragment
+
+            championFragmentSet = true
+        }
+    }
+
     private fun updateChampionList() {
+        leagueConnection.ensureChampionsAndChallengesSetup()
+
         runLater {
             when (getActiveView()) {
                 ActiveView.ARAM -> {

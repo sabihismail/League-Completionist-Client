@@ -3,13 +3,13 @@ package ui.views
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleListProperty
 import javafx.beans.property.SimpleObjectProperty
-import javafx.collections.FXCollections
 import javafx.geometry.Pos
 import league.models.ChampionInfo
 import league.models.ChampionSelectInfo
 import league.models.enums.GameMode
 import league.models.json.Challenge
 import tornadofx.*
+import ui.SharedViewUtil
 import ui.views.fragments.ChampionFragment
 import ui.views.util.boldLabel
 import util.constants.ViewConstants.IMAGE_HORIZONTAL_COUNT
@@ -26,8 +26,8 @@ class AramGridView: View() {
     private val completableChallengesProperty = SimpleListProperty<Challenge>()
     private val skipCompleteChallengesProperty = SimpleBooleanProperty(false)
 
-    fun setChallenges(completableChallenges: List<Challenge>) {
-        allChallengesProperty.value = FXCollections.observableList(completableChallenges)
+    fun setChallenges(lst: List<Challenge>) {
+        allChallengesProperty.value = SharedViewUtil.addEmptyChallenge(lst)
 
         setActiveChallenges()
     }
@@ -35,23 +35,8 @@ class AramGridView: View() {
     fun setChampions(championSelectInfo: ChampionSelectInfo) {
         runAsync {
             Pair(
-                FXCollections.observableList(
-                    championSelectInfo.benchedChampions.filter {
-                        currentChallengeProperty.value == null ||
-                                (currentChallengeProperty.value.availableIdsInt?.isEmpty()!! && !it.completedChallenges.contains(currentChallengeProperty.value.id?.toInt())) ||
-                                (!currentChallengeProperty.value.availableIdsInt?.isEmpty()!! && it.availableChallenges.contains(currentChallengeProperty.value.id?.toInt()) && !it.completedChallenges.contains(currentChallengeProperty.value.id?.toInt()))
-                    }
-                ),
-
-                FXCollections.observableList(
-                    championSelectInfo.teamChampions.map {
-                        it?.apply {
-                            hasChallengeAvailable = currentChallengeProperty.value != null &&
-                                    ((currentChallengeProperty.value.availableIdsInt?.isEmpty()!! && !it.completedChallenges.contains(currentChallengeProperty.value.id?.toInt())) ||
-                                    (!currentChallengeProperty.value.availableIdsInt?.isEmpty()!! && it.availableChallenges.contains(currentChallengeProperty.value.id?.toInt()) && !it.completedChallenges.contains(currentChallengeProperty.value.id?.toInt())))
-                        }
-                    }
-                )
+                SharedViewUtil.getActiveChampions(championSelectInfo.benchedChampions, challenges = currentChallengeProperty),
+                SharedViewUtil.getActiveChampions(championSelectInfo.teamChampions, challenges = currentChallengeProperty),
             )
         } ui {
             benchedChampionListProperty.value = it.first
@@ -61,13 +46,10 @@ class AramGridView: View() {
 
     private fun setActiveChallenges() {
         runAsync {
-            FXCollections.observableList(
-                allChallengesProperty.sortedBy { it.description }
-                    .filter { it.gameModeSet.contains(GameMode.ARAM) }
-                    .filter { skipCompleteChallengesProperty.value == false || !it.isComplete }
-            )
+            SharedViewUtil.getActiveChallenges(allChallengesProperty.value, GameMode.ARAM, skip = skipCompleteChallengesProperty)
         } ui {
             completableChallengesProperty.value = it
+            currentChallengeProperty.value = it?.first()
         }
     }
 
