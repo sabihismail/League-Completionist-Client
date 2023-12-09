@@ -11,16 +11,11 @@ import league.models.enums.Role
 import league.models.enums.SummonerStatus
 import tornadofx.runLater
 import ui.controllers.MainViewController
-import ui.views.MainView
-import ui.views.NormalGridView
 import java.util.*
 
 
 class NormalMockController : MainViewController() {
     private val roleFilter = false
-
-    private val view: MainView by inject()
-    private val regularView: NormalGridView by inject()
 
     init {
         val summonerInfo = SummonerInfo(
@@ -63,19 +58,19 @@ class NormalMockController : MainViewController() {
 
         runLater {
             view.gameModeProperty.set(leagueConnection.gameMode)
-            view.defaultGridView.setRoot(regularView)
+            view.defaultGridView.setRoot(normalView)
 
             val sortedChampionInfo = leagueConnection.getChampionMasteryInfo()
-            regularView.setChampions(FXCollections.observableList(sortedChampionInfo))
+            normalView.setChampions(FXCollections.observableList(sortedChampionInfo))
         }
 
-        regularView.currentLaneProperty.addListener { _, _, newValue ->
+        normalView.currentLaneProperty.addListener { _, _, newValue ->
             leagueConnection.role = newValue
             leagueConnection.gameMode = GameMode.RANKED_FLEX
             leagueConnection.championSelectInfo = ChampionSelectInfo(assignedRole = leagueConnection.role)
 
             val newSortedChampionInfo = leagueConnection.getChampionMasteryInfo()
-            regularView.setChampions(FXCollections.observableList(newSortedChampionInfo))
+            normalView.setChampions(FXCollections.observableList(newSortedChampionInfo))
         }
     }
 }

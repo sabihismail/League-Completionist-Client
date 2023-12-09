@@ -18,6 +18,7 @@ import org.apache.hc.client5.http.HttpHostConnectException
 import org.apache.hc.core5.http.HttpException
 import tornadofx.*
 import util.*
+import util.KotlinExtensionUtil.containsLong
 import util.constants.GenericConstants.GSON
 import util.constants.GenericConstants.GSON_PRETTY
 import java.io.*
@@ -31,7 +32,8 @@ class LeagueConnection {
 
     var gameMode = GameMode.NONE
     var role = Role.ANY
-    val isSmurf get() = summonerInfo.uniqueId == Settings.INSTANCE.smurfId
+    val isDisenchantmentUser = Settings.INSTANCE.disenchantIds.containsLong(summonerInfo.uniqueId)
+    val isDeveloper = Settings.INSTANCE.developerIds.containsLong(summonerInfo.uniqueId)
 
     var championSelectInfo = ChampionSelectInfo()
     var championInfo = mapOf<Int, ChampionInfo>()
@@ -453,7 +455,7 @@ class LeagueConnection {
             ))
         }
 
-        if (isSmurf) {
+        if (isDisenchantmentUser) {
             functions.addAll(mutableListOf(
                 { upgradeMasteryTokens(loot) },
 
@@ -749,7 +751,7 @@ class LeagueConnection {
         if (shop.isEmpty()) return
 
         val canPurchase: Boolean
-        if (isSmurf) {
+        if (isDisenchantmentUser) {
             val item = shop.first { it.localizedTitle.lowercase().contains(itemText) }
 
             canPurchase = event.currentTokenBalance >= item.price
@@ -834,9 +836,10 @@ class LeagueConnection {
 
                 if (championSelectInfo.teamChampions.isEmpty()) {
                     val championId = gameFlow.gameData.currentChampionId(summonerInfo.displayName)
-                    val champion = championInfo[championId].apply { this?.isSummonerSelectedChamp = true }
+                    val champions = gameFlow.gameData.playerChampionSelections.map { championInfo[it.championId] }
+                        .map { it.apply { it?.isSummonerSelectedChamp = it?.id == championId } }
 
-                    championSelectInfo = ChampionSelectInfo(listOf(champion), listOf(), Role.ANY)
+                    championSelectInfo = ChampionSelectInfo(champions, listOf(), Role.ANY)
                 }
 
                 gameId = gameFlow.gameData.gameId
@@ -856,7 +859,7 @@ class LeagueConnection {
             runEventShopCleanup()
         }
 
-        if (!isSmurf) {
+        if (!isDisenchantmentUser) {
             role = championSelectInfo.assignedRole
         }
 

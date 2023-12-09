@@ -13,7 +13,8 @@ import kotlin.system.exitProcess
 
 class Settings {
     var mainId = 0L
-    var smurfId = 0L
+    var disenchantIds = ""
+    var developerIds = ""
 
     companion object {
         val INSTANCE: Settings by lazy {

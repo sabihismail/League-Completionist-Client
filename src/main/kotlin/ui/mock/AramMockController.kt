@@ -10,15 +10,10 @@ import league.models.enums.GameMode
 import league.models.enums.SummonerStatus
 import tornadofx.runLater
 import ui.controllers.MainViewController
-import ui.views.AramGridView
-import ui.views.MainView
 import java.util.*
 
 
 class AramMockController : MainViewController() {
-    private val view: MainView by inject()
-    private val aramView: AramGridView by inject()
-
     init {
         // onSummonerChange
         val summonerInfo = SummonerInfo(

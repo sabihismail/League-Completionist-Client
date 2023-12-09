@@ -22,4 +22,8 @@ object KotlinExtensionUtil {
         0L -> 1
         else -> log10(abs(toDouble())).toInt() + 1
     }
+
+    fun String.containsLong(element: Long): Boolean {
+        return this.split(",").map { it.toLong() }.toSet().contains(element)
+    }
 }

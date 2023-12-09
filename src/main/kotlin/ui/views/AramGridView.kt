@@ -1,5 +1,6 @@
 package ui.views
 
+import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleListProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.collections.FXCollections
@@ -21,16 +22,14 @@ class AramGridView: View() {
     val benchedChampionListProperty = SimpleListProperty<ChampionInfo>()
     val teamChampionListProperty = SimpleListProperty<ChampionInfo>()
 
+    private val allChallengesProperty = SimpleListProperty<Challenge>()
     private val completableChallengesProperty = SimpleListProperty<Challenge>()
+    private val skipCompleteChallengesProperty = SimpleBooleanProperty(false)
 
     fun setCompletableChallenges(completableChallenges: List<Challenge>) {
-        runAsync {
-            FXCollections.observableList(
-                completableChallenges.sortedBy { it.description }.filter { it.gameModeSet.contains(GameMode.ARAM) }
-            )
-        } ui {
-            completableChallengesProperty.value = it
-        }
+        allChallengesProperty.value = FXCollections.observableList(completableChallenges)
+
+        setActiveChallenges()
     }
 
     fun setChampions(championSelectInfo: ChampionSelectInfo) {
@@ -57,6 +56,18 @@ class AramGridView: View() {
         } ui {
             benchedChampionListProperty.value = it.first
             teamChampionListProperty.value = it.second
+        }
+    }
+
+    private fun setActiveChallenges() {
+        runAsync {
+            FXCollections.observableList(
+                allChallengesProperty.sortedBy { it.description }
+                    .filter { it.gameModeSet.contains(GameMode.ARAM) }
+                    .filter { skipCompleteChallengesProperty.value == false || !it.isComplete }
+            )
+        } ui {
+            completableChallengesProperty.value = it
         }
     }
 
@@ -112,6 +123,15 @@ class AramGridView: View() {
 
                         label("Challenge (skips completed champs): ")
                         combobox(currentChallengeProperty, completableChallengesProperty)
+                    }
+
+                    hbox {
+                        alignment = Pos.CENTER_RIGHT
+                        spacing = 10.0
+
+                        checkbox("Skip Complete Challenges", skipCompleteChallengesProperty).apply {
+                            skipCompleteChallengesProperty.onChange { setActiveChallenges() }
+                        }
                     }
                 }
             }

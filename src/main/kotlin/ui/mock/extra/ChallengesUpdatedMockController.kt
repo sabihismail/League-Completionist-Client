@@ -6,11 +6,8 @@ import league.models.enums.SummonerStatus
 import tornadofx.runLater
 import ui.controllers.MainViewController
 import ui.views.ChallengesUpdatedView
-import ui.views.MainView
 
 class ChallengesUpdatedMockController : MainViewController() {
-    private val view: MainView by inject()
-
     init {
         // onSummonerChange
         val summonerInfo = SummonerInfo(SummonerStatus.LOGGED_IN_AUTHORIZED, -1, -1, "TestName", "TestName",

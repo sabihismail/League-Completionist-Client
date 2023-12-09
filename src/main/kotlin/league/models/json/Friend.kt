@@ -14,7 +14,7 @@ enum class LolProductName {
     LEAGUE_OF_LEGENDS,
 
     @SerializedName("valorant")
-    VALORANT,;
+    VALORANT;
 
     override fun toString(): String {
         return PRODUCT_MAPPING[this] ?: ""

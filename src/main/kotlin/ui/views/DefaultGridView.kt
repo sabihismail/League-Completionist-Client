@@ -15,12 +15,6 @@ class DefaultGridView: View() {
     }
 
     fun setRoot(view: View) {
-        if (isAlreadyBound(view)) return
-
         root.center = view.root
-    }
-
-    private fun isAlreadyBound(view: View): Boolean {
-        return currentView == view
     }
 }

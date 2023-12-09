@@ -158,25 +158,42 @@ class MainView: View("League Completionist Client") {
                         }
                     }
 
-                    button("Execute Endpoint (for devs)").apply {
+                    button("Swap to ARAM View").apply {
                         enableWhen { summonerProperty.select { (it.status == SummonerStatus.LOGGED_IN_AUTHORIZED).toProperty() } }
                         action {
-                            val dialog = TextInputDialog()
-                            dialog.title = "Input Command"
-                            dialog.headerText = "Input Command"
-
-                            val result = dialog.showAndWait()
-                            if (result.isPresent) {
-                                controller.leagueConnection.executeCommand(result.get())
+                            if (text.contains("ARAM")) {
+                                text = "Swap to Normal View"
+                                controller.overrideView = controller.aramView
+                            } else {
+                                text = "Swap to ARAM View"
+                                controller.overrideView = controller.normalView
                             }
+
+                            controller.replaceDisplay()
                         }
                     }
 
-                    button("Debug (for devs)").apply {
-                        enableWhen { summonerProperty.select { (it.status == SummonerStatus.LOGGED_IN_AUTHORIZED).toProperty() } }
-                        action {
-                            val stage = find<DebugView>().openWindow(owner = null)
-                            ViewUtil.moveToScreen(stage)
+                    if (controller.leagueConnection.isDeveloper) {
+                        button("Execute Endpoint").apply {
+                            enableWhen { summonerProperty.select { (it.status == SummonerStatus.LOGGED_IN_AUTHORIZED).toProperty() } }
+                            action {
+                                val dialog = TextInputDialog()
+                                dialog.title = "Input Command"
+                                dialog.headerText = "Input Command"
+
+                                val result = dialog.showAndWait()
+                                if (result.isPresent) {
+                                    controller.leagueConnection.executeCommand(result.get())
+                                }
+                            }
+                        }
+
+                        button("Debug").apply {
+                            enableWhen { summonerProperty.select { (it.status == SummonerStatus.LOGGED_IN_AUTHORIZED).toProperty() } }
+                            action {
+                                val stage = find<DebugView>().openWindow(owner = null)
+                                ViewUtil.moveToScreen(stage)
+                            }
                         }
                     }
 

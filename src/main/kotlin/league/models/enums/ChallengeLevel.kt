@@ -10,6 +10,7 @@ import kotlinx.serialization.json.JsonNames
 enum class ChallengeLevel(i: Int) {
     @OptIn(ExperimentalSerializationApi::class)
     @JsonNames("NONE", "")
+    @SerializedName("NONE", alternate = [""])
     NONE(0),
     @SerializedName("IRON")
     IRON(1),

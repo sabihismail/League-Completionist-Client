@@ -137,16 +137,19 @@ class Challenge {
 
     val pointsDifference by lazy { abs(nextLevelPoints - previousLevelPoints) }
 
-    val isSeasonal by lazy {
-        if (name?.contains("Seasonal")!!) {
-            println("RE")
+    private val season by lazy {
+        val number = parentName?.split(" ")?.first()?.toIntOrNull()
+        if (number != null && number >= 2022) {
+            return@lazy number
         }
-        name?.contains("Seasonal")!!
 
+        return@lazy null
     }
 
+    val isSeasonal get() = season != null
+
     val descriptiveDescription by lazy {
-        description + if (!isSeasonal) "" else " (Seasonal)"
+        description + if (!isSeasonal) "" else " ($season)"
     }
 
     val availableIdsInt by lazy { availableIds?.map { it.toInt() }?.toSet() }

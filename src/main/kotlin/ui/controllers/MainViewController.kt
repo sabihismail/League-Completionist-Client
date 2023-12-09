@@ -7,6 +7,7 @@ import league.models.ChallengeLevelInfo
 import league.models.enums.*
 import league.models.json.Challenge
 import tornadofx.Controller
+import tornadofx.View
 import tornadofx.runLater
 import ui.views.*
 import ui.views.ChallengesView.Companion.CRINGE_MISSIONS
@@ -17,15 +18,16 @@ import ui.views.fragments.ChampionFragment
 open class MainViewController : Controller() {
     val leagueConnection = LeagueConnection()
 
-    private val view: MainView by inject()
-    private val aramView: AramGridView by inject()
-    private val normalView: NormalGridView by inject()
+    val aramView: AramGridView by inject()
+    val normalView: NormalGridView by inject()
+    var overrideView: View? = null
+
+    val view: MainView by inject()
     private val challengesView: ChallengesView by inject()
     private val challengesLevelView: ChallengesLevelView by inject()
     private val challengesUpdatedView: ChallengesUpdatedView by inject()
     private val debugView: DebugView by inject()
 
-    private var activeView = ActiveView.NORMAL
     private var manualRoleSelect = false
     private var manualGameModeSelect = false
     private var championFragmentSet = false
@@ -177,8 +179,8 @@ open class MainViewController : Controller() {
         }
     }
 
-    private fun replaceDisplay() {
-        activeView = when (leagueConnection.gameMode) {
+    fun replaceDisplay() {
+        val activeView = when (leagueConnection.gameMode) {
             GameMode.ARAM -> ActiveView.ARAM
             GameMode.BLIND_PICK,
             GameMode.DRAFT_PICK,
@@ -188,19 +190,23 @@ open class MainViewController : Controller() {
             else -> ActiveView.NORMAL
         }
 
-        val replacementView = when (activeView) {
-            ActiveView.ARAM -> aramView
-            ActiveView.NORMAL -> normalView
+        val replacementView = if (overrideView == null) {
+            when (activeView) {
+                ActiveView.ARAM -> aramView
+                ActiveView.NORMAL -> normalView
+            }
+        } else {
+            overrideView
         }
 
         if (ROLE_SPECIFIC_MODES.contains(leagueConnection.gameMode) && !manualRoleSelect) {
-            if (!leagueConnection.isSmurf) {
+            if (!leagueConnection.isDisenchantmentUser) {
                 runLater { normalView.currentLaneProperty.set(leagueConnection.championSelectInfo.assignedRole) }
             }
         }
 
         runLater {
-            view.defaultGridView.setRoot(replacementView)
+            view.defaultGridView.setRoot(replacementView!!)
 
             updateChampionList()
         }
@@ -208,12 +214,12 @@ open class MainViewController : Controller() {
 
     private fun updateChampionList() {
         runLater {
-            when (activeView) {
-                ActiveView.ARAM -> {
+            when (view.defaultGridView.root.center) {
+                aramView.root -> {
                     aramView.setCompletableChallenges(leagueConnection.completableChallenges)
                     aramView.setChampions(leagueConnection.championSelectInfo)
                 }
-                ActiveView.NORMAL -> {
+                else -> {
                     val championList = leagueConnection.getChampionMasteryInfo()
 
                     normalView.setCompletableChallenges(leagueConnection.completableChallenges)
@@ -317,6 +323,7 @@ open class MainViewController : Controller() {
         private val ACCEPTABLE_GAME_MODES = ROLE_SPECIFIC_MODES + setOf(
             GameMode.ARAM,
             GameMode.BLIND_PICK,
+            GameMode.CHERRY,
         )
     }
 }
