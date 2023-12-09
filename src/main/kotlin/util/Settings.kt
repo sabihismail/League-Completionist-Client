@@ -31,7 +31,7 @@ class Settings {
             }
 
             val dataStr = configFile.readText()
-            val data = GenericConstants.GSON.fromJson(dataStr, Settings::class.java)
+            val data = GenericConstants.GSON_PRETTY.fromJson(dataStr, Settings::class.java)
 
             for (property in Settings::class.memberProperties) {
                 val propertyValue = property.get(data)

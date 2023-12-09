@@ -6,9 +6,9 @@ import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
 import javafx.collections.FXCollections
 import javafx.geometry.Pos
+import javafx.scene.layout.Priority
 import league.models.ChampionInfo
 import league.models.enums.ChampionRole
-import league.models.enums.GameMode
 import league.models.enums.Role
 import league.models.json.Challenge
 import tornadofx.*
@@ -30,7 +30,7 @@ class NormalGridView: View() {
 
     private val allChallengesProperty = SimpleListProperty<Challenge>()
     private val challengesProperty = SimpleListProperty<Challenge>()
-    private val skipCompleteChallengesProperty = SimpleBooleanProperty(false)
+    private val skipCompleteChallengesProperty = SimpleBooleanProperty(true)
 
     private val eternalsOnlyProperty = SimpleBooleanProperty(false)
     private val loadEternalsProperty = SimpleBooleanProperty(false)
@@ -58,7 +58,7 @@ class NormalGridView: View() {
 
     private fun setActiveChallenges() {
         runAsync {
-            SharedViewUtil.getActiveChallenges(allChallengesProperty.value, gameMode = GameMode.CLASSIC, skip = skipCompleteChallengesProperty)
+            SharedViewUtil.getActiveChallenges(allChallengesProperty.value, skip = skipCompleteChallengesProperty)
         } ui {
             challengesProperty.value = it
             currentChallengeProperty.value = it?.first()
@@ -93,12 +93,22 @@ class NormalGridView: View() {
                 }
             }
 
-            textfield(championSearchProperty) {
-                paddingRight = 16
-                paddingBottom = 4
+            hbox {
+                hgrow = Priority.ALWAYS
+                alignment = Pos.CENTER_LEFT
+                paddingLeft = 10.0
+                paddingRight = 24
+                paddingBottom = 6
+                spacing = 10.0
 
-                textProperty().addListener { _, _, _ ->
-                    setActiveChampions()
+                label("Search by Name: ")
+
+                textfield(championSearchProperty) {
+                    hgrow = Priority.ALWAYS
+
+                    textProperty().addListener { _, _, _ ->
+                        setActiveChampions()
+                    }
                 }
             }
         }
@@ -130,7 +140,7 @@ class NormalGridView: View() {
                     hbox {
                         alignment = Pos.CENTER_RIGHT
 
-                        label("Challenge (skips completed champs): ")
+                        label("Challenges (completed champs hidden): ")
                         combobox(currentChallengeProperty, challengesProperty)
                     }
 
@@ -138,12 +148,16 @@ class NormalGridView: View() {
                         alignment = Pos.CENTER_RIGHT
                         spacing = 10.0
 
-                        checkbox("Load Eternals", loadEternalsProperty).apply {
+                        checkbox("Display Eternals", loadEternalsProperty).apply {
                             loadEternalsProperty.onChange { setActiveChampions() }
                         }
 
-                        checkbox("Champions with Eternals Only", eternalsOnlyProperty).apply {
+                        checkbox("Eternals Available Only", eternalsOnlyProperty).apply {
                             eternalsOnlyProperty.onChange { setActiveChampions() }
+                        }
+
+                        checkbox("Skip Completed Challenges", skipCompleteChallengesProperty).apply {
+                            skipCompleteChallengesProperty.onChange { setActiveChallenges() }
                         }
                     }
                 }

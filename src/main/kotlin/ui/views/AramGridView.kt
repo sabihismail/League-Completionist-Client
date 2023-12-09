@@ -24,7 +24,7 @@ class AramGridView: View() {
 
     private val allChallengesProperty = SimpleListProperty<Challenge>()
     private val completableChallengesProperty = SimpleListProperty<Challenge>()
-    private val skipCompleteChallengesProperty = SimpleBooleanProperty(false)
+    private val skipCompleteChallengesProperty = SimpleBooleanProperty(true)
 
     fun setChallenges(lst: List<Challenge>) {
         allChallengesProperty.value = SharedViewUtil.addEmptyChallenge(lst)
@@ -46,7 +46,7 @@ class AramGridView: View() {
 
     private fun setActiveChallenges() {
         runAsync {
-            SharedViewUtil.getActiveChallenges(allChallengesProperty.value, GameMode.ARAM, skip = skipCompleteChallengesProperty)
+            SharedViewUtil.getActiveChallenges(allChallengesProperty.value, gameMode = GameMode.ARAM, skip = skipCompleteChallengesProperty)
         } ui {
             completableChallengesProperty.value = it
             currentChallengeProperty.value = it?.first()
@@ -103,7 +103,7 @@ class AramGridView: View() {
                     hbox {
                         alignment = Pos.CENTER_RIGHT
 
-                        label("Challenge (skips completed champs): ")
+                        label("Challenges (completed champs hidden): ")
                         combobox(currentChallengeProperty, completableChallengesProperty)
                     }
 
@@ -111,7 +111,7 @@ class AramGridView: View() {
                         alignment = Pos.CENTER_RIGHT
                         spacing = 10.0
 
-                        checkbox("Skip Complete Challenges", skipCompleteChallengesProperty).apply {
+                        checkbox("Skip Completed Challenges", skipCompleteChallengesProperty).apply {
                             skipCompleteChallengesProperty.onChange { setActiveChallenges() }
                         }
                     }

@@ -11,7 +11,7 @@ import league.models.enums.GameMode
 import league.models.json.Challenge
 
 object SharedViewUtil {
-    private const val EMPTY_CHALLENGE_NAME = "All Challenges"
+    private const val EMPTY_CHALLENGE_NAME = "ALL CHALLENGES"
 
     fun addEmptyChallenge(lst: List<Challenge>): ObservableList<Challenge> {
         val challenge = Challenge().apply {
@@ -28,16 +28,16 @@ object SharedViewUtil {
 
     fun getActiveChallenges(
         allChallengesProperty: Iterable<Challenge>,
-        gameMode: GameMode,
+        gameMode: GameMode? = null,
         skip: SimpleBooleanProperty? = null,
     ): ObservableList<Challenge>? {
-        val skipFilter: (Challenge) -> Boolean = if (skip != null) { c -> c.isEmptyChallenge() || skip.value == false || !c.isComplete } else { _ -> true }
+        val skipFilter: (Challenge) -> Boolean = if (skip != null) { c -> skip.value == false || !c.isComplete } else { _ -> true }
         val allFilters = listOf(skipFilter)
 
         return FXCollections.observableList(
             allChallengesProperty.sortedWith(compareByDescending<Challenge> { it.isEmptyChallenge() }.thenBy { it.description })
-                .filter { if (gameMode != GameMode.ARAM) it.gameModeSet != setOf(GameMode.ARAM) else it.gameModeSet.contains(GameMode.ARAM) }
-                .filter { allFilters.all { filter -> filter(it) } }
+                .filter { it.isEmptyChallenge() || gameMode == null || it.gameModeSet.contains(gameMode) }
+                .filter { it.isEmptyChallenge() || allFilters.all { filter -> filter(it) } }
         )
     }
 
@@ -53,8 +53,8 @@ object SharedViewUtil {
         val eternalsOnlyFilter: (ChampionInfo) -> Boolean = if (eternalsOnly != null) { c -> !eternalsOnly.value || c.eternalInfo.any { eternal -> eternal.value } } else { _ -> true }
         val challengesFilter: (ChampionInfo) -> Boolean = if (challenges != null) {
             { c -> (challenges.value == null || challenges.value.isEmptyChallenge()) ||
-                (challenges.value.availableIdsInt?.isEmpty() == true && !c.completedChallenges.contains(challenges.value.id?.toInt())) ||
-                (challenges.value.availableIdsInt?.isEmpty() == false && c.availableChallenges.contains(challenges.value.id?.toInt()) && !c.completedChallenges.contains(challenges.value.id?.toInt())) }
+                (challenges.value.availableIdsInt.isEmpty() && !c.completedChallenges.contains(challenges.value.id?.toInt())) ||
+                (challenges.value.availableIdsInt.isEmpty() && c.availableChallenges.contains(challenges.value.id?.toInt()) && !c.completedChallenges.contains(challenges.value.id?.toInt())) }
         } else { _ -> true }
         val allFilters = listOf(roleFilter, searchFilter, eternalsOnlyFilter, challengesFilter)
 

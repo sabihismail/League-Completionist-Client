@@ -4,7 +4,7 @@ import league.util.LeagueConnectionUtil
 import org.apache.hc.client5.http.classic.methods.HttpGet
 import org.apache.hc.core5.http.Header
 import org.apache.hc.core5.http.io.entity.EntityUtils
-import util.constants.GenericConstants.GSON
+import util.constants.GenericConstants
 import java.net.URI
 
 object HttpUtil {
@@ -35,6 +35,6 @@ object HttpUtil {
 
         if (stringResponse.isBlank()) return null
 
-        return GSON.fromJson(stringResponse, T::class.java)
+        return GenericConstants.GSON_PRETTY.fromJson(stringResponse, T::class.java)
     }
 }

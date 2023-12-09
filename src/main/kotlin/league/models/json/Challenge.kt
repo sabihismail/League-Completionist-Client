@@ -148,8 +148,8 @@ class Challenge {
         description + if (!isSeasonal) "" else " ($season)"
     }
 
-    val availableIdsInt by lazy { availableIds?.map { it.toInt() }?.toSet() }
-    val completedIdsInt by lazy { completedIds?.map { it.toInt() }?.toSet() }
+    val availableIdsInt by lazy { availableIds?.map { it.toInt() }?.toSet() ?: emptySet() }
+    val completedIdsInt by lazy { completedIds?.map { it.toInt() }?.toSet() ?: emptySet() }
     val isListingCompletedChampions by lazy {
         val contains = setOf("\u003cem\u003e")
         val ignore = setOf("5-stack", "Mastery 7", "Mastery 5", "Obtain", "premade 5", "mythic items", "champion skins", "5 or more skins")

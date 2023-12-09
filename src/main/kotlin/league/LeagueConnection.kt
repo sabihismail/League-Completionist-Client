@@ -19,7 +19,6 @@ import org.apache.hc.core5.http.HttpException
 import tornadofx.*
 import util.*
 import util.KotlinExtensionUtil.containsLong
-import util.constants.GenericConstants.GSON
 import util.constants.GenericConstants.GSON_PRETTY
 import java.io.*
 import java.net.ConnectException
@@ -64,7 +63,7 @@ class LeagueConnection {
     private val eventListenerMapping = mapOf(
         "/lol-champ-select/v1/session.*".toRegex() to { event: ClientWebSocket.Event ->
             val dataJson = FieldUtils.readField(event, "dataJson", true) as JsonObject
-            val data = GSON.fromJson(dataJson, LolChampSelectChampSelectSessionImpl::class.java)
+            val data = GSON_PRETTY.fromJson(dataJson, LolChampSelectChampSelectSessionImpl::class.java)
 
             handleChampionSelectChange(data)
         },
@@ -82,14 +81,14 @@ class LeagueConnection {
         },
         "/lol-challenges/v1/my-updated-challenges/.*".toRegex() to { event ->
             val dataJson = FieldUtils.readField(event, "dataJson", true) as JsonObject
-            val jsonStr = GSON.toJson(dataJson)
+            val jsonStr = GSON_PRETTY.toJson(dataJson)
             val json = StringUtil.extractJsonMapFromString<Challenge>(jsonStr)
 
             handleChallengesChange(json.values.toList())
         },
         "/lol-event-shop/v1/info".toRegex() to { event ->
             val dataJson = FieldUtils.readField(event, "dataJson", true) as JsonObject
-            val data = GSON.fromJson(dataJson, LolEventShopInfo::class.java)
+            val data = GSON_PRETTY.fromJson(dataJson, LolEventShopInfo::class.java)
 
             handleEventShop(data, " orb")
         },
@@ -551,7 +550,7 @@ class LeagueConnection {
         val challengesCompleted = hashMapOf<Int, MutableSet<Int>>()
         val challengesAvailable = hashMapOf<Int, MutableSet<Int>>()
         completableChallenges.forEach { challenge ->
-            challenge.completedIdsInt?.forEach { champId ->
+            challenge.completedIdsInt.forEach { champId ->
                 if (!challengesCompleted.containsKey(champId)) {
                     challengesCompleted[champId] = mutableSetOf()
                 }
@@ -559,7 +558,7 @@ class LeagueConnection {
                 challengesCompleted[champId]?.add(challenge.id?.toInt()!!)
             }
 
-            challenge.availableIdsInt?.forEach { champId ->
+            challenge.availableIdsInt.forEach { champId ->
                 if (!challengesAvailable.containsKey(champId)) {
                     challengesAvailable[champId] = mutableSetOf()
                 }
@@ -604,7 +603,7 @@ class LeagueConnection {
 
     fun updateChallengesInfo() {
         val challengesResult = clientApi!!.executeGet("/lol-challenges/v1/challenges/local-player", Map::class.java).responseObject
-        val jsonStr = GSON.toJson(challengesResult)
+        val jsonStr = GSON_PRETTY.toJson(challengesResult)
         val json = StringUtil.extractJsonMapFromString<Challenge>(jsonStr)
 
         val sections = json.values.groupBy { it.category!! }
