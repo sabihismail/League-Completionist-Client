@@ -61,7 +61,7 @@ object CacheUtil {
         runBlocking {
             mutex.withLock {
                 val jsonStr = path.readText()
-                val json: T = GenericConstants.GSON_PRETTY.fromJson(jsonStr, object : TypeToken<T>() {}.type)
+                val json: T = GenericConstants.GSON.fromJson(jsonStr, object : TypeToken<T>() {}.type)
 
                 data.set(json)
             }
