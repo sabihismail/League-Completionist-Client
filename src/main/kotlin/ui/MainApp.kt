@@ -1,7 +1,5 @@
 package ui
 
-// import atlantafx.base.theme.NordDark
-
 import javafx.stage.Stage
 import tornadofx.App
 import tornadofx.importStylesheet

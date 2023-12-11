@@ -19,7 +19,7 @@ import org.apache.hc.core5.http.HttpException
 import tornadofx.*
 import util.*
 import util.KotlinExtensionUtil.containsLong
-import util.constants.GenericConstants.GSON_PRETTY
+import util.constants.GenericConstants.GSON
 import java.io.*
 import java.net.ConnectException
 import java.util.*
@@ -63,7 +63,7 @@ class LeagueConnection {
     private val eventListenerMapping = mapOf(
         "/lol-champ-select/v1/session.*".toRegex() to { event: ClientWebSocket.Event ->
             val dataJson = FieldUtils.readField(event, "dataJson", true) as JsonObject
-            val data = GSON_PRETTY.fromJson(dataJson, LolChampSelectChampSelectSessionImpl::class.java)
+            val data = GSON.fromJson(dataJson, LolChampSelectChampSelectSessionImpl::class.java)
 
             handleChampionSelectChange(data)
         },
@@ -81,14 +81,14 @@ class LeagueConnection {
         },
         "/lol-challenges/v1/my-updated-challenges/.*".toRegex() to { event ->
             val dataJson = FieldUtils.readField(event, "dataJson", true) as JsonObject
-            val jsonStr = GSON_PRETTY.toJson(dataJson)
+            val jsonStr = GSON.toJson(dataJson)
             val json = StringUtil.extractJsonMapFromString<Challenge>(jsonStr)
 
             handleChallengesChange(json.values.toList())
         },
         "/lol-event-shop/v1/info".toRegex() to { event ->
             val dataJson = FieldUtils.readField(event, "dataJson", true) as JsonObject
-            val data = GSON_PRETTY.fromJson(dataJson, LolEventShopInfo::class.java)
+            val data = GSON.fromJson(dataJson, LolEventShopInfo::class.java)
 
             handleEventShop(data, " orb")
         },
@@ -603,7 +603,7 @@ class LeagueConnection {
 
     fun updateChallengesInfo() {
         val challengesResult = clientApi!!.executeGet("/lol-challenges/v1/challenges/local-player", Map::class.java).responseObject
-        val jsonStr = GSON_PRETTY.toJson(challengesResult)
+        val jsonStr = GSON.toJson(challengesResult)
         val json = StringUtil.extractJsonMapFromString<Challenge>(jsonStr)
 
         val sections = json.values.groupBy { it.category!! }
@@ -629,7 +629,7 @@ class LeagueConnection {
         val obj = clientApi?.executeGet(path, Any::class.java)?.responseObject
 
         if (obj != null) {
-            Logging.log(GSON_PRETTY.toJson(obj), LogType.INFO)
+            Logging.log(GSON.toJson(obj), LogType.INFO)
         }
     }
 

@@ -1,15 +1,12 @@
 package util
 
-import javafx.scene.control.Alert
-import tornadofx.runLater
-import util.constants.GenericConstants
+import util.constants.GenericConstants.GSON
 import java.nio.file.Paths
 import kotlin.io.path.createFile
 import kotlin.io.path.exists
 import kotlin.io.path.readText
 import kotlin.io.path.writeText
 import kotlin.reflect.full.memberProperties
-import kotlin.system.exitProcess
 
 class Settings {
     var mainId = 0L
@@ -22,7 +19,7 @@ class Settings {
 
             if (!configFile.exists()) {
                 val settings = Settings()
-                val json = GenericConstants.GSON_PRETTY.toJson(settings)
+                val json = GSON.toJson(settings)
 
                 configFile.createFile()
                 configFile.writeText(json)
@@ -31,7 +28,7 @@ class Settings {
             }
 
             val dataStr = configFile.readText()
-            val data = GenericConstants.GSON_PRETTY.fromJson(dataStr, Settings::class.java)
+            val data = GSON.fromJson(dataStr, Settings::class.java)
 
             for (property in Settings::class.memberProperties) {
                 val propertyValue = property.get(data)
@@ -45,19 +42,7 @@ class Settings {
         }
 
         private fun invalidConfigurationData() {
-            runLater {
-                val alertDialog = Alert(Alert.AlertType.ERROR)
-                alertDialog.title = "Fatal Error"
-                alertDialog.contentText = "Invalid 'config.json' values."
-                alertDialog.showAndWait()
-                alertDialog.setOnCloseRequest {
-                    exitProcess(-1)
-                }
-            }
-
-            while (true) {
-                Thread.sleep(1000)
-            }
+            Logging.log("Invalid configuration in 'config.json'", LogType.ERROR)
         }
     }
 }

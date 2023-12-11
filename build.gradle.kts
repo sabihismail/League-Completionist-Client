@@ -1,13 +1,11 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-val jarFileName = "League-Completionist-Client.jar"
-
 group = "me.sabihismail"
-version = "0.4.1"
+version = "0.4.2"
 
 plugins {
-    kotlin("jvm") version "1.9.10"
-    kotlin("plugin.serialization") version "1.9.10"
+    kotlin("jvm") version "1.9.21"
+    kotlin("plugin.serialization") version "1.9.21"
     // id("org.openjfx.javafxplugin") version "0.1.0"
     id("com.github.johnrengelman.shadow") version "7.1.2"
     application
@@ -26,7 +24,6 @@ repositories {
 }
 
 dependencies {
-    implementation("com.github.stelar7", "R4J", "2.2.9")
     implementation("com.github.stirante", "lol-client-java-api", "-SNAPSHOT")  // "1.2.8-SNAPSHOT")
     implementation("no.tornado", "tornadofx", "1.7.20")
     implementation("org.apache.commons", "commons-lang3", "3.12.0")
@@ -57,6 +54,8 @@ tasks {
     }
 
     shadowJar {
+        val jarFileName = "League-Completionist-Client.jar"
+
         archiveFileName.set(jarFileName)
 
         doLast {

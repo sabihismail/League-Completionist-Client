@@ -6,7 +6,8 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import league.models.CacheInfo
 import league.models.enums.CacheType
-import util.constants.GenericConstants
+import util.constants.GenericConstants.GSON
+import util.constants.GenericConstants.GSON_PRETTY
 import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.io.path.*
@@ -35,7 +36,7 @@ object CacheUtil {
     }
 
     fun <T1, T2> addJsonCache(cacheType: CacheType, data: KMutableProperty0<HashMap<T1, T2>>, append: String = "") {
-        val json = GenericConstants.GSON_PRETTY.toJson(data.get())
+        val json = GSON_PRETTY.toJson(data.get())
 
         val path = getPath(cacheType, append = append).resolve(data.name + ".json")
 
@@ -61,7 +62,7 @@ object CacheUtil {
         runBlocking {
             mutex.withLock {
                 val jsonStr = path.readText()
-                val json: T = GenericConstants.GSON.fromJson(jsonStr, object : TypeToken<T>() {}.type)
+                val json: T = GSON.fromJson(jsonStr, object : TypeToken<T>() {}.type)
 
                 data.set(json)
             }
