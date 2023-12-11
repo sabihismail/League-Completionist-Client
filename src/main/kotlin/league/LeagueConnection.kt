@@ -31,8 +31,8 @@ class LeagueConnection {
 
     var gameMode = GameMode.NONE
     var role = Role.ANY
-    val isDisenchantmentUser = Settings.INSTANCE.disenchantIds.containsLong(summonerInfo.uniqueId)
-    val isDeveloper = Settings.INSTANCE.developerIds.containsLong(summonerInfo.uniqueId)
+    var isDisenchantmentUser = false
+    var isDeveloper = false
 
     var championSelectInfo = ChampionSelectInfo()
     var championInfo = mapOf<Int, ChampionInfo>()
@@ -483,6 +483,11 @@ class LeagueConnection {
         if (functions.any { it.invoke() }) {
             runLootCleanup()
         }
+    }
+
+    private fun updateGlobalVariables() {
+        isDisenchantmentUser = Settings.INSTANCE.disenchantIds.containsLong(summonerInfo.uniqueId)
+        isDeveloper = Settings.INSTANCE.developerIds.containsLong(summonerInfo.uniqueId)
     }
 
     private fun updateChampionMasteryInfo() {
@@ -976,6 +981,7 @@ class LeagueConnection {
             summoner.percentCompleteForNextLevel, summoner.summonerLevel, summoner.xpUntilNextLevel)
         summonerChanged()
 
+        updateGlobalVariables()
         updateChampionMasteryInfo()
         updateMasteryChestInfo()
         updateClientState()
