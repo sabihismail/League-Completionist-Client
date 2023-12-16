@@ -102,16 +102,8 @@ open class MainViewController : Controller() {
             updateCurrentChampion()
 
             if (!manualGameModeSelect) {
-                runAsync {
-                    if (leagueConnection.gameMode.isClassic) {
-                        GameMode.CLASSIC
-                    } else if (leagueConnection.gameMode == GameMode.ARAM) {
-                        GameMode.ARAM
-                    } else {
-                        throw IllegalArgumentException("onChampionSelectChange - Invalid GameMode - " + leagueConnection.gameMode)
-                    }
-                } ui { gameMode ->
-                    challengesView.currentGameModeProperty.set(gameMode)
+                runLater {
+                    challengesView.currentGameModeProperty.set(leagueConnection.gameMode.gameModeGeneric)
                 }
             }
         }

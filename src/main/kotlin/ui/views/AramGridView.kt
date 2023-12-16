@@ -26,12 +26,6 @@ class AramGridView: View() {
     private val completableChallengesProperty = SimpleListProperty<Challenge>()
     private val skipCompleteChallengesProperty = SimpleBooleanProperty(true)
 
-    fun setChallenges(lst: List<Challenge>) {
-        allChallengesProperty.value = SharedViewUtil.addEmptyChallenge(lst)
-
-        setActiveChallenges()
-    }
-
     fun setChampions(championSelectInfo: ChampionSelectInfo) {
         runAsync {
             Pair(
@@ -42,6 +36,14 @@ class AramGridView: View() {
             benchedChampionListProperty.value = it.first
             teamChampionListProperty.value = it.second
         }
+    }
+
+    fun setChallenges(lst: List<Challenge>) {
+        if (allChallengesProperty.isNotEmpty()) return
+
+        allChallengesProperty.value = SharedViewUtil.addEmptyChallenge(lst)
+
+        setActiveChallenges()
     }
 
     private fun setActiveChallenges() {

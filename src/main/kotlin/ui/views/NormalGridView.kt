@@ -42,6 +42,8 @@ class NormalGridView: View() {
     }
 
     fun setChallenges(lst: List<Challenge>) {
+        if (allChallengesProperty.isNotEmpty()) return
+
         allChallengesProperty.value = SharedViewUtil.addEmptyChallenge(lst)
 
         setActiveChallenges()

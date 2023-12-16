@@ -38,9 +38,9 @@ enum class GameMode {
     ANY,
     UNKNOWN;
 
-    val isClassic get() = CLASSIC_MODES.contains(this)
-
     val serializedName: SerializedName by lazy { this.declaringJavaClass.getField(this.name).getAnnotation(SerializedName::class.java) }
+
+    val gameModeGeneric by lazy { GAME_MODE_MAPPING[this] }
 
     override fun toString(): String {
         return STRING_MAPPING.getOrDefault(this, this.name)
@@ -48,6 +48,7 @@ enum class GameMode {
 
     companion object {
         private val CLASSIC_MODES = setOf(CLASSIC, BLIND_PICK, DRAFT_PICK, RANKED_SOLO, RANKED_FLEX, CLASH, BOT)
+        private val GAME_MODE_MAPPING = CLASSIC_MODES.associateWith { CLASSIC } + mapOf(ARAM to ARAM, CHERRY to CHERRY)
 
         val STRING_MAPPING = mapOf(ANY to "All", CHERRY to "Arena", CLASSIC to "Summoner's Rift")
 

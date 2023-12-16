@@ -842,7 +842,7 @@ class LeagueConnection {
                     val championId = gameFlow.gameData.getCurrentChampionId(summonerInfo.displayName)
                     val championsTeam1 = gameFlow.gameData.teamOne.map { championInfo[it.championId] }
                         .mapNotNull { it.apply { it?.isSummonerSelectedChamp = it?.id == championId } }
-                    val championsTeam2 = gameFlow.gameData.teamOne.map { championInfo[it.championId] }
+                    val championsTeam2 = gameFlow.gameData.teamTwo.map { championInfo[it.championId] }
                         .mapNotNull { it.apply { it?.isSummonerSelectedChamp = it?.id == championId } }
 
                     val currentTeam = if (championsTeam1.any { it.isSummonerSelectedChamp }) championsTeam1 else championsTeam2
