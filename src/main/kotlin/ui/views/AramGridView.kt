@@ -19,6 +19,7 @@ import util.constants.ViewConstants.IMAGE_WIDTH
 
 class AramGridView: View() {
     val currentChallengeProperty = SimpleObjectProperty<Challenge>(null)
+    val champSelectInfoProperty = SimpleObjectProperty<ChampionSelectInfo>()
     val benchedChampionListProperty = SimpleListProperty<ChampionInfo>()
     val teamChampionListProperty = SimpleListProperty<ChampionInfo>()
 
@@ -27,15 +28,9 @@ class AramGridView: View() {
     private val skipCompleteChallengesProperty = SimpleBooleanProperty(true)
 
     fun setChampions(championSelectInfo: ChampionSelectInfo) {
-        runAsync {
-            Pair(
-                SharedViewUtil.getActiveChampions(championSelectInfo.benchedChampions, challenges = currentChallengeProperty),
-                SharedViewUtil.getActiveChampions(championSelectInfo.teamChampions, challenges = currentChallengeProperty),
-            )
-        } ui {
-            benchedChampionListProperty.value = it.first
-            teamChampionListProperty.value = it.second
-        }
+        champSelectInfoProperty.value = championSelectInfo
+
+        setActiveChampions()
     }
 
     fun setChallenges(lst: List<Challenge>) {
@@ -44,6 +39,18 @@ class AramGridView: View() {
         allChallengesProperty.value = SharedViewUtil.addEmptyChallenge(lst)
 
         setActiveChallenges()
+    }
+
+    private fun setActiveChampions() {
+        runAsync {
+            Pair(
+                SharedViewUtil.getActiveChampions(champSelectInfoProperty.value.benchedChampions, challenges = currentChallengeProperty),
+                SharedViewUtil.getActiveChampions(champSelectInfoProperty.value.teamChampions, challenges = currentChallengeProperty),
+            )
+        } ui {
+            benchedChampionListProperty.value = it.first
+            teamChampionListProperty.value = it.second
+        }
     }
 
     private fun setActiveChallenges() {
