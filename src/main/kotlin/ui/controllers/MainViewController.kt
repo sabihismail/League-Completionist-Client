@@ -236,13 +236,12 @@ open class MainViewController : Controller() {
         runAsync {
             leagueConnection.challengeInfo.flatMap {
                 it.value.map { x ->
-                    x.init()
                     val rewardValue = x.allThresholds.associate { y -> y.first to y.second }[x.rewardLevel]?.value ?: 0.0
 
                     ChallengeLevelInfo(x.id?.toLong() ?: 0L, x.description ?: "", x.rewardLevel, x.rewardTitle, rewardValue,
                         x.currentLevel ?: ChallengeLevel.NONE, x.currentLevelImage, x.currentValue ?: 0.0)
-                } }
-                .filter { it.rewardLevel != ChallengeLevel.NONE }
+                }
+            }.filter { it.rewardLevel != ChallengeLevel.NONE }
         } ui {
             challengesLevelView.setChallenges(it)
         }

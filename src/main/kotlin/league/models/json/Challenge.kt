@@ -107,11 +107,28 @@ class Challenge {
     }
 
     val isComplete by lazy { currentLevel == thresholds!!.keys.maxOf { x -> x } || pointsDifference == 0 }
-    var rewardTitle = ""
-    var rewardLevel = ChallengeLevel.NONE
+
+    private val rewardCategory by lazy {
+        thresholds!!.map { it.key to it.value.rewards!!.firstOrNull { reward -> reward.category == ChallengeThresholdRewardCategory.TITLE } }
+            .firstOrNull { it.second != null }
+    }
+
+    val rewardTitle by lazy { if (rewardCategory != null) rewardCategory!!.second!!.name.toString() else "" }
+    val rewardLevel by lazy { if (rewardCategory != null) rewardCategory!!.first else ChallengeLevel.NONE }
+    val hasRewardTitle by lazy { rewardCategory != null }
+
     val rewardObtained get() = rewardLevel <= currentLevel!!
-    var hasRewardTitle = false
-    var gameModeSet = setOf<GameMode>()
+
+    val gameModeSet by lazy {
+        gameModes!!.map {
+            try {
+                GameMode.valueOf(it)
+            } catch (e: IllegalArgumentException) {
+                Logging.log(e.message!!, LogType.WARNING)
+                return@map null
+            }
+        }.filterNotNull().toSet()
+    }
     val levelByThreshold get() = thresholds!!.keys.sorted().indexOf(currentLevel) + 1
 
     val percentage by lazy { currentValue!!.toDouble() / nextThreshold!! }
@@ -155,35 +172,6 @@ class Challenge {
         val ignore = setOf("5-stack", "Mastery 7", "Mastery 5", "Obtain", "premade 5", "mythic items", "champion skins", "5 or more skins")
 
         return@lazy contains.all { descriptionShort?.contains(it) == true } && ignore.all { description?.contains(it) == false }
-    }
-
-    fun init() {
-        initGameMode()
-        initRewardTitle()
-    }
-
-    private fun initGameMode() {
-        gameModeSet = gameModes!!.map {
-            try {
-                GameMode.valueOf(it)
-            } catch (e: IllegalArgumentException) {
-                Logging.log(e.message!!, LogType.WARNING)
-                return@map null
-            }
-        }.filterNotNull().toSet()
-    }
-
-    private fun initRewardTitle() {
-        val rewardCategory = thresholds!!.map { it.key to it.value.rewards!!.firstOrNull { reward -> reward.category == ChallengeThresholdRewardCategory.TITLE } }
-            .firstOrNull { it.second != null }
-        if (rewardCategory != null) {
-            rewardTitle = rewardCategory.second!!.name.toString()
-            rewardLevel = rewardCategory.first
-            hasRewardTitle = true
-            return
-        }
-
-        hasRewardTitle = false
     }
 
     operator fun minus(other: Challenge): Int {

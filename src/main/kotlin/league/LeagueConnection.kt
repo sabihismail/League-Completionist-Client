@@ -624,8 +624,6 @@ class LeagueConnection {
             }
             .toMap()
 
-        sections.values.forEach { value -> value.forEach { it.init() } }
-
         challengeInfo = sections.filter { it.key != ChallengeCategory.NONE }
         challengeInfoSummary = clientApi!!.executeGet("/lol-challenges/v1/summary-player-data/local-player", ChallengeSummary::class.java).responseObject
     }
@@ -782,7 +780,6 @@ class LeagueConnection {
 
         challengeInfoList.forEach {
             val index = challengeInfo[it.category]!!.indexOfFirst { old -> old.id == it.id }
-            it.init()
 
             challengesUpdatedInfo.add(Pair(challengeInfo[it.category]!![index], it))
 
