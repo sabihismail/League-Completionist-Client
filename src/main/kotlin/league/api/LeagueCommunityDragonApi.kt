@@ -7,10 +7,10 @@ import league.models.enums.CacheType
 import league.models.enums.ChallengeLevel
 import league.models.enums.ChampionOwnershipStatus
 import league.models.enums.Role
+import league.models.json.RoleMapping
 import league.models.json.communitydragon.ApiChallengeResponse
 import league.models.json.communitydragon.ApiEternalsResponse
 import league.models.json.communitydragon.ApiQueueInfoResponse
-import league.models.json.RoleMapping
 import util.LogType
 import util.Logging
 import util.StringUtil
@@ -201,7 +201,7 @@ object LeagueCommunityDragonApi {
         CHAMPION_ROLE_MAPPING.clear()
 
         val jsonStr = sendRequest(CHAMPION_ROLE_ENDPOINT)
-        val json = StringUtil.extractJSONFromString<RoleMapping>(jsonStr, "function(a){a.exports={", elementLocation = -1, skipStartCount = "function(a){".length + 1)
+        val json = StringUtil.extractAndAggregateJson<RoleMapping>(jsonStr, arrayOf("BOTTOM", "TOP", "MIDDLE", "JUNGLE", "SUPPORT"))
 
         CHAMPION_ROLE_MAPPING[Role.TOP] = json.top
         CHAMPION_ROLE_MAPPING[Role.JUNGLE] = json.jungle

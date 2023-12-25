@@ -105,6 +105,26 @@ object StringUtil {
         return finalJsonValues[index]
     }
 
+    inline fun <reified T> extractAndAggregateJson(s: String, starters: Array<String>, prefix: String = ""): T {
+        val combinedJson = starters.map { prefix + it }
+            .joinToString(",") {
+                "\"$it\": " + extractJSON(s, trimUntilStr = it, skipStartCount = it.length)
+            }
+
+        val combinedJsonStr = "{$combinedJson}"
+
+        return JSON_FORMAT.decodeFromString(combinedJsonStr)
+    }
+
+    @Suppress("unused")
+    inline fun <reified T> extractJSONFromFirstString(s: String, trimStarting: Array<String>, prefix: String = "", elementLocation: Int = 0): T {
+        val earliestIndexStr = trimStarting.map { prefix + it to s.indexOf(it) }.minBy { it.second }.first
+
+        val jsonStr = extractJSON(s, trimUntilStr=earliestIndexStr, elementLocation=elementLocation, skipStartCount=earliestIndexStr.length)
+
+        return JSON_FORMAT.decodeFromString(jsonStr)
+    }
+
     inline fun <reified T> extractJSONFromString(s: String, trimUntilStr: String? = null, elementLocation: Int = 0, skipStartCount: Int = 0): T {
         val jsonStr = extractJSON(s, trimUntilStr=trimUntilStr, elementLocation=elementLocation, skipStartCount=skipStartCount)
 
