@@ -111,9 +111,7 @@ object StringUtil {
                 "\"$it\": " + extractJSON(s, trimUntilStr = it, skipStartCount = it.length)
             }
 
-        val combinedJsonStr = "{$combinedJson}"
-
-        return JSON_FORMAT.decodeFromString(combinedJsonStr)
+        return JSON_FORMAT.decodeFromString("{$combinedJson}")
     }
 
     @Suppress("unused")
