@@ -72,6 +72,7 @@ class AramGridView: View() {
             datagrid(benchedChampionListProperty) {
                 alignment = Pos.CENTER
                 paddingBottom = 16.0
+                minHeight = IMAGE_WIDTH * 2 + IMAGE_SPACING_WIDTH + 10.0
 
                 maxRows = 2
                 maxCellsInRow = IMAGE_HORIZONTAL_COUNT

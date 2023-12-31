@@ -99,6 +99,7 @@ open class MainViewController : Controller() {
             }
 
             replaceDisplay()
+            view.setSwapViewText()
             updateCurrentChampion()
 
             if (!manualGameModeSelect) {
@@ -135,6 +136,7 @@ open class MainViewController : Controller() {
                 view.masteryAccountView.run()
                 view.clientStateProperty.set(it)
                 view.gameModeProperty.set(leagueConnection.gameMode)
+                view.setSwapViewText()
             }
         }
 
@@ -182,7 +184,7 @@ open class MainViewController : Controller() {
         }
     }
 
-    private fun getActiveView(): ActiveView {
+    fun getActiveView(): ActiveView {
         return when (view.defaultGridView.root.center) {
             aramView.root -> ActiveView.ARAM
             else -> ActiveView.NORMAL

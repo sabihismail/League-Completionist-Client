@@ -6,9 +6,11 @@ import DEBUG_FAKE_UI_DATA_UPDATED_CHALLENGES
 import generated.LolGameflowGameflowPhase
 import javafx.beans.property.SimpleObjectProperty
 import javafx.geometry.Pos
+import javafx.scene.control.Button
 import javafx.scene.control.TextInputDialog
 import javafx.scene.text.Font
 import league.models.SummonerInfo
+import league.models.enums.ActiveView
 import league.models.enums.GameMode
 import league.models.enums.SummonerStatus
 import tornadofx.*
@@ -39,6 +41,7 @@ class MainView: View("League Completionist Client") {
     val gameModeProperty = SimpleObjectProperty(GameMode.NONE)
 
     private val friendsView = find(FriendsView::class)
+    private lateinit var swapViewButton: Button
 
     private val controller = find(
         if (DEBUG_FAKE_UI_DATA_ARAM) AramMockController::class
@@ -156,18 +159,12 @@ class MainView: View("League Completionist Client") {
                         }
                     }
 
-                    button("Swap to ARAM View").apply {
+                    swapViewButton = button("Swap to ARAM View").apply {
                         enableWhen { summonerProperty.select { (it.status == SummonerStatus.LOGGED_IN_AUTHORIZED).toProperty() } }
                         action {
-                            if (text.contains("ARAM")) {
-                                text = "Swap to Normal View"
-                                controller.overrideView = controller.aramView
-                            } else {
-                                text = "Swap to ARAM View"
-                                controller.overrideView = controller.normalView
-                            }
-
+                            setOverrideView()
                             controller.replaceDisplay()
+                            setSwapViewText()
                         }
                     }
 
@@ -212,6 +209,28 @@ class MainView: View("League Completionist Client") {
                     }
                     */
                 }
+            }
+        }
+    }
+
+    fun setOverrideView() {
+        when (controller.getActiveView()) {
+            ActiveView.ARAM -> {
+                controller.overrideView = controller.aramView
+            }
+            ActiveView.NORMAL -> {
+                controller.overrideView = controller.normalView
+            }
+        }
+    }
+
+    fun setSwapViewText() {
+        when (controller.getActiveView()) {
+            ActiveView.ARAM -> {
+                swapViewButton.text = "Swap to Normal View"
+            }
+            ActiveView.NORMAL -> {
+                swapViewButton.text = "Swap to ARAM View"
             }
         }
     }
