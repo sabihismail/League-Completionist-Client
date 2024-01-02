@@ -99,7 +99,6 @@ open class MainViewController : Controller() {
             }
 
             replaceDisplay()
-            view.setSwapViewText()
             updateCurrentChampion()
 
             if (!manualGameModeSelect) {
@@ -136,7 +135,6 @@ open class MainViewController : Controller() {
                 view.masteryAccountView.run()
                 view.clientStateProperty.set(it)
                 view.gameModeProperty.set(leagueConnection.gameMode)
-                view.setSwapViewText()
             }
         }
 
@@ -181,6 +179,8 @@ open class MainViewController : Controller() {
             view.defaultGridView.setRoot(replacementView!!)
 
             updateChampionList()
+
+            view.setSwapViewText()
         }
     }
 

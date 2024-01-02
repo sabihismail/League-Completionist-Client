@@ -164,7 +164,6 @@ class MainView: View("League Completionist Client") {
                         action {
                             setOverrideView()
                             controller.replaceDisplay()
-                            setSwapViewText()
                         }
                     }
 
@@ -213,13 +212,13 @@ class MainView: View("League Completionist Client") {
         }
     }
 
-    fun setOverrideView() {
+    private fun setOverrideView() {
         when (controller.getActiveView()) {
             ActiveView.ARAM -> {
-                controller.overrideView = controller.aramView
+                controller.overrideView = controller.normalView
             }
             ActiveView.NORMAL -> {
-                controller.overrideView = controller.normalView
+                controller.overrideView = controller.aramView
             }
         }
     }
