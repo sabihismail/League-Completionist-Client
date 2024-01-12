@@ -42,7 +42,9 @@ open class MainViewController : Controller() {
 
             leagueConnection.role = newValue
 
-            normalView.setChampions(leagueConnection.getChampionMasteryInfo())
+            if (LeagueConnection.summonerInfo.status == SummonerStatus.LOGGED_IN_AUTHORIZED) {
+                normalView.setChampions(leagueConnection.getChampionMasteryInfo())
+            }
         }
 
         normalView.currentChampionRoleProperty.addListener { _, _, _ ->
