@@ -8,6 +8,7 @@ plugins {
     kotlin("plugin.serialization") version "1.9.21"
     // id("org.openjfx.javafxplugin") version "0.1.0"
     id("com.github.johnrengelman.shadow") version "7.1.2"
+    id("com.github.ben-manes.versions") version "0.51.0"
     application
 }
 
@@ -26,13 +27,13 @@ repositories {
 dependencies {
     implementation("com.github.stirante", "lol-client-java-api", "-SNAPSHOT")  // "1.2.8-SNAPSHOT")
     implementation("no.tornado", "tornadofx", "1.7.20")
-    implementation("org.apache.commons", "commons-lang3", "3.12.0")
+    implementation("org.apache.commons", "commons-lang3", "3.14.0")
     implementation("org.junit.jupiter", "junit-jupiter", "5.9.2")
     implementation("com.squareup.okhttp3", "okhttp", "4.11.0")
-    implementation("org.xerial", "sqlite-jdbc", "3.40.0.0")
+    implementation("org.xerial", "sqlite-jdbc", "3.46.0.0")
     // implementation("org.slf4j", "slf4j-nop", "2.0.9")
 
-    val exposedVersion = "0.45.0"
+    val exposedVersion = "0.52.0"
     implementation("org.jetbrains.exposed", "exposed-core", exposedVersion)
     implementation("org.jetbrains.exposed", "exposed-dao", exposedVersion)
     implementation("org.jetbrains.exposed", "exposed-jdbc", exposedVersion)

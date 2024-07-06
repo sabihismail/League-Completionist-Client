@@ -33,6 +33,8 @@ enum class GameMode {
     BOT,
     @SerializedName("PRACTICETOOL")
     PRACTICE_TOOL,
+    @SerializedName("STRAWBERRY")
+    STRAWBERRY,
 
     NONE,
     ANY,
