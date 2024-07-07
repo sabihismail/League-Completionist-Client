@@ -51,6 +51,10 @@ class Challenge {
     var thresholds: Map<ChallengeLevel, ChallengeThreshold>? = null
     var valueMapping: String? = null
 
+    val anyImageId by lazy {
+        levelToIconPath.values.first().split("/").first { it.toIntOrNull() != null }.toInt()
+    }
+
     val allThresholds by lazy {
         thresholds!!.toList().sortedBy { it.first }
     }

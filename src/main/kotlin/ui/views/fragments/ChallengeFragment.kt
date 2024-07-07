@@ -22,7 +22,7 @@ class ChallengeFragment : Fragment() {
             fitWidth = CHALLENGE_IMAGE_WIDTH
             fitHeight = CHALLENGE_IMAGE_WIDTH
 
-            image = LeagueCommunityDragonApi.getImage(CacheType.CHALLENGE, challenge.id?.toInt()!!, challenge.currentLevelImage).apply {
+            image = LeagueCommunityDragonApi.getImage(CacheType.CHALLENGE, challenge.anyImageId, challenge.currentLevelImage).apply {
                 effect = LeagueCommunityDragonApi.getChallengeImageEffect(challenge.currentLevel)
             }
         }

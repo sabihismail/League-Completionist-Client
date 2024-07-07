@@ -118,7 +118,7 @@ object LeagueCommunityDragonApi {
 
                 fileOutputStream.channel.transferFrom(readableByteChannel, 0, Long.MAX_VALUE)
 
-                Logging.log("Image Download: '$imagePath", LogType.INFO)
+                Logging.log("Image Download: '$imagePath'", LogType.INFO)
             } catch (e: FileNotFoundException) {
                 throw e
             }

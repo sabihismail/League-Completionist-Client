@@ -65,7 +65,7 @@ class ChallengesLevelView : View("LoL Level Challenges") {
                             fitWidth = CHALLENGE_IMAGE_WIDTH
                             fitHeight = CHALLENGE_IMAGE_WIDTH
 
-                            image = LeagueCommunityDragonApi.getImage(CacheType.CHALLENGE, it.id, it.currentLevelImage).apply {
+                            image = LeagueCommunityDragonApi.getImage(CacheType.CHALLENGE, it.anyImageId, it.currentLevelImage).apply {
                                 effect = LeagueCommunityDragonApi.getChallengeImageEffect(it.currentLevel)
                             }
                         }
