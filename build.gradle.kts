@@ -19,13 +19,11 @@ plugins {
 
 repositories {
     mavenCentral()
-    maven { url = uri("https://jitpack.io") }
-    // maven { url = uri("https://oss.sonatype.org/content/repositories/snapshots") }
-    // maven { url = uri("https://nexus.stirante.com/repository/maven-snapshots/") }
+    maven { url = uri("https://nexus.stirante.com/repository/maven-snapshots/") }
 }
 
 dependencies {
-    implementation("com.github.stirante", "lol-client-java-api", "-SNAPSHOT")  // "1.2.8-SNAPSHOT")
+    implementation("com.stirante", "lol-client-java-api", "1.2.11-SNAPSHOT")  // "1.2.8-SNAPSHOT")
     implementation("no.tornado", "tornadofx", "1.7.20")
     implementation("org.apache.commons", "commons-lang3", "3.14.0")
     implementation("org.junit.jupiter", "junit-jupiter", "5.9.2")

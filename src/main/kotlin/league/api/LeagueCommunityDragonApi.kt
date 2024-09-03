@@ -160,7 +160,7 @@ object LeagueCommunityDragonApi {
             width = IMAGE_WIDTH
             height = IMAGE_WIDTH
 
-            paint = if (championInfo.ownershipStatus == ChampionOwnershipStatus.BOX_ATTAINED)
+            paint = if (championInfo.masteryBoxRewards == "")
                 CHAMPION_STATUS_UNAVAILABLE_CHEST_COLOR
             else
                 CHAMPION_STATUS_AVAILABLE_CHEST_COLOR

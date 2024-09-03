@@ -9,10 +9,9 @@ import league.models.json.EternalsSetInfo
 data class ChampionInfo(val id: Int = -1, val name: String = "None", val ownershipStatus: ChampionOwnershipStatus = ChampionOwnershipStatus.NOT_OWNED,
                         val masteryPoints: Int = 1, val currentMasteryPoints: Int = 1, val nextLevelMasteryPoints: Int = 2, val level: Int = 0, val tokens: Int = 0,
                         var isSummonerSelectedChamp: Boolean = false, var eternalInfo: Map<Int, Boolean> = mapOf(), var roles: Set<ChampionRole>? = null,
-                        var idealChampionToMasterEntry: Int = -1, val clientApi: ClientApi? = null) {
+                        var idealChampionToMasterEntry: Int = -1, val clientApi: ClientApi? = null, val masteryBoxRewards: String = "") {
     lateinit var completedChallenges: MutableSet<Int>
     lateinit var availableChallenges: MutableSet<Int>
-    var hasChallengeAvailable: Boolean = false
 
     val nameLower by lazy {
         name.lowercase()

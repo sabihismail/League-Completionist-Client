@@ -10,7 +10,7 @@ data class SummonerInfo(var status: SummonerStatus = SummonerStatus.NOT_CHECKED,
         return when (status) {
             SummonerStatus.NOT_LOGGED_IN, SummonerStatus.NOT_CHECKED -> "Not logged in."
             SummonerStatus.LOGGED_IN_UNAUTHORIZED -> "Unauthorized Login."
-            SummonerStatus.LOGGED_IN_AUTHORIZED -> "Logged in as: $displayName (Lvl $summonerLevel) (ID: $uniqueId)"
+            SummonerStatus.LOGGED_IN_AUTHORIZED -> "Logged in as: $displayName (Lvl $summonerLevel) (Summoner ID: $summonerId) (Account ID: $accountID)"
         }
     }
 

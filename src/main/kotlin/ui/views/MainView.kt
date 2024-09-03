@@ -4,6 +4,7 @@ import DEBUG_FAKE_UI_DATA_ARAM
 import DEBUG_FAKE_UI_DATA_NORMAL
 import DEBUG_FAKE_UI_DATA_UPDATED_CHALLENGES
 import generated.LolGameflowGameflowPhase
+import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.geometry.Pos
 import javafx.scene.control.Button
@@ -39,6 +40,8 @@ class MainView: View("League Completionist Client") {
     val summonerProperty = SimpleObjectProperty(SummonerInfo())
     val clientStateProperty = SimpleObjectProperty(LolGameflowGameflowPhase.NONE)
     val gameModeProperty = SimpleObjectProperty(GameMode.NONE)
+
+    val isDeveloper = SimpleBooleanProperty(false)
 
     private val friendsView = find(FriendsView::class)
     private lateinit var swapViewButton: Button
@@ -167,27 +170,25 @@ class MainView: View("League Completionist Client") {
                         }
                     }
 
-                    if (controller.leagueConnection.isDeveloper) {
-                        button("Execute Endpoint").apply {
-                            enableWhen { summonerProperty.select { (it.status == SummonerStatus.LOGGED_IN_AUTHORIZED).toProperty() } }
-                            action {
-                                val dialog = TextInputDialog()
-                                dialog.title = "Input Command"
-                                dialog.headerText = "Input Command"
+                    button("Execute Endpoint").apply {
+                        enableWhen { summonerProperty.select { (it.status == SummonerStatus.LOGGED_IN_AUTHORIZED).toProperty() } }
+                        action {
+                            val dialog = TextInputDialog()
+                            dialog.title = "Input Command"
+                            dialog.headerText = "Input Command"
 
-                                val result = dialog.showAndWait()
-                                if (result.isPresent) {
-                                    controller.leagueConnection.executeCommand(result.get())
-                                }
+                            val result = dialog.showAndWait()
+                            if (result.isPresent) {
+                                controller.leagueConnection.executeCommand(result.get())
                             }
                         }
+                    }
 
-                        button("Debug").apply {
-                            enableWhen { summonerProperty.select { (it.status == SummonerStatus.LOGGED_IN_AUTHORIZED).toProperty() } }
-                            action {
-                                val stage = find<DebugView>().openWindow(owner = null)
-                                ViewUtil.moveToScreen(stage)
-                            }
+                    button("Debug").apply {
+                        enableWhen { summonerProperty.select { (it.status == SummonerStatus.LOGGED_IN_AUTHORIZED).toProperty() } }
+                        action {
+                            val stage = find<DebugView>().openWindow(owner = null)
+                            ViewUtil.moveToScreen(stage)
                         }
                     }
 

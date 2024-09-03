@@ -47,6 +47,8 @@ class ChampionFragment : Fragment() {
                     blackLabel(text, fontSize = 9.6)
 
                     blackLabel("${champion.roles?.sortedBy { it.name }?.joinToString(", ") { it.name.lowercase() }}", fontSize = 9.6)
+
+                    blackLabel("M - ${champion.masteryBoxRewards}")
                 }
             }
 

@@ -23,23 +23,23 @@ class AramMockController : MainViewController() {
         // onChampionSelectChange
         val championSelectInfo = ChampionSelectInfo(
             listOf(
-                ChampionInfo(711, "Vex", ChampionOwnershipStatus.BOX_NOT_ATTAINED, 10, 0, 1, isSummonerSelectedChamp = false),
-                ChampionInfo(350, "Yuumi", ChampionOwnershipStatus.BOX_ATTAINED, 10, 0, 1, isSummonerSelectedChamp = false),
+                ChampionInfo(711, "Vex", ChampionOwnershipStatus.RENTAL, 10, 0, 1, isSummonerSelectedChamp = false),
+                ChampionInfo(350, "Yuumi", ChampionOwnershipStatus.RENTAL, 10, 0, 1, isSummonerSelectedChamp = false),
                 ChampionInfo(114, "Fiora", ChampionOwnershipStatus.FREE_TO_PLAY, 10, 0, 1, isSummonerSelectedChamp = false),
                 ChampionInfo(134, "Syndra", ChampionOwnershipStatus.RENTAL, 10, 0, 1, isSummonerSelectedChamp = true),
                 ChampionInfo(106, "Volibear", ChampionOwnershipStatus.NOT_OWNED, 10, 0, 1, isSummonerSelectedChamp = false),
             ),
             listOf(
-                ChampionInfo(432, "Bard", ChampionOwnershipStatus.BOX_ATTAINED, 10, 0, 1, isSummonerSelectedChamp = false),
-                ChampionInfo(127, "Lissandra", ChampionOwnershipStatus.BOX_ATTAINED, 10, 0, 1, isSummonerSelectedChamp = false),
-                ChampionInfo(58, "Renekton", ChampionOwnershipStatus.BOX_ATTAINED, 10, 0, 1, isSummonerSelectedChamp = false),
-                ChampionInfo(48, "Trundle", ChampionOwnershipStatus.BOX_ATTAINED, 10, 0, 1, isSummonerSelectedChamp = false),
-                ChampionInfo(45, "Veigar", ChampionOwnershipStatus.BOX_ATTAINED, 10, 0, 1, isSummonerSelectedChamp = false),
-                ChampionInfo(28, "Evelynn", ChampionOwnershipStatus.BOX_ATTAINED, 10, 0, 1, isSummonerSelectedChamp = false),
-                ChampionInfo(13, "Ryze", ChampionOwnershipStatus.BOX_ATTAINED, 10, 0, 1, isSummonerSelectedChamp = false),
-                ChampionInfo(16, "Soraka", ChampionOwnershipStatus.BOX_ATTAINED, 10, 0, 1, isSummonerSelectedChamp = false),
-                ChampionInfo(22, "Ashe", ChampionOwnershipStatus.BOX_ATTAINED, 10, 0, 1, isSummonerSelectedChamp = false),
-                ChampionInfo(875, "Sett", ChampionOwnershipStatus.BOX_ATTAINED, 10, 0, 1, isSummonerSelectedChamp = false),
+                ChampionInfo(432, "Bard", ChampionOwnershipStatus.RENTAL, 10, 0, 1, isSummonerSelectedChamp = false),
+                ChampionInfo(127, "Lissandra", ChampionOwnershipStatus.NOT_OWNED, 10, 0, 1, isSummonerSelectedChamp = false),
+                ChampionInfo(58, "Renekton", ChampionOwnershipStatus.FREE_TO_PLAY, 10, 0, 1, isSummonerSelectedChamp = false),
+                ChampionInfo(48, "Trundle", ChampionOwnershipStatus.FREE_TO_PLAY, 10, 0, 1, isSummonerSelectedChamp = false),
+                ChampionInfo(45, "Veigar", ChampionOwnershipStatus.FREE_TO_PLAY, 10, 0, 1, isSummonerSelectedChamp = false),
+                ChampionInfo(28, "Evelynn", ChampionOwnershipStatus.FREE_TO_PLAY, 10, 0, 1, isSummonerSelectedChamp = false),
+                ChampionInfo(13, "Ryze", ChampionOwnershipStatus.FREE_TO_PLAY, 10, 0, 1, isSummonerSelectedChamp = false),
+                ChampionInfo(16, "Soraka", ChampionOwnershipStatus.RENTAL, 10, 0, 1, isSummonerSelectedChamp = false),
+                ChampionInfo(22, "Ashe", ChampionOwnershipStatus.RENTAL, 10, 0, 1, isSummonerSelectedChamp = false),
+                ChampionInfo(875, "Sett", ChampionOwnershipStatus.RENTAL, 10, 0, 1, isSummonerSelectedChamp = false),
             )
         )
 

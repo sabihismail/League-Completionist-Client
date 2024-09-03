@@ -20,10 +20,14 @@ import tornadofx.*
 import util.*
 import util.KotlinExtensionUtil.containsLong
 import util.constants.GenericConstants.GSON
+import util.constants.GenericConstants.GSON_PRETTY
+import java.awt.Toolkit
+import java.awt.datatransfer.StringSelection
 import java.io.*
 import java.net.ConnectException
 import java.util.*
 import kotlin.concurrent.thread
+
 
 class LeagueConnection {
     var clientApi: ClientApi? = null
@@ -498,8 +502,8 @@ class LeagueConnection {
         val champions = clientApi?.executeGet("/lol-champions/v1/inventories/${summonerInfo.summonerId}/champions",
             Array<LolChampionsCollectionsChampionImpl>::class.java)?.responseObject?.filter { it.active == true } ?: return
 
-        val championMasteryList = clientApi!!.executeGet("/lol-collections/v1/inventories/${summonerInfo.summonerId}/champion-mastery",
-            Array<LolCollectionsCollectionsChampionMastery>::class.java).responseObject ?: return
+        val championMasteryList = clientApi!!.executeGet("/lol-champion-mastery/v1/local-player/champion-mastery",
+            Array<ChampionMastery>::class.java).responseObject ?: return
         Logging.log(championMasteryList, LogType.VERBOSE)
 
         val eternalSummary = clientApi!!.executeGet("/lol-statstones/v2/player-summary-self", Array<LolStatstonesChampionStatstoneSummary>::class.java)
@@ -520,6 +524,7 @@ class LeagueConnection {
                 var nextLevelMasteryPoints = 0
                 var championLevel = 0
                 var tokens = 0
+                var masteryBoxRewards = ""
 
                 lateinit var championOwnershipStatus: ChampionOwnershipStatus
                 if (it.ownership?.owned == false) {
@@ -531,12 +536,13 @@ class LeagueConnection {
                         ChampionOwnershipStatus.NOT_OWNED
                     }
                 } else {
+                    championOwnershipStatus = ChampionOwnershipStatus.OWNED
+
                     val championMastery = championMasteryList.firstOrNull { championMastery -> championMastery.championId == it.id }
 
-                    if (championMastery == null) {
-                        championOwnershipStatus = ChampionOwnershipStatus.BOX_NOT_ATTAINED
-                    } else {
-                        championOwnershipStatus = if (championMastery.chestGranted) ChampionOwnershipStatus.BOX_ATTAINED else ChampionOwnershipStatus.BOX_NOT_ATTAINED
+                    if (championMastery != null) {
+                        val grades = championMastery.nextSeasonMilestone?.requireGradeCounts
+                        masteryBoxRewards = "B-: ${grades?.bMinus}, C-: ${grades?.cMinus}"
 
                         championPoints = championMastery.championPoints
                         championLevel = championMastery.championLevel
@@ -548,7 +554,7 @@ class LeagueConnection {
 
                 ChampionInfo(it.id, it.name, championOwnershipStatus, championPoints, currentMasteryPoints, nextLevelMasteryPoints, championLevel, tokens,
                     eternalInfo=championIdToHasEternal.getOrDefault(it.id, mapOf()), roles=it.roles.map { role -> ChampionRole.fromString(role) }.toSet(),
-                    clientApi=clientApi)
+                    clientApi=clientApi, masteryBoxRewards=masteryBoxRewards)
             }
 
         completableChallenges = challengeInfo.values.flatten().filter { it.isListingCompletedChampions }
@@ -632,7 +638,11 @@ class LeagueConnection {
         val obj = clientApi?.executeGet(path, Any::class.java)?.responseObject
 
         if (obj != null) {
-            Logging.log(GSON.toJson(obj), LogType.INFO)
+            val jsonStr = GSON_PRETTY.toJson(obj)
+
+            Logging.log(jsonStr, LogType.INFO)
+            val selection = StringSelection(jsonStr)
+            Toolkit.getDefaultToolkit().systemClipboard.setContents(selection, selection)
         }
     }
 
