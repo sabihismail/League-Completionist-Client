@@ -29,7 +29,7 @@ dependencies {
     implementation("org.junit.jupiter", "junit-jupiter", "5.9.2")
     implementation("com.squareup.okhttp3", "okhttp", "4.11.0")
     implementation("org.xerial", "sqlite-jdbc", "3.46.0.0")
-    // implementation("org.slf4j", "slf4j-nop", "2.0.9")
+    implementation("org.slf4j", "slf4j-simple", "2.0.16") // "slf4j-nop", "2.0.9")
 
     val exposedVersion = "0.52.0"
     implementation("org.jetbrains.exposed", "exposed-core", exposedVersion)

@@ -692,7 +692,7 @@ class LeagueConnection {
                 runLootCleanup()
                 checkEventShopRewardsAvailable()
                 runEventShopCleanup()
-                checkTftBattlepassRewardsAvailable()
+                // checkTftBattlepassRewardsAvailable()
 
                 socket = clientApi?.openWebSocket()
                 socket?.setSocketListener(object : ClientWebSocket.SocketListener {
@@ -869,7 +869,7 @@ class LeagueConnection {
         if (clientState == LolGameflowGameflowPhase.ENDOFGAME) {
             updateLootTab()
             updateChampionMasteryInfo()
-            checkTftBattlepassRewardsAvailable()
+            // checkTftBattlepassRewardsAvailable()
 
             checkEventShopRewardsAvailable()
             runEventShopCleanup()
