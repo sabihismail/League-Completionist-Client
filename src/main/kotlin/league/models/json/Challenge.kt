@@ -104,10 +104,12 @@ class Challenge {
     }
 
     val currentLevelImage by lazy {
-        if (currentLevel == ChallengeLevel.NONE)
-            ChallengeLevel.IRON.name.lowercase()
+        val result = if (currentLevel == ChallengeLevel.NONE)
+            nextLevel?.name?.lowercase() ?: ChallengeLevel.IRON.name.lowercase()
         else
             currentLevel!!.name.lowercase()
+
+        return@lazy result
     }
 
     val isComplete by lazy { currentLevel == thresholds!!.keys.maxOf { x -> x } || pointsDifference == 0 }
