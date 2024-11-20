@@ -141,17 +141,6 @@ object StringUtil {
         return hashMap
     }
 
-    inline fun <reified T> parseJson(s: String): HashMap<String, T> {
-        val json = JSON_FORMAT.parseToJsonElement(s)
-
-        val hashMap = hashMapOf<String, T>()
-        for ((key, value) in json.jsonObject) {
-            hashMap[key] = JSON_FORMAT.decodeFromJsonElement(value)
-        }
-
-        return hashMap
-    }
-
     inline fun <reified T> parseJsonArray(s: String): List<T> {
         return JSON_FORMAT.decodeFromString<List<T>>(s)
     }
