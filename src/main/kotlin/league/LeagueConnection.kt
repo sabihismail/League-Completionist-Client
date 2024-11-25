@@ -541,8 +541,7 @@ class LeagueConnection {
                     val championMastery = championMasteryList.firstOrNull { championMastery -> championMastery.championId == it.id }
 
                     if (championMastery != null) {
-                        val grades = championMastery.nextSeasonMilestone?.requireGradeCounts
-                        masteryBoxRewards = "B-: ${grades?.bMinus}, C-: ${grades?.cMinus}"
+                        masteryBoxRewards = championMastery.masteryBoxRewards
 
                         championPoints = championMastery.championPoints
                         championLevel = championMastery.championLevel

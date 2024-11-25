@@ -13,8 +13,39 @@ class ChampionMastery {
     var lastPlayTime: Long? = null
     var markRequiredForNextLevel: Int? = null
     var nextSeasonMilestone: ChampionMasteryNextSeasonMilestone? = null
+    var milestoneGrades: List<String>? = null
     var puuid: String? = null
     var tokensEarned: Int = 0
+
+    val masteryBoxRewards by lazy {
+        val orderActual = listOf(
+            Pair("S-", nextSeasonMilestone?.requireGradeCounts?.sMinus),
+            Pair("A-", nextSeasonMilestone?.requireGradeCounts?.aMinus),
+            Pair("B-", nextSeasonMilestone?.requireGradeCounts?.bMinus),
+            Pair("C-", nextSeasonMilestone?.requireGradeCounts?.cMinus),
+        )
+
+        milestoneGrades?.map { calculateScore(it) }
+
+        orderActual.filter { it.second != 0 }.joinToString(",") {
+            "${it.first}: ${it.second}"
+        }
+    }
+
+    private fun calculateScore(s: String) {
+        val mapping = mapOf(
+            "S" to 4,
+            "A" to 3,
+            "B" to 2,
+            "C" to 1,
+        )
+
+        val minusMapping = mapOf(
+            "+" to 3,
+            "" to 2,
+            "-" to 1,
+        )
+    }
 }
 
 class ChampionMasteryNextSeasonMilestone {
@@ -25,8 +56,15 @@ class ChampionMasteryNextSeasonMilestone {
 }
 
 class ChampionMasteryRequireGradeCounts {
+    @SerializedName("S-")
+    var sMinus: Int = 0
+
+    @SerializedName("A-")
+    var aMinus: Int = 0
+
     @SerializedName("B-")
     var bMinus: Int = 0
+
     @SerializedName("C-")
     var cMinus: Int = 0
 }
