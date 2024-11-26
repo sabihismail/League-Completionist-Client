@@ -3,6 +3,7 @@ package league.models
 import com.google.gson.annotations.SerializedName
 
 
+@Suppress("unused")
 class ChampionMastery {
     var championId: Int = 0
     var championLevel: Int = 0
@@ -27,11 +28,14 @@ class ChampionMastery {
 
         milestoneGrades?.map { calculateScore(it) }
 
-        orderActual.filter { it.second != 0 }.joinToString(",") {
+        orderActual.filter { it.second != 0 }.joinToString(", ") {
             "${it.first}: ${it.second}"
         }
+
+        milestoneGrades?.joinToString(", ")!!
     }
 
+    @Suppress("UNUSED_VARIABLE")
     private fun calculateScore(s: String) {
         val mapping = mapOf(
             "S" to 4,
@@ -48,6 +52,7 @@ class ChampionMastery {
     }
 }
 
+@Suppress("unused")
 class ChampionMasteryNextSeasonMilestone {
     var bonus: Boolean? = null
     var requireGradeCounts: ChampionMasteryRequireGradeCounts? = null
@@ -69,6 +74,7 @@ class ChampionMasteryRequireGradeCounts {
     var cMinus: Int = 0
 }
 
+@Suppress("unused")
 class ChampionMasteryRewardConfig {
     var maximumReward: Int? = null
     var rewardValue: String? = null
