@@ -35,7 +35,7 @@ object DatabaseImpl {
 
         val keyId = key.name + "_" + LeagueConnection.summonerInfo.uniqueId
         transaction {
-            val result = GenericKeyValueTable.select { GenericKeyValueTable.key eq keyId }.singleOrNull() ?: return@transaction
+            val result = GenericKeyValueTable.selectAll().where { GenericKeyValueTable.key eq keyId }.singleOrNull() ?: return@transaction
             str = result[GenericKeyValueTable.value]
         }
 
@@ -46,7 +46,7 @@ object DatabaseImpl {
         val keyId = keyIn.name + "_" + LeagueConnection.summonerInfo.uniqueId
         transaction {
             val query: (SqlExpressionBuilder.() -> Op<Boolean>) = { GenericKeyValueTable.key eq keyId }
-            if (GenericKeyValueTable.select(query).count() == 1L) {
+            if (GenericKeyValueTable.selectAll().where(query).count() == 1L) {
                 GenericKeyValueTable.update(query) { update ->
                     update[value] = valueIn.toString()
                 }
@@ -72,7 +72,7 @@ object DatabaseImpl {
             val uniqueAccountId = summonerInfo.uniqueId
 
             val query: (SqlExpressionBuilder.() -> Op<Boolean>) = { MasteryChestTable.accountId eq uniqueAccountId }
-            if (MasteryChestTable.select(query).count() >= 1) {
+            if (MasteryChestTable.selectAll().where(query).count() >= 1) {
                 MasteryChestTable.update(query) { update ->
                     update[name] = summonerInfo.displayName
                     update[lastBoxDate] = finalDate
