@@ -470,7 +470,7 @@ class LeagueConnection {
                 { upgradeChampionShard(shards, blueEssence) { ChampionOwnershipStatus.UNOWNED_SET.contains(championInfo[it.storeItemId]?.ownershipStatus) } },
                 { upgradeChampionPermanents(permanents, blueEssence) },
 
-                { disenchantTokenItem(loot, "Unlock new and classic content exclusively for Mythic Essence", "Random Skin Shard") },
+//                { disenchantTokenItem(loot, "Unlock new and classic content exclusively for Mythic Essence", "Random Skin Shard") },
             ))
 
             // If we have any unowned champions
