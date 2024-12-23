@@ -28,11 +28,11 @@ class ChampionMastery {
 
         milestoneGrades?.map { calculateScore(it) }
 
-        orderActual.filter { it.second != 0 }.joinToString(", ") {
+        val currentOrder = orderActual.filter { it.second != 0 }.joinToString(", ") {
             "${it.first}: ${it.second}"
         }
 
-        milestoneGrades?.joinToString(", ")!!
+        "To Do: $currentOrder\nHave: ${milestoneGrades?.joinToString(", ")!!}"
     }
 
     @Suppress("UNUSED_VARIABLE")
