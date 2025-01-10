@@ -13,8 +13,8 @@ class ChampionMastery {
     var highestGrade: String? = null
     var lastPlayTime: Long? = null
     var markRequiredForNextLevel: Int? = null
-    var nextSeasonMilestone: ChampionMasteryNextSeasonMilestone? = null
-    var milestoneGrades: List<String>? = null
+    private var nextSeasonMilestone: ChampionMasteryNextSeasonMilestone? = null
+    private var milestoneGrades: List<String>? = null
     var puuid: String? = null
     var tokensEarned: Int = 0
 
@@ -36,7 +36,7 @@ class ChampionMastery {
     }
 
     @Suppress("UNUSED_VARIABLE")
-    private fun calculateScore(s: String) {
+    private fun calculateScore(@Suppress("UNUSED_PARAMETER") s: String) {
         val mapping = mapOf(
             "S" to 4,
             "A" to 3,

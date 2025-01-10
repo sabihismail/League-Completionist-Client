@@ -35,6 +35,8 @@ enum class GameMode {
     PRACTICE_TOOL,
     @SerializedName("STRAWBERRY")
     STRAWBERRY,
+    @SerializedName("SWIFTPLAY")
+    SWIFTPLAY,
 
     NONE,
     ANY,

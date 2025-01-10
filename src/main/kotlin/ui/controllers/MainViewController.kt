@@ -309,6 +309,7 @@ open class MainViewController : Controller() {
         const val CHEST_WAIT_TIME = 7.0
 
         private val ROLE_SPECIFIC_MODES = setOf(
+            GameMode.SWIFTPLAY,
             GameMode.DRAFT_PICK,
             GameMode.RANKED_SOLO,
             GameMode.RANKED_FLEX,
