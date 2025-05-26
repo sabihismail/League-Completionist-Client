@@ -31,17 +31,32 @@ class ChallengesView : View("League Challenges") {
     private val filteredChallengesProperty = SimpleMapProperty<ChallengeCategory, List<Challenge>>()
     private val allGameModesProperty = SimpleListProperty<GameMode>()
 
-    private val hideEarnPointChallengesProperty = SimpleBooleanProperty(true)
-    private val hidePremadeChallengesProperty = SimpleBooleanProperty(true)
-    private val hideCompletedChallengesProperty = SimpleBooleanProperty(true)
-    private val hideNonTitleChallengesProperty = SimpleBooleanProperty(false)
-    private val hideWinChallengesProperty = SimpleBooleanProperty(false)
-    private val hideNonWinChallengesProperty = SimpleBooleanProperty(false)
-    private val hideMultiTierChallengesProperty = SimpleBooleanProperty(false)
-    private val hideCollectionProperty = SimpleBooleanProperty(false)
-    private val hideLegacyProperty = SimpleBooleanProperty(false)
-    private val hideNonSeasonChallengesProperty = SimpleBooleanProperty(false)
+    private val hideEarnPointChallengesProperty = SimpleBooleanProperty(config.boolean("challengesHideEarnPointChallenges") ?: true)
+    private val hidePremadeChallengesProperty = SimpleBooleanProperty(config.boolean("challengesHidePremadeChallenges") ?: true)
+    private val hideCompletedChallengesProperty = SimpleBooleanProperty(config.boolean("challengesHideCompletedChallenges") ?: true)
+    private val hideContainerChallengesProperty = SimpleBooleanProperty(config.boolean("challengesHideContainerChallenges") ?: true)
+    private val hideNonTitleChallengesProperty = SimpleBooleanProperty(config.boolean("challengesHideNonTitleChallenges") ?: false)
+    private val hideWinChallengesProperty = SimpleBooleanProperty(config.boolean("challengesHideWinChallenges") ?: false)
+    private val hideNonWinChallengesProperty = SimpleBooleanProperty(config.boolean("challengesHideNonWinChallenges") ?: false)
+    private val hideMultiTierChallengesProperty = SimpleBooleanProperty(config.boolean("challengesHideMultiTierChallenges") ?: false)
+    private val hideCollectionProperty = SimpleBooleanProperty(config.boolean("challengesHideCollection") ?: false)
+    private val hideLegacyProperty = SimpleBooleanProperty(config.boolean("challengesHideLegacy") ?: true)
+    private val hideNonSeasonChallengesProperty = SimpleBooleanProperty(config.boolean("challengesHideNonSeasonChallenges") ?: false)
     private val currentSearchTextProperty = SimpleStringProperty("")
+
+    private val configMapping = mapOf(
+        hideEarnPointChallengesProperty to "challengesHideEarnPointChallenges",
+        hidePremadeChallengesProperty to "challengesHidePremadeChallenges",
+        hideCompletedChallengesProperty to "challengesHideCompletedChallenges",
+        hideContainerChallengesProperty to "challengesHideContainerChallenges",
+        hideNonTitleChallengesProperty to "challengesHideNonTitleChallenges",
+        hideWinChallengesProperty to "challengesHideWinChallenges",
+        hideNonWinChallengesProperty to "challengesHideNonWinChallenges",
+        hideMultiTierChallengesProperty to "challengesHideMultiTierChallenges",
+        hideCollectionProperty to "challengesHideCollection",
+        hideLegacyProperty to "challengesHideLegacy",
+        hideNonSeasonChallengesProperty to "challengesHideNonSeasonChallenges",
+    )
 
     private lateinit var verticalRow: ScrollPane
     private lateinit var grid: DataGrid<ChallengeCategory>
@@ -60,6 +75,8 @@ class ChallengesView : View("League Challenges") {
                 },
 
                 ChallengeFilter(hideCompletedChallengesProperty.get()) { challengeInfo -> !challengeInfo.isComplete },
+
+                ChallengeFilter(hideContainerChallengesProperty.get()) { challengeInfo -> challengeInfo.description?.contains("Earn progress from challenges") == false },
 
                 ChallengeFilter(hideNonTitleChallengesProperty.get()) { challengeInfo -> challengeInfo.hasRewardTitle && !challengeInfo.rewardObtained },
 
@@ -120,6 +137,7 @@ class ChallengesView : View("League Challenges") {
         setOf(
             hideEarnPointChallengesProperty,
             hideCompletedChallengesProperty,
+            hideContainerChallengesProperty,
             hideNonTitleChallengesProperty,
             hideWinChallengesProperty,
             hideNonWinChallengesProperty,
@@ -129,8 +147,13 @@ class ChallengesView : View("League Challenges") {
             hideNonSeasonChallengesProperty,
             currentGameModeProperty,
             currentSearchTextProperty,
-        ).forEach {
-            it.onChange {
+        ).forEach { prop ->
+            prop.onChange {
+                if (prop in configMapping) {
+                    config[configMapping[prop]] = prop.value.toString()
+                    config.save()
+                }
+
                 if (challengesSummaryProperty.value == null || allChallengesProperty.value == null || allCategoriesProperty.value == null) return@onChange
                 setChallenges()
             }
@@ -144,7 +167,7 @@ class ChallengesView : View("League Challenges") {
     private fun getChallengeString(level: ChallengeLevel, key: String, current: Long, s: String = " - ", includeTotal: Boolean = false): String {
         val maxPoints = try {
             LeagueCommunityDragonApi.getChallengeThreshold(key, ChallengeLevel.entries[level.ordinal + 1])
-        } catch (e: NullPointerException) {
+        } catch (_: NullPointerException) {
             0
         }
 
@@ -267,6 +290,7 @@ class ChallengesView : View("League Challenges") {
                 checkbox("Hide Grind/Time", hideEarnPointChallengesProperty)
                 checkbox("Hide Premade", hidePremadeChallengesProperty)
                 checkbox("Hide Completed", hideCompletedChallengesProperty)
+                checkbox("Hide Container", hideContainerChallengesProperty)
                 checkbox("Hide Non-Title", hideNonTitleChallengesProperty)
                 checkbox("Hide Win", hideWinChallengesProperty)
                 checkbox("Hide Non-Win", hideNonWinChallengesProperty)

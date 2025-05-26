@@ -13,7 +13,7 @@ import kotlin.system.exitProcess
 
 
 class MainApp: App(MainView::class) {
-    override val configPath: Path = Paths.get("config.properties")
+    override val configPath: Path = Paths.get("./config.properties")
 
     init {
         reloadStylesheetsOnFocus()

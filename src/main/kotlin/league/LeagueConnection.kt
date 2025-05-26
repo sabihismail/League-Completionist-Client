@@ -1,7 +1,10 @@
 package league
 
 import com.google.gson.JsonObject
-import com.stirante.lolclient.*
+import com.stirante.lolclient.ClientApi
+import com.stirante.lolclient.ClientConnectionListener
+import com.stirante.lolclient.ClientWebSocket
+import com.stirante.lolclient.PowershellProcessWatcher
 import db.DatabaseImpl
 import generated.*
 import league.api.LeagueCommunityDragonApi
@@ -16,14 +19,12 @@ import org.apache.commons.lang3.StringUtils
 import org.apache.commons.lang3.reflect.FieldUtils
 import org.apache.hc.client5.http.HttpHostConnectException
 import org.apache.hc.core5.http.HttpException
-import tornadofx.*
 import util.*
 import util.KotlinExtensionUtil.containsLong
 import util.constants.GenericConstants.GSON
 import util.constants.GenericConstants.GSON_PRETTY
 import java.awt.Toolkit
 import java.awt.datatransfer.StringSelection
-import java.io.*
 import java.net.ConnectException
 import java.util.*
 import kotlin.concurrent.thread
@@ -255,7 +256,7 @@ class LeagueConnection {
         }
 
         val response = postRequest.responseObject
-        return if (postRequest.isOk && (response.added.isNotEmpty() || response.removed.isNotEmpty() || response.removed.isNotEmpty())) {
+        return if (postRequest.isOk && (response.added.isNotEmpty() || response.removed.isNotEmpty())) {
             val localizedName = listOf(
                 { LeagueCommunityDragonApi.getLootEntity("loot_name_" + recipe.recipeName.lowercase().replace("_open", "")) },
                 { recipe.description },
@@ -428,7 +429,7 @@ class LeagueConnection {
 
         val ignoredIds = listOf("CURRENCY_champion", "CHEST_champion_mastery", "MATERIAL_key_fragment", "CURRENCY_champion", "CURRENCY_RP")
         val ignoredCategories = listOf("SKIN", "WARDSKIN")
-        @Suppress("UNUSED_VARIABLE") val singleLoot = loot.filter { ignoredIds.all { id -> it.lootId != id } }
+        @Suppress("UNUSED_VARIABLE", "unused") val singleLoot = loot.filter { ignoredIds.all { id -> it.lootId != id } }
             .filter { ignoredCategories.all { id -> it.displayCategories != id } }
             .filter { !it.localizedName.contains(" Token") }
             .filter { it.type != "CHAMPION_RENTAL" }
@@ -464,7 +465,7 @@ class LeagueConnection {
 
                 { craftLoot(shards, "CHAMPION_RENTAL_disenchant") { championInfo[it.storeItemId]?.level == 7 } },
                 { craftLoot(shards, "CHAMPION_RENTAL_disenchant") { championInfo[it.storeItemId]?.level == 6 && it.count == 2 } },
-                { craftLoot(shards, "CHAMPION_RENTAL_disenchant") { it.count >= 3 &&
+                { craftLoot(shards, "CHAMPION_RENTAL_disenchant") { it.count >= 1 &&
                         !ChampionOwnershipStatus.UNOWNED_SET.contains(championInfo[it.storeItemId]?.ownershipStatus) } },
 
                 { upgradeChampionShard(shards, blueEssence) { ChampionOwnershipStatus.UNOWNED_SET.contains(championInfo[it.storeItemId]?.ownershipStatus) } },
@@ -585,6 +586,7 @@ class LeagueConnection {
         championInfo = masteryPairing.associateBy({ it.id }, { it })
     }
 
+    @Suppress("unused")
     private fun checkTftBattlepassRewardsAvailable() {
         val battlepass = clientApi!!.executeGet("/lol-tft/v2/tft/battlepass", LolMissionsTftPaidBattlepass::class.java).responseObject
         val missions = battlepass.milestones.filter { !it.isPaid && it.state == "REWARDABLE" }
@@ -845,7 +847,7 @@ class LeagueConnection {
                 Logging.log(gameFlow, LogType.DEBUG)
 
                 if (championSelectInfo.teamChampions.isEmpty()) {
-                    val championId = gameFlow.gameData.getCurrentChampionId(summonerInfo.displayName)
+                    val championId = gameFlow.gameData.getCurrentChampionId(summonerInfo.summonerId)
                     val championsTeam1 = gameFlow.gameData.teamOne.map { championInfo[it.championId] }
                         .mapNotNull { it.apply { it?.isSummonerSelectedChamp = it?.id == championId } }
                     val championsTeam2 = gameFlow.gameData.teamTwo.map { championInfo[it.championId] }
@@ -948,16 +950,12 @@ class LeagueConnection {
     }
 
     private fun handleClientConnection(): Boolean {
-        var str = "ClientConnection: isConnected=${clientApi?.isConnected}"
-
         if (!clientApi!!.isConnected) {
             Logging.log("Login - " + SummonerStatus.NOT_LOGGED_IN, LogType.INFO, ignorableDuplicate = true)
             return false
         }
 
         try {
-            str += " - isAuthorized=${clientApi?.isAuthorized}"
-
             if (!clientApi!!.isAuthorized) {
                 Logging.log("Login - " + SummonerStatus.LOGGED_IN_UNAUTHORIZED, LogType.INFO, ignorableDuplicate = true)
 
