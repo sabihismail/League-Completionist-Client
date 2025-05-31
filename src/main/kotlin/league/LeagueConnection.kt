@@ -621,12 +621,7 @@ class LeagueConnection {
         val sections = json.values.groupBy { it.category!! }
             .map { entry ->
                 Pair(entry.key, entry.value.sortedWith(
-                    compareBy<Challenge> { it.isComplete }
-                        .thenByDescending { it.currentLevel }
-                        .thenByDescending { it.hasRewardTitle }
-                        .thenBy { !it.rewardObtained }
-                        .thenByDescending { it.nextLevelPoints }
-                        .thenByDescending { it.percentage }
+                    Challenge.DEFAULT_COMPARISON
                 ).toMutableList())
             }
             .toMap()

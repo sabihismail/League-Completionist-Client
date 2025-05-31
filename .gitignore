@@ -77,3 +77,4 @@ database.db
 config.json
 ui.views.FriendsView.properties
 scratchpad.txt
+conf/ui.views.ChallengesView.properties

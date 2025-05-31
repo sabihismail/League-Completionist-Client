@@ -107,7 +107,7 @@ class ChallengesView : View("League Challenges") {
             var categories = if (hideCollectionProperty.value) allCategories.filter { it != ChallengeCategory.COLLECTION } else allCategories
             categories = if (hideLegacyProperty.value) categories.filter { it != ChallengeCategory.LEGACY } else categories
 
-            val uniqueGameModeBase = if (allChallengesProperty.size > 0) allChallengesProperty.value else sortedMap
+            val uniqueGameModeBase = if (allChallengesProperty.isNotEmpty()) allChallengesProperty.value else sortedMap
             val uniqueGameModes = setOf(GameMode.ANY).union(uniqueGameModeBase.flatMap { it.value }.flatMap { it.gameModeSet })
 
             ChallengeUiRefreshData(summary, FXCollections.observableMap(challengeInfo), FXCollections.observableMap(sortedMap),
@@ -313,9 +313,9 @@ class ChallengesView : View("League Challenges") {
         private const val INNER_CELL_HEIGHT = CHALLENGE_IMAGE_WIDTH + (DEFAULT_SPACING * 2) + HEADER_FONT_SIZE
 
         private var ROW_COUNT = 6
-        // cell + row_spacing for 6 rows + vert spacing
+        // cell + row_spacing for 6 rows + vert spacing + random buffer
         private var getOuterGridPaneHeight = {
-            (INNER_CELL_HEIGHT + SPACING_BETWEEN_ROW * 2) * ROW_COUNT + DEFAULT_SPACING * 2 + SCROLLBAR_HEIGHT
+            (INNER_CELL_HEIGHT + SPACING_BETWEEN_ROW * 2) * ROW_COUNT + DEFAULT_SPACING * 2 + SCROLLBAR_HEIGHT + 20
         }
 
         val CRINGE_MISSIONS = setOf(

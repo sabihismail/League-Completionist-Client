@@ -137,7 +137,7 @@ class Challenge {
     }
     val levelByThreshold get() = thresholds!!.keys.sorted().indexOf(currentLevel) + 1
 
-    val percentage by lazy { currentValue!!.toDouble() / nextThreshold!! }
+    val percentage by lazy { currentValue!! / nextThreshold!! }
     val nextLevelPoints by lazy {
         try {
             thresholds!![nextLevel]!!.rewards!!.firstOrNull { it.category == ChallengeThresholdRewardCategory.CHALLENGE_POINTS }!!.quantity!!.toInt()
@@ -194,5 +194,12 @@ class Challenge {
 
     companion object {
         const val THRESHOLD_SEPARATOR = " > "
+
+        val DEFAULT_COMPARISON = compareBy<Challenge> { it.isComplete }
+            .thenByDescending { it.currentLevel }
+            .thenBy { !it.rewardObtained }
+            .thenByDescending { it.nextLevelPoints }
+            .thenByDescending { it.percentage }
+            .thenByDescending { it.hasRewardTitle }
     }
 }
