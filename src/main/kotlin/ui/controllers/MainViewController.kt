@@ -89,7 +89,7 @@ open class MainViewController : Controller() {
         leagueConnection.onMasteryChestChange {
             if (it.nextChestDate == null) return@onMasteryChestChange
 
-            runLater { view.masteryAccountView.run() }
+//            runLater { view.masteryAccountView.run() }
         }
 
         leagueConnection.onChampionSelectChange {
@@ -134,7 +134,7 @@ open class MainViewController : Controller() {
             replaceDisplay()
 
             runLater {
-                view.masteryAccountView.run()
+//                view.masteryAccountView.run()
                 view.clientStateProperty.set(it)
                 view.gameModeProperty.set(leagueConnection.gameMode)
             }

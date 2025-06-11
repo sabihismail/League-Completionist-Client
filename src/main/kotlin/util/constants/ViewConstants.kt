@@ -1,7 +1,5 @@
 package util.constants
 
-import javafx.scene.paint.Color
-
 
 object ViewConstants {
     const val IMAGE_HORIZONTAL_COUNT = 6
@@ -13,7 +11,7 @@ object ViewConstants {
     const val SCROLLBAR_HEIGHT = 14.0
     const val SCROLLBAR_WIDTH = 14.0
 
-    val CHAMPION_STATUS_AVAILABLE_CHEST_COLOR: Color = Color.GREEN
-    val CHAMPION_STATUS_UNAVAILABLE_CHEST_COLOR: Color = Color.RED
-    val CHAMPION_STATUS_NOT_OWNED_COLOR: Color = Color.BLACK
+//    val CHAMPION_STATUS_AVAILABLE_CHEST_COLOR: Color = Color.GREEN
+//    val CHAMPION_STATUS_UNAVAILABLE_CHEST_COLOR: Color = Color.RED
+//    val CHAMPION_STATUS_NOT_OWNED_COLOR: Color = Color.BLACK
 }

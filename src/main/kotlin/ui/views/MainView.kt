@@ -4,12 +4,10 @@ import DEBUG_FAKE_UI_DATA_ARAM
 import DEBUG_FAKE_UI_DATA_NORMAL
 import DEBUG_FAKE_UI_DATA_UPDATED_CHALLENGES
 import generated.LolGameflowGameflowPhase
-import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.geometry.Pos
 import javafx.scene.control.Button
 import javafx.scene.control.TextInputDialog
-import javafx.scene.text.Font
 import league.models.SummonerInfo
 import league.models.enums.ActiveView
 import league.models.enums.GameMode
@@ -22,10 +20,6 @@ import ui.mock.extra.ChallengesUpdatedMockController
 import ui.views.fragments.ChampionFragment
 import ui.views.util.boldLabel
 import util.ViewUtil
-import util.constants.ViewConstants.CHAMPION_STATUS_AVAILABLE_CHEST_COLOR
-import util.constants.ViewConstants.CHAMPION_STATUS_NOT_OWNED_COLOR
-import util.constants.ViewConstants.CHAMPION_STATUS_UNAVAILABLE_CHEST_COLOR
-import util.constants.ViewConstants.DEFAULT_SPACING
 import util.constants.ViewConstants.IMAGE_HORIZONTAL_COUNT
 import util.constants.ViewConstants.IMAGE_SPACING_WIDTH
 import util.constants.ViewConstants.IMAGE_WIDTH
@@ -34,14 +28,14 @@ import util.constants.ViewConstants.SCROLLBAR_WIDTH
 
 class MainView: View("League Completionist Client") {
     val defaultGridView = find(DefaultGridView::class)
-    val masteryAccountView = find(MasteryAccountView::class)
+    // val masteryAccountView = find(MasteryAccountView::class)
     var currentChampionView = find(ChampionFragment::class)
 
     val summonerProperty = SimpleObjectProperty(SummonerInfo())
     val clientStateProperty = SimpleObjectProperty(LolGameflowGameflowPhase.NONE)
     val gameModeProperty = SimpleObjectProperty(GameMode.NONE)
 
-    val isDeveloper = SimpleBooleanProperty(false)
+    // val isDeveloper = SimpleBooleanProperty(false)
 
     private val friendsView = find(FriendsView::class)
     private lateinit var swapViewButton: Button
@@ -82,47 +76,47 @@ class MainView: View("League Completionist Client") {
             center = defaultGridView.root
 
             bottom = vbox {
-                vbox {
-                    hbox {
-                        spacing = 4.0
-                        alignment = Pos.CENTER_LEFT
-
-                        rectangle(0, 0, 20, 20) {
-                            fill = CHAMPION_STATUS_AVAILABLE_CHEST_COLOR
-                        }
-                        label("Mastery Chest Available")
-                    }
-                    hbox {
-                        spacing = 4.0
-                        alignment = Pos.CENTER_LEFT
-
-                        rectangle(0, 0, 20, 20) {
-                            fill = CHAMPION_STATUS_UNAVAILABLE_CHEST_COLOR
-                        }
-                        label("Mastery Chest Already Obtained")
-                    }
-                    hbox {
-                        spacing = 4.0
-                        alignment = Pos.CENTER_LEFT
-
-                        rectangle(0, 0, 20, 20) {
-                            fill = CHAMPION_STATUS_NOT_OWNED_COLOR
-                        }
-                        label("Not Owned/Free to Play")
-                    }
-                }
-
-                separator {
-                    paddingBottom = 6.0
-                }
-
-                scrollpane(fitToHeight = true) {
-                    minHeight = Font.getDefault().size + DEFAULT_SPACING * 2 + DEFAULT_SPACING * 2
-
-                    borderpane {
-                        center = masteryAccountView.root
-                    }
-                }
+//                vbox {
+//                    hbox {
+//                        spacing = 4.0
+//                        alignment = Pos.CENTER_LEFT
+//
+//                        rectangle(0, 0, 20, 20) {
+//                            fill = CHAMPION_STATUS_AVAILABLE_CHEST_COLOR
+//                        }
+//                        label("Mastery Chest Available")
+//                    }
+//                    hbox {
+//                        spacing = 4.0
+//                        alignment = Pos.CENTER_LEFT
+//
+//                        rectangle(0, 0, 20, 20) {
+//                            fill = CHAMPION_STATUS_UNAVAILABLE_CHEST_COLOR
+//                        }
+//                        label("Mastery Chest Already Obtained")
+//                    }
+//                    hbox {
+//                        spacing = 4.0
+//                        alignment = Pos.CENTER_LEFT
+//
+//                        rectangle(0, 0, 20, 20) {
+//                            fill = CHAMPION_STATUS_NOT_OWNED_COLOR
+//                        }
+//                        label("Not Owned/Free to Play")
+//                    }
+//                }
+//
+//                separator {
+//                    paddingBottom = 6.0
+//                }
+//
+//                scrollpane(fitToHeight = true) {
+//                    minHeight = Font.getDefault().size + DEFAULT_SPACING * 2 + DEFAULT_SPACING * 2
+//
+//                    borderpane {
+//                        center = masteryAccountView.root
+//                    }
+//                }
 
                 hbox {
                     alignment = Pos.BOTTOM_CENTER

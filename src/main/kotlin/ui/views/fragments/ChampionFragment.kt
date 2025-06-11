@@ -1,6 +1,10 @@
 package ui.views.fragments
 
 import javafx.geometry.Pos
+import javafx.scene.effect.Blend
+import javafx.scene.effect.BlendMode
+import javafx.scene.effect.ColorInput
+import javafx.scene.paint.Color
 import javafx.scene.text.TextAlignment
 import league.api.LeagueCommunityDragonApi
 import league.models.ChampionInfo
@@ -26,7 +30,16 @@ class ChampionFragment : Fragment() {
             fitWidth = IMAGE_WIDTH
             fitHeight = IMAGE_WIDTH
 
-            effect = LeagueCommunityDragonApi.getChampionImageEffect(champion)
+            effect = Blend().apply {
+                mode = BlendMode.SRC_OVER
+                opacity = 0.7
+                topInput = ColorInput().apply {
+                    width = IMAGE_WIDTH
+                    height = IMAGE_WIDTH
+
+                    paint = Color.GREEN
+                }
+            } //LeagueCommunityDragonApi.getChampionImageEffect(champion)
         }
 
         borderpane {
@@ -34,12 +47,12 @@ class ChampionFragment : Fragment() {
                 alignment = Pos.TOP_LEFT
 
                 vbox {
-                    val extraInfoStr = if (showTokens && setOf(5, 6).any { champion.level == it })
-                        " (T: ${champion.tokens}/${champion.level / 2})"
-                    else
-                        champion.percentageUntilNextLevel
+//                    val extraInfoStr = if (showTokens && setOf(5, 6).any { champion.level == it })
+//                        " (T: ${champion.tokens}/${champion.level / 2})"
+//                    else
+//                        champion.percentageUntilNextLevel
 
-                    var text = "Lvl ${champion.level}$extraInfoStr"
+                    var text = "Lvl ${champion.level}${champion.percentageUntilNextLevel}" // $extraInfoStr"
                     if (champion.idealChampionToMasterEntry != -1) {
                         text += " (Rec: ${champion.idealChampionToMasterEntry})"
                     }
@@ -48,7 +61,7 @@ class ChampionFragment : Fragment() {
 
                     blackLabel("${champion.roles?.sortedBy { it.name }?.joinToString(", ") { it.name.lowercase() }}", fontSize = 9.6)
 
-                    blackLabel(champion.masteryBoxRewards, textAlignment = TextAlignment.LEFT)
+//                    blackLabel(champion.masteryBoxRewards, textAlignment = TextAlignment.LEFT)
                 }
             }
 

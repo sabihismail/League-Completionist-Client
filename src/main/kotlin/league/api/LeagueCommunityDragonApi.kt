@@ -2,6 +2,7 @@ package league.api
 
 import javafx.scene.effect.*
 import javafx.scene.image.Image
+import javafx.scene.paint.Color
 import league.models.ChampionInfo
 import league.models.enums.CacheType
 import league.models.enums.ChallengeLevel
@@ -14,8 +15,6 @@ import league.models.json.communitydragon.ApiQueueInfoResponse
 import util.LogType
 import util.Logging
 import util.StringUtil
-import util.constants.ViewConstants.CHAMPION_STATUS_AVAILABLE_CHEST_COLOR
-import util.constants.ViewConstants.CHAMPION_STATUS_UNAVAILABLE_CHEST_COLOR
 import util.constants.ViewConstants.IMAGE_WIDTH
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
@@ -160,10 +159,10 @@ object LeagueCommunityDragonApi {
             width = IMAGE_WIDTH
             height = IMAGE_WIDTH
 
-            paint = if (championInfo.masteryBoxRewards == "")
-                CHAMPION_STATUS_UNAVAILABLE_CHEST_COLOR
-            else
-                CHAMPION_STATUS_AVAILABLE_CHEST_COLOR
+//            paint = if (championInfo.masteryBoxRewards == "")
+//                CHAMPION_STATUS_UNAVAILABLE_CHEST_COLOR
+//            else
+//                CHAMPION_STATUS_AVAILABLE_CHEST_COLOR
         }
 
         val blend = Blend().apply {
