@@ -22,6 +22,7 @@ class AramGridView: View() {
     val champSelectInfoProperty = SimpleObjectProperty<ChampionSelectInfo>()
     val benchedChampionListProperty = SimpleListProperty<ChampionInfo>()
     val teamChampionListProperty = SimpleListProperty<ChampionInfo>()
+    val cardChampionListProperty = SimpleListProperty<ChampionInfo>()
 
     private val allChallengesProperty = SimpleListProperty<Challenge>()
     private val completableChallengesProperty = SimpleListProperty<Challenge>()
@@ -43,13 +44,15 @@ class AramGridView: View() {
 
     private fun setActiveChampions() {
         runAsync {
-            Pair(
+            Triple(
                 SharedViewUtil.getActiveChampions(champSelectInfoProperty.value.benchedChampions, challenges = currentChallengeProperty),
                 SharedViewUtil.getActiveChampions(champSelectInfoProperty.value.teamChampions, challenges = currentChallengeProperty),
+                SharedViewUtil.getActiveChampions(champSelectInfoProperty.value.cardChampions, challenges = currentChallengeProperty),
             )
         } ui {
             benchedChampionListProperty.value = it.first
             teamChampionListProperty.value = it.second
+            cardChampionListProperty.value = it.third
         }
     }
 
@@ -86,6 +89,24 @@ class AramGridView: View() {
 
             boldLabel("Your Team:")
             datagrid(teamChampionListProperty) {
+                alignment = Pos.CENTER
+
+                maxRows = 1
+                maxCellsInRow = IMAGE_HORIZONTAL_COUNT
+                cellWidth = IMAGE_WIDTH
+                cellHeight = IMAGE_WIDTH
+                horizontalCellSpacing = IMAGE_SPACING_WIDTH
+
+                cellCache {
+                    find<ChampionFragment>(mapOf(ChampionFragment::champion to it, ChampionFragment::showTokens to false, ChampionFragment::showYou to true)).root
+                }
+            }
+
+            boldLabel("Cards:") {
+                visibleWhen(cardChampionListProperty.sizeProperty.greaterThan(0))
+            }
+
+            datagrid(cardChampionListProperty) {
                 alignment = Pos.CENTER
 
                 maxRows = 1

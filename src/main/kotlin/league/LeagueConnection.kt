@@ -851,7 +851,7 @@ class LeagueConnection {
                     val currentTeam = if (championsTeam1.any { it.isSummonerSelectedChamp }) championsTeam1 else championsTeam2
                     val otherTeam = if (currentTeam == championsTeam1) championsTeam2 else championsTeam1
 
-                    championSelectInfo = ChampionSelectInfo(currentTeam, otherTeam, Role.ANY)
+                    championSelectInfo = ChampionSelectInfo(currentTeam, otherTeam, listOf(), Role.ANY)
                 }
 
                 gameId = gameFlow.gameData.gameId
@@ -918,29 +918,43 @@ class LeagueConnection {
             }
 
         // Set ideal champion to master based on mastery points and role size
+        var cardChampions = listOf<ChampionInfo>()
         if (gameMode == GameMode.ARAM) {
             val idealChampions = listOf(teamChampions, benchedChampions)
-                .flatMap { lst -> lst?.filter { it?.level!! < 5 }?.map { it } ?: listOf() }
+                .flatMap { lst -> lst?.filterNotNull()?.filter { it.level < 5 }?.map { it } ?: listOf() }
                 .sortedWith(
                     compareByDescending<ChampionInfo?> { it?.masteryPoints }
                         .thenByDescending { it?.roles?.size }
                 )
-                .mapIndexed { index, championInfo -> championInfo?.id to (index + 1) }
+                .mapIndexed { index, championInfo -> championInfo.id to (index + 1) }
                 .toMap()
 
             teamChampions.filterNotNull().forEach {
-                it.isSummonerSelectedChamp = it.id == selectedChamp.championId || it.id == selectedChamp.championPickIntent
                 it.idealChampionToMasterEntry = idealChampions.getOrDefault(it.id, -1)
             }
 
             benchedChampions?.forEach {
                 it.idealChampionToMasterEntry = idealChampions.getOrDefault(it.id, -1)
             }
+
+            val cardsStr = clientApi!!.executeGet("/lol-lobby-team-builder/champ-select/v1/subset-champion-list", Any::class.java).responseObject
+
+            cardChampions = (cardsStr as List<*>).filterIsInstance<Double>()
+                .map { championInfo[it.toInt()] ?: ChampionInfo(name = "Failed to Load Champ ID: $it") }
+
+            val allChampionIds = cardChampions.map { it.id }.toSet().union(teamChampions.filterNotNull().map { it.id }.toSet())
+            if (benchedChampions?.isNotEmpty() == true && benchedChampions.map { it.id }.toSet().intersect(allChampionIds).isNotEmpty()) {
+                cardChampions = listOf()
+            }
+        }
+
+        teamChampions.filterNotNull().forEach {
+            it.isSummonerSelectedChamp = it.id == selectedChamp.championId || it.id == selectedChamp.championPickIntent
         }
 
         val assignedRole = Role.fromString(selectedChamp.assignedPosition)
 
-        championSelectInfo = ChampionSelectInfo(teamChampions.filterNotNull(), benchedChampions ?: listOf(), assignedRole)
+        championSelectInfo = ChampionSelectInfo(teamChampions.filterNotNull(), benchedChampions ?: listOf(), cardChampions, assignedRole)
         championSelectChanged()
     }
 
