@@ -843,8 +843,12 @@ class LeagueConnection {
 
                 if (championSelectInfo.teamChampions.isEmpty()) {
                     val championId = gameFlow.gameData.getCurrentChampionId(summonerInfo.summonerId)
+
+                    @Suppress("UNNECESSARY_SAFE_CALL")
                     val championsTeam1 = gameFlow.gameData.teamOne.map { championInfo[it.championId] }
                         .mapNotNull { it.apply { it?.isSummonerSelectedChamp = it?.id == championId } }
+
+                    @Suppress("UNNECESSARY_SAFE_CALL")
                     val championsTeam2 = gameFlow.gameData.teamTwo.map { championInfo[it.championId] }
                         .mapNotNull { it.apply { it?.isSummonerSelectedChamp = it?.id == championId } }
 
