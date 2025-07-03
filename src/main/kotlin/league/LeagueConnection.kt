@@ -861,6 +861,11 @@ class LeagueConnection {
                 gameId = gameFlow.gameData.gameId
                 GameMode.fromGameMode(gameFlow.gameData.queue.gameMode, gameFlow.gameData.queue.id)
             }
+            LolGameflowGameflowPhase.ENDOFGAME -> {
+                championSelectInfo = ChampionSelectInfo()
+
+                GameMode.NONE
+            }
             else -> {
                 GameMode.NONE
             }
