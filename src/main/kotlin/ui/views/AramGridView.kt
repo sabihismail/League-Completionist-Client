@@ -98,7 +98,8 @@ class AramGridView: View() {
                 horizontalCellSpacing = IMAGE_SPACING_WIDTH
 
                 cellCache {
-                    find<ChampionFragment>(mapOf(ChampionFragment::champion to it, ChampionFragment::showTokens to false, ChampionFragment::showYou to true)).root
+                    find<ChampionFragment>(mapOf(ChampionFragment::champion to it, ChampionFragment::showTokens to false, ChampionFragment::showYou to true,
+                        ChampionFragment::showMaxEternal to true)).root
                 }
             }
 
@@ -116,7 +117,7 @@ class AramGridView: View() {
                 horizontalCellSpacing = IMAGE_SPACING_WIDTH
 
                 cellCache {
-                    find<ChampionFragment>(mapOf(ChampionFragment::champion to it, ChampionFragment::showTokens to false, ChampionFragment::showYou to true)).root
+                    find<ChampionFragment>(mapOf(ChampionFragment::champion to it, ChampionFragment::showTokens to false, ChampionFragment::showYou to true, ChampionFragment::showMaxEternal to true)).root
                 }
             }
         }

@@ -18,6 +18,7 @@ class ChampionFragment : Fragment() {
     val showTokens: Boolean by param(true)
     val showEternals: Boolean by param(true)
     val showYou: Boolean by param(false)
+    val showMaxEternal: Boolean by param(false)
 
     override val root = stackpane {
         alignment = Pos.TOP_CENTER
@@ -53,6 +54,11 @@ class ChampionFragment : Fragment() {
 //                        champion.percentageUntilNextLevel
 
                     var text = "Lvl ${champion.level}${champion.percentageUntilNextLevel}" // $extraInfoStr"
+
+                    if (showMaxEternal) {
+                        text += champion.maxEternalStr
+                    }
+
                     if (champion.idealChampionToMasterEntry != -1) {
                         text += " (Rec: ${champion.idealChampionToMasterEntry})"
                     }

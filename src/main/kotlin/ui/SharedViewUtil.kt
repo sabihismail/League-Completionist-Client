@@ -47,6 +47,7 @@ object SharedViewUtil {
         search: SimpleStringProperty? = null,
         eternalsOnly: SimpleBooleanProperty? = null,
         challenges: SimpleObjectProperty<Challenge>? = null,
+        sortByMaxEternals: SimpleBooleanProperty? = null,
     ): ObservableList<ChampionInfo>? {
         val roleFilter: (ChampionInfo) -> Boolean = if (role != null) { c -> role.value == ChampionRole.ANY || c.roles?.contains(role.value) == true } else { _ -> true }
         val searchFilter: (ChampionInfo) -> Boolean = if (search != null) { c -> c.nameLower.contains(search.value.lowercase()) } else { _ -> true }
@@ -56,10 +57,16 @@ object SharedViewUtil {
                 (challenges.value.availableIdsInt.isEmpty() && !c.completedChallenges.contains(challenges.value.id?.toInt())) ||
                 (challenges.value.availableIdsInt.isEmpty() && c.availableChallenges.contains(challenges.value.id?.toInt()) && !c.completedChallenges.contains(challenges.value.id?.toInt())) }
         } else { _ -> true }
-        val allFilters = listOf(roleFilter, searchFilter, eternalsOnlyFilter, challengesFilter)
+        val sortByMaxEternalsFilter: (ChampionInfo) -> Boolean = if (sortByMaxEternals?.value == true) {
+            { c -> (c.maxEternal?.formattedMilestoneLevel?.toInt()!! < 15) }
+        } else { _ -> true }
+        val allFilters = listOf(roleFilter, searchFilter, eternalsOnlyFilter, challengesFilter, sortByMaxEternalsFilter)
 
-        return FXCollections.observableList(
-            allChampionsProperty.filter { allFilters.all { filter -> filter(it) } }
-        )
+        var result = allChampionsProperty.filter { allFilters.all { filter -> filter(it) } }
+        if (sortByMaxEternals?.value == true) {
+            result = result.sortedByDescending { it.maxEternal?.formattedMilestoneLevel?.toInt() }
+        }
+
+        return FXCollections.observableList(result)
     }
 }

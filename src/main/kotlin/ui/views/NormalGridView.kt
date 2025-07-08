@@ -34,6 +34,7 @@ class NormalGridView: View() {
 
     private val eternalsOnlyProperty = SimpleBooleanProperty(false)
     private val loadEternalsProperty = SimpleBooleanProperty(false)
+    private val sortByMaxEternalsProperty = SimpleBooleanProperty(false)
 
     fun setChampions(lst: List<ChampionInfo>) {
         allChampionsProperty.value = FXCollections.observableList(lst)
@@ -52,7 +53,7 @@ class NormalGridView: View() {
     private fun setActiveChampions() {
         runAsync {
             SharedViewUtil.getActiveChampions(allChampionsProperty.value, role = currentChampionRoleProperty, search = championSearchProperty,
-                eternalsOnly = eternalsOnlyProperty, challenges = currentChallengeProperty)
+                eternalsOnly = eternalsOnlyProperty, challenges = currentChallengeProperty, sortByMaxEternals = sortByMaxEternalsProperty)
         } ui {
             championListProperty.value = it
         }
@@ -91,7 +92,8 @@ class NormalGridView: View() {
                 cellHeight = IMAGE_WIDTH
 
                 cellFormat {
-                    graphic = find<ChampionFragment>(mapOf(ChampionFragment::champion to it, ChampionFragment::showEternals to loadEternalsProperty.value)).root
+                    graphic = find<ChampionFragment>(mapOf(ChampionFragment::champion to it, ChampionFragment::showEternals to loadEternalsProperty.value,
+                        ChampionFragment::showMaxEternal to sortByMaxEternalsProperty.value)).root
                 }
             }
 
@@ -150,12 +152,12 @@ class NormalGridView: View() {
                         alignment = Pos.CENTER_RIGHT
                         spacing = 10.0
 
-                        checkbox("Display Eternals", loadEternalsProperty).apply {
-                            loadEternalsProperty.onChange { setActiveChampions() }
+                        checkbox("Sort: Max Eternal", sortByMaxEternalsProperty).apply {
+                            sortByMaxEternalsProperty.onChange { setActiveChampions() }
                         }
 
-                        checkbox("Eternals Available Only", eternalsOnlyProperty).apply {
-                            eternalsOnlyProperty.onChange { setActiveChampions() }
+                        checkbox("Display Eternals", loadEternalsProperty).apply {
+                            loadEternalsProperty.onChange { setActiveChampions() }
                         }
 
                         checkbox("Skip Completed Challenges", skipCompleteChallengesProperty).apply {
