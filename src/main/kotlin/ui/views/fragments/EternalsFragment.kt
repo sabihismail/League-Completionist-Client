@@ -24,9 +24,11 @@ class EternalsFragment : Fragment() {
 
     fun set(newEternal: List<EternalsInfo>) {
         val vBox = vbox {
-            newEternal.sortedByDescending { it.formattedMilestoneLevel }
+            newEternal.filter { it.setName != "Starter Series" }
+                .sortedByDescending { it.formattedMilestoneLevel }
                 .forEach {
                     val regex = StringUtil.getSafeRegex(ETERNALS_DESCRIPTION_REGEX, it.description)
+
                     blackLabel(regex + "Lvl ${it.formattedMilestoneLevel} - ${it.formattedValue}/${it.nextMilestone}", fontSize = fontSizeIn, isWrapText = false) {
                         val txt = if (it.formattedMilestoneLevel.toInt() >= 4) {
                             it.description
@@ -41,6 +43,9 @@ class EternalsFragment : Fragment() {
                         }
                     }
                 }
+
+            val starters = newEternal.first { it.setName == "Starter Series" }
+            blackLabel(starters.name.toString(), fontSize = fontSizeIn)
         }
 
         root.children.clear()

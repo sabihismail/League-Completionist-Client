@@ -76,7 +76,7 @@ open class MainViewController : Controller() {
                 }
                 else -> {
                     runLater {
-                        val newFragment = view.find<ChampionFragment>()
+                        val newFragment = view.find<ChampionFragment>(ChampionFragment::showMaxEternal to true)
                         view.currentChampionView.replaceWith(newFragment)
                         view.currentChampionView = newFragment
 

@@ -59,9 +59,9 @@ class ChampionFragment : Fragment() {
                         text += champion.maxEternalStr
                     }
 
-                    if (champion.idealChampionToMasterEntry != -1) {
-                        text += " (Rec: ${champion.idealChampionToMasterEntry})"
-                    }
+//                    if (champion.idealChampionToMasterEntry != -1) {
+//                        text += " (Rec: ${champion.idealChampionToMasterEntry})"
+//                    }
 
                     blackLabel(text, fontSize = 9.6)
 

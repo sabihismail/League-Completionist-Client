@@ -3,13 +3,16 @@ package league.models.json
 import league.api.LeagueCommunityDragonApi
 import java.text.NumberFormat
 
-class EternalsInfo {
+class EternalsInfo() {
     private var statstoneId: String = ""
+
     var description: String = ""
     var formattedMilestoneLevel: String = ""
     var formattedValue: String? = null
     var name: String? = null
     var nextMilestone: String = ""
+    var setName = ""
+    var setComplete = false
     /*
     var boundChampionItemId: Int? = null
     var category: String? = null

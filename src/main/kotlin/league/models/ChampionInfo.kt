@@ -15,7 +15,7 @@ data class ChampionInfo(val id: Int = -1, val name: String = "None", val ownersh
     lateinit var completedChallenges: MutableSet<Int>
     lateinit var availableChallenges: MutableSet<Int>
 
-    private var latestEternalInfo: List<EternalsInfo> = listOf()
+    private var latestEternalInfo: MutableList<EternalsInfo> = mutableListOf()
 
     val nameLower by lazy {
         name.lowercase()
@@ -31,9 +31,33 @@ data class ChampionInfo(val id: Int = -1, val name: String = "None", val ownersh
     fun getEternals(showEternals: Boolean): List<EternalsInfo> {
         return if (eternalInfo.any { it.value } && showEternals) {
             if (latestEternalInfo.isEmpty()) {
-                latestEternalInfo = clientApi?.executeGet("/lol-statstones/v2/player-statstones-self/${id}", Array<EternalsSetInfo>::class.java)?.responseObject
-                    ?.filter { set -> set.name != "Starter Series" && set.stonesOwned > 0 }
-                    ?.flatMap { set -> set.statstones } ?: emptyList()
+                val apiResponse = clientApi?.executeGet("/lol-statstones/v2/player-statstones-self/${id}", Array<EternalsSetInfo>::class.java)?.responseObject
+
+                latestEternalInfo = apiResponse?.filter { set -> set.name != "Starter Series" && set.stonesOwned > 0 }
+                    ?.onEach { set -> set.statstones.onEach { stone -> stone.setName = set.name.toString() } }
+                    ?.flatMap { set -> set.statstones }
+                    ?.toMutableList()!!
+
+                val starterEternals = apiResponse.firstOrNull { set -> set.name == "Starter Series" }?.statstones
+
+                val nameMap = mapOf("Epic Monsters Killed" to "M", "Structures Destroyed" to "T", "Takedowns" to "K")
+                val sortMap = mapOf("K" to 1, "T" to 2, "M" to 3)
+
+                val joinedStarterSeries = starterEternals?.map { stone -> Pair(stone, nameMap[stone.name]) }
+                    ?.sortedByDescending { sortMap[it.second] }
+                latestEternalInfo.add(EternalsInfo().apply {
+                    name = joinedStarterSeries?.joinToString(", ") {
+                        "${it.second}${it.first.formattedMilestoneLevel}"
+                    }
+                    setName = "Starter Series"
+                    setComplete = joinedStarterSeries?.all { it.first.formattedMilestoneLevel.toInt() > 5 } == true
+                    formattedMilestoneLevel = "9999"
+                })
+            }
+
+            if (latestEternalInfo.filterNot { it.setName == "Starter Series" }.groupBy { stone -> stone.setName }
+                .any { it.value.all { stone -> stone.formattedMilestoneLevel.toInt() >= 5 } } or latestEternalInfo.first { it.setName == "Starter Series" }.setComplete) {
+                return emptyList()
             }
 
             return latestEternalInfo.filter { it.formattedMilestoneLevel.toInt() < 5 }
@@ -47,7 +71,7 @@ data class ChampionInfo(val id: Int = -1, val name: String = "None", val ownersh
             getEternals(true)
         }
 
-        latestEternalInfo.maxByOrNull { it.formattedMilestoneLevel.toInt() }
+        latestEternalInfo.filter { it.setName != "Starter Series" }.maxByOrNull { it.formattedMilestoneLevel.toInt() }
     }
 
     val maxEternalStr by lazy {
@@ -57,13 +81,14 @@ data class ChampionInfo(val id: Int = -1, val name: String = "None", val ownersh
 
         val regexStr = StringUtil.getSafeRegex(ETERNALS_DESCRIPTION_REGEX, highest?.description ?: "")
 
-        " (max E: $regexStr${highest?.formattedMilestoneLevel}"
+        " - $regexStr${highest?.formattedMilestoneLevel}"
     }
 
     override fun toString(): String {
         return "ChampionInfo(id=$id, name='$name', ownershipStatus=$ownershipStatus, masteryPoints=$masteryPoints, currentMasteryPoints=$currentMasteryPoints, " +
-                "nextLevelMasteryPoints=$nextLevelMasteryPoints, level=$level, tokens=$tokens, isSummonerSelectedChamp=$isSummonerSelectedChamp, hasEternal=$eternalInfo, " +
-                "roles=$roles, idealChampionToMasterEntry=$idealChampionToMasterEntry, clientApi=$clientApi, nameLower='$nameLower', " +
-                "percentageUntilNextLevel='$percentageUntilNextLevel')"
+                "nextLevelMasteryPoints=$nextLevelMasteryPoints, level=$level, tokens=$tokens, isSummonerSelectedChamp=$isSummonerSelectedChamp, eternalInfo=$eternalInfo, " +
+                "roles=$roles, idealChampionToMasterEntry=$idealChampionToMasterEntry, clientApi=$clientApi, masteryBoxRewards='$masteryBoxRewards', " +
+                "completedChallenges=$completedChallenges, availableChallenges=$availableChallenges, latestEternalInfo=$latestEternalInfo, " +
+                "nameLower='$nameLower', percentageUntilNextLevel='$percentageUntilNextLevel', maxEternal=$maxEternal, maxEternalStr='$maxEternalStr')"
     }
 }
