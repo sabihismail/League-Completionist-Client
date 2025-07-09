@@ -44,8 +44,10 @@ class EternalsFragment : Fragment() {
                     }
                 }
 
-            val starters = newEternal.first { it.setName == "Starter Series" }
-            blackLabel(starters.name.toString(), fontSize = fontSizeIn)
+            val starters = newEternal.firstOrNull { it.setName == "Starter Series" }
+            if (starters != null) {
+                blackLabel(starters.name.toString(), fontSize = fontSizeIn)
+            }
         }
 
         root.children.clear()
