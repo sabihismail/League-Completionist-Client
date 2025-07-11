@@ -203,7 +203,7 @@ open class MainViewController : Controller() {
         } ui {
             if (it == null) return@ui
 
-            val newFragment = view.find<ChampionFragment>(mapOf(ChampionFragment::champion to it, ChampionFragment::showEternals to true))
+            val newFragment = view.find<ChampionFragment>(mapOf(ChampionFragment::champion to it, ChampionFragment::showEternals to true, ChampionFragment::showMaxEternal to true))
             view.currentChampionView.replaceWith(newFragment)
             view.currentChampionView = newFragment
 
